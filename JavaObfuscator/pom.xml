@@ -53,6 +53,13 @@
             <version>RELEASE</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Spoon is the library to alter and adjust java sourcecode-->
+        <dependency>
+            <groupId>fr.inria.gforge.spoon</groupId>
+            <artifactId>spoon-core</artifactId>
+            <version>8.3.0</version>
+        </dependency>
     </dependencies>
 
 
