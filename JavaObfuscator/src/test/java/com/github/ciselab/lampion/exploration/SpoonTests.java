@@ -7,15 +7,20 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import spoon.Launcher;
 import spoon.compiler.Environment;
+import spoon.refactoring.CtRefactoring;
+import spoon.refactoring.CtRenameGenericVariableRefactoring;
+import spoon.refactoring.CtRenameLocalVariableRefactoring;
+import spoon.reflect.code.CtBlock;
+import spoon.reflect.code.CtLocalVariable;
+import spoon.reflect.code.CtReturn;
 import spoon.reflect.code.CtStatement;
-import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtMethod;
-import spoon.reflect.declaration.CtParameter;
-import spoon.reflect.declaration.CtType;
+import spoon.reflect.declaration.*;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.factory.TypeFactory;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.CompressionType;
+import spoon.support.reflect.code.CtBlockImpl;
+import spoon.support.reflect.code.CtLiteralImpl;
 import spoon.support.reflect.declaration.CtParameterImpl;
 import spoon.support.reflect.declaration.CtTypeImpl;
 
@@ -24,6 +29,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -38,9 +44,12 @@ import java.util.Set;
  *
  * The Launcher can be run with a main method, which is inherited from Spoon being a normal application as well.
  * For all of Lampions cases, the "parseClass" is the correct Entrypoint.
- * Hence, The program will need a lookup from Files to Classes and a helper logic around it.
+ * Optionally, Spoon Launcher can be run on a folder (of the project) and builds a "CtModel" which holds all entities found.
  *
  * All Spoon Items start with Ct, which is short for "CompileTime".
+ * Some CtElements are Generics of <T> where T is a placeholder for their type if known/applicable.
+ * Literals can be build using the factory.createLiteral("Hello") or factory.createLiteral(6) and are correct typed.
+ * Some items further have SubTypes.
  * The TopLevel item, "CTModel" implements a "CtQueryable", which enables one to apply "CtQuery"
  * The CTQuery can be used to iterate over all implemented children.
  * Lambdas over CtElements fulfill CtQueries, so using "filterChildren(predicate)" is a perfectly normal thing.
@@ -51,26 +60,36 @@ import java.util.Set;
  * so if one prints them, there might be no resulting valid java code. Solve this with rigid unit-testing.
  *
  * The CtElements often have "SetComment" and "AddComment" methods for many things such as fields, variables, parameters
+ * In "spoonExploration_AddInlineComment()" there is an example how to add an inline comment.
+ * Important: The items need a valid position, which is not trivially done by inserting it into a list of all available
+ * Statements (e.g. filterChildren(instanceof Statement) and inserting the inline comment is still invisible!)
  *
- * ToDo:
- * - What does CtClass<T> <T> mean ?
- * - Apply a class-level transformation and add a nonsense method
- * - Apply the following method level transformations:
- *      - Add Comment
- *      - Alter variable name
- *      - Put whole statement into If(true) block
- * - Is there anything else usable for toplevel parsing than Launcher?
- * - Can I check if the code compiles / is correct
+ * For some items there are "refactorings" availible (mostly for renaming) which only provide interfaces except for
+ * Variable Renaming (that one is fully implemented).
+ * Altering method names requires to provide a new refactoring (atleast to do it properly).
  *
- * Further Examples:
+ * One of the "run" or "refactor" methods builds a spooned folder with the altered class.
+ *
+ * TODO:
+ * - Inspect what builds the "spooned" folder
+ *
+ * Further Examples / Reading:
  * - https://github.com/INRIA/spoon
  * - http://spoon.gforge.inria.fr/
  * - https://github.com/SpoonLabs/spoon-examples
  */
 public class SpoonTests {
 
-    private static String pathToTestFile = "./src/test/resources/example.java";
+    private static String pathToTestFile = "./src/test/resources/javafiles/example.java";
+    private static String pathToTestFileFolder = "./src/test/resources/javafiles";
 
+
+
+    /*
+    ================================================================================================================
+                    Building, Search and Iterations
+    ================================================================================================================
+     */
     @Tag("Exploration")
     @Test
     void minimalSpoonExample(){
@@ -89,6 +108,36 @@ public class SpoonTests {
 
         assertNotNull(testObject);
         assertEquals("Example",testObject.getSimpleName());
+    }
+
+    @Tag("Exploration")
+    @Test
+    void spoonExploration_FromFileWithLauncher() throws IOException {
+        // The "Run" is necessary!
+        Launcher launcher = new Launcher();
+
+        launcher.addInputResource(pathToTestFile);
+
+        launcher.run();
+
+        var results = launcher.getModel().filterChildren(c -> c instanceof CtMethod).list();
+
+        assertEquals(1,results.size());
+    }
+
+    @Tag("Exploration")
+    @Test
+    void spoonExploration_FromFolderWithLauncher() throws IOException {
+        // The "Run" is necessary!
+        Launcher launcher = new Launcher();
+
+        launcher.addInputResource(pathToTestFileFolder);
+
+        launcher.run();
+
+        var results = launcher.getModel().filterChildren(c -> c instanceof CtMethod).list();
+
+        assertEquals(1,results.size());
     }
 
     @Tag("Exploration")
@@ -129,6 +178,11 @@ public class SpoonTests {
         assertFalse(statements.isEmpty());
     }
 
+    /*
+    ===================================================================================================================
+                        Refactorings & Transformation Tests
+    ===================================================================================================================
+     */
     @Tag("Exploration")
     @Test
     void spoonExploration_AddParameter() throws IOException {
@@ -155,6 +209,114 @@ public class SpoonTests {
         assertTrue(result.contains("byte yolo"));
     }
 
+
+    @Tag("Exploration")
+    @Test
+    void spoonExploration_AddInlineComment() throws IOException {
+        CtClass containerClass = readExampleFile();
+
+        Launcher launcher = new Launcher();
+        Factory factory = launcher.getFactory();
+
+        // Statements in the method "sum"
+        var statements = containerClass.filterChildren(c -> c instanceof CtMethod)
+                .filterChildren(c -> c instanceof CtStatement).list();
+
+        var comment =  factory.createInlineComment("I am a comment!");
+
+        CtBlockImpl block = (CtBlockImpl) statements.get(0);
+        // With using the CtBlockImpl::addStatement the comment also gets it's position set, which is very important!
+        // Without the sourceCodePosition, the comment stays invisible
+        block.addStatement(comment);
+
+        String result = containerClass.toString();
+
+        assertTrue(result.contains("I am a comment!"));
+    }
+
+    @Tag("Exploration")
+    @Test
+    void spoonExploration_AddUnusedMethod() throws IOException {
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(pathToTestFile);
+        launcher.run();
+
+        CtClass testObject = launcher.getModel().filterChildren(u -> u instanceof CtClass).first();
+        Factory factory = launcher.getFactory();
+        TypeFactory types = new TypeFactory();
+
+        CtMethod additionalMethod = factory.createMethod();
+        additionalMethod.setSimpleName("truther");
+        additionalMethod.setType(types.BOOLEAN_PRIMITIVE);
+        additionalMethod.addModifier(ModifierKind.STATIC);
+        additionalMethod.addModifier(ModifierKind.PUBLIC);
+        additionalMethod.addModifier(ModifierKind.FINAL);
+        CtReturn content = factory.createReturn();
+        content.setReturnedExpression(factory.createLiteral(true));
+        additionalMethod.setBody(content);
+
+        testObject.addMethod(additionalMethod);
+
+        String result = testObject.toString();
+
+        assertTrue(testObject.toString().contains("truther"));
+        assertTrue(testObject.toString().contains("return true;"));
+    }
+
+    @Tag("Exploration")
+    @Test
+    void spoonExploration_WrapInIfStatement() throws IOException {
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(pathToTestFile);
+        launcher.run();
+
+        CtMethod testObject = launcher.getModel().filterChildren(u -> u instanceof CtMethod).first();
+        Factory factory = launcher.getFactory();
+        TypeFactory types = new TypeFactory();
+
+        CtBlock methodBody = testObject.getBody();
+
+        var ifWrapper = factory.createIf();
+        ifWrapper.setCondition(factory.createLiteral(true));
+        ifWrapper.setThenStatement(methodBody);
+
+        testObject.setBody(ifWrapper);
+
+        String result = testObject.toString();
+
+        assertTrue(result.contains("if"));
+    }
+
+    @Tag("Exploration")
+    @Test
+    void spoonExploration_renameParameter() throws IOException {
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(pathToTestFile);
+        launcher.run();
+
+        CtMethod testObject = launcher.getModel().filterChildren(u -> u instanceof CtMethod).first();
+        Factory factory = launcher.getFactory();
+        TypeFactory types = new TypeFactory();
+
+
+        List<CtVariable> localVars = testObject.filterChildren(c -> c instanceof CtVariable).list();
+
+        CtRenameGenericVariableRefactoring refac = new CtRenameGenericVariableRefactoring();
+        refac.setTarget(localVars.get(0));
+        refac.setNewName("changedA");
+        refac.refactor();
+
+        String result = testObject.toString();
+
+        assertTrue(result.contains("changedA"));
+        assertFalse(result.contains("return a + b;"));
+    }
+
+    /*
+    ==================================================================================================================
+                                    Other Minor Tests and Stuff
+    ==================================================================================================================
+     */
     @Tag("Exploration")
     @Test
     void spoonExploration_whatElseCanLauncherDo() throws IOException {
@@ -168,6 +330,8 @@ public class SpoonTests {
         aClass.addMethod(myMethod);
 
         String result  = aClass.toString();
+
+        assertTrue(result.contains("class myNewName"));
     }
 
     @Tag("Exploration")
