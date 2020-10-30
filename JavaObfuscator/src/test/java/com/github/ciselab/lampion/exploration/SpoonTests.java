@@ -10,10 +10,7 @@ import spoon.compiler.Environment;
 import spoon.refactoring.CtRefactoring;
 import spoon.refactoring.CtRenameGenericVariableRefactoring;
 import spoon.refactoring.CtRenameLocalVariableRefactoring;
-import spoon.reflect.code.CtBlock;
-import spoon.reflect.code.CtLocalVariable;
-import spoon.reflect.code.CtReturn;
-import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.*;
 import spoon.reflect.declaration.*;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.factory.TypeFactory;
@@ -29,8 +26,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * This Class contains exploration-tests to evaluate the behaviour of the Spoon Library.
@@ -75,8 +74,10 @@ import java.util.Set;
  *
  * Further Examples / Reading:
  * - https://github.com/INRIA/spoon
- * - http://spoon.gforge.inria.fr/
- * - https://github.com/SpoonLabs/spoon-examples
+ * - http://spoon.gforge.inria.fr/first_transformation.html introduction to transformations
+ * - http://spoon.gforge.inria.fr/first_transformation.html overview of all elements
+ * - http://spoon.gforge.inria.fr/ general landing page for docs
+ * - https://github.com/SpoonLabs/spoon-examples secondary project that uses Spoon
  */
 public class SpoonTests {
 
@@ -261,6 +262,75 @@ public class SpoonTests {
 
         assertTrue(testObject.toString().contains("truther"));
         assertTrue(testObject.toString().contains("return true;"));
+    }
+
+
+    @Tag("Exploration")
+    @Test
+    void spoonExploration_AddLambdaIdentityWrapper_generalInspection(){
+        /*
+        This is for looking into and building the first steps of this stuff
+        See below in "spoonExploration_AddLambdaIdentityWrapper_WithMapper()"
+        and "wrapInLambda" how to apply it
+         */
+        Launcher launcher = new Launcher();
+        CtClass testObject = Launcher.parseClass("class A { void addOne(int a) {return a + 1;} }");
+
+        CtMethod testMethod = (CtMethod) testObject.getMethods().stream().findFirst().get();
+        Factory factory = launcher.getFactory();
+        TypeFactory types = new TypeFactory();
+
+        List<CtLiteral> literals = testObject.filterChildren(c -> c instanceof CtLiteral).list();
+
+        CtLiteral one = literals.get(0);
+        CtLambda lambda = factory.createLambda();
+        lambda.setExpression(one);
+        //lambda.setType(one.getType());
+
+        CtLocalVariable wrapped = factory.createLocalVariable(types.OBJECT,"u",lambda);
+
+        testMethod.getBody().addStatement(wrapped);
+
+        var test2 = factory.createCodeSnippetExpression("("+lambda.toString()+").get()");
+        test2.setType(one.getType());
+
+        String result = testObject.toString();
+
+        return;
+    }
+
+
+    @Tag("Exploration")
+    @Test
+    void spoonExploration_AddLambdaIdentityWrapper_WithMapper(){
+        CtClass testObject = Launcher.parseClass("class A { void addOne(int a) {return a + 1;} }");
+        CtMethod testMethod = (CtMethod) testObject.getMethods().stream().findFirst().get();
+
+
+        List<CtLiteral> literals = testMethod.filterChildren(c -> c instanceof CtLiteral).list();
+        CtLiteral one = literals.get(0);
+
+        var wrapped = wrapInLambda(one);
+
+        one.replace(wrapped);
+
+        String result = testObject.toString();
+
+        assertTrue(result.contains("a + (() -> 1).get()"));
+        assertFalse(result.contains("a + 1"));
+    }
+
+    private CtExpression<?> wrapInLambda(CtLiteral<?> toWrap){
+        // Important: Make a clone ! Otherwise it's overwriting the initial items attributes
+        Factory factory = (new Launcher()).getFactory();
+        CtLambda lambda = factory.createLambda();
+        lambda.setExpression(toWrap.clone());
+
+        CtExpression wrapped = factory.createCodeSnippetExpression("("+lambda.toString()+").get()");
+        wrapped.setType(toWrap.getType());
+        wrapped.setPosition(toWrap.getPosition());
+        wrapped.setParent(toWrap.getParent());
+        return wrapped;
     }
 
     @Tag("Exploration")

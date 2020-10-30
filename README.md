@@ -18,3 +18,9 @@ The folder *Manifest-Schema* holds sql-files to generate a valid schema required
 General information on design decisions can be found in the [Design-Notes](./Resources/DesignNotes.md).
 
 A examples and reasoning on the metamorphic transformations can be found in [Transformations.md](./Resources/Transformations.md).
+
+## Related & Similar Work
+
+The Paper [Embedding Java Classes with code2vec: Improvements from Variable Obfuscation](https://arxiv.org/pdf/2004.02942.pdf) and it's accompanying [repository](https://github.com/basedrhys/obfuscated-code2vec) investigate the impact of changing variable names on the performance / robustness of Code2Vec based models.
+With variable renaming being a subset of this work, it can be seen as related work with a different goal.
+A more precise differentiation will be done in an actual publication.
