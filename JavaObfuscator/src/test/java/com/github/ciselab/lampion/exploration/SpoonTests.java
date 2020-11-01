@@ -68,6 +68,7 @@ import java.util.function.Supplier;
  * Altering method names requires to provide a new refactoring (atleast to do it properly).
  *
  * One of the "run" or "refactor" methods builds a spooned folder with the altered class.
+ * There is a "buildModel" method of the Launcher, which does not need to
  *
  * TODO:
  * - Inspect what builds the "spooned" folder
