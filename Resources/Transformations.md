@@ -14,19 +14,35 @@ They are categorized by their primary category.
 
 Wrap the whole body of a method into a `if(true){body}`
 
-Risks: If not applied to a whole block statement, the if(true) can hide variable declarations which may be required for later statements, leading to broken code.
-
 Example:
 
 ```Java
 // before
-public void sum (int a, int b) {
+public void some (String text) {
+    System.out.println(text);
+}
+// after
+public void some (String text) {
+    if (true) {
+        System.out.println(text);
+    }
+}
+```
+
+If the method has a return statement, to produce valid code it is necessary to have a return statement in the other path. 
+Yes, this is trivial and likely your IDE will detect / change / warn about this, but some compilers will be harsh on you.
+
+```Java
+// before
+public int sum(int a, int b) {
     return a + b;
 }
 // after
-public void sum (int a, int b) {
+public int sum(int a, int b) {
     if (true) {
         return a + b;
+    } else {
+        return null;
     }
 }
 ```
@@ -47,7 +63,7 @@ Categories: Structure, Control-Flow, Layout, Complexity
 
 Add a unused parameter to a method.
 
-Risks: Collision with existing parameters / variables
+Risks: Collision with existing parameters / variables, breaking interfaces
 
 Example:
 

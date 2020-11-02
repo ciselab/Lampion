@@ -358,6 +358,40 @@ public class SpoonTests {
         assertTrue(result.contains("if"));
     }
 
+
+    @Tag("Exploration")
+    @Test
+    void spoonExploration_WrapInIfStatementElseReturnFalse() throws IOException {
+        /**
+         * There is an issue with compilation of the method has a return statement.
+         * If there is a return statement, and the compiler does not understand that its if(true)
+         * then there will be a compilation error.
+         * hence, there must be a trivial else branch returning false
+         */
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(pathToTestFile);
+        launcher.run();
+
+        CtMethod testObject = launcher.getModel().filterChildren(u -> u instanceof CtMethod).first();
+        Factory factory = launcher.getFactory();
+        TypeFactory types = new TypeFactory();
+
+        CtBlock methodBody = testObject.getBody();
+
+        var ifWrapper = factory.createIf();
+        ifWrapper.setCondition(factory.createLiteral(true));
+        ifWrapper.setThenStatement(methodBody);
+        ifWrapper.setElseStatement(factory.createBlock().addStatement(factory.createCodeSnippetStatement("return null")));
+
+        testObject.setBody(ifWrapper);
+
+        String result = testObject.toString();
+
+        assertTrue(result.contains("if"));
+        assertTrue(result.contains("else"));
+        assertTrue(result.contains("return null;"));
+    }
+
     @Tag("Exploration")
     @Test
     void spoonExploration_renameParameter() throws IOException {
