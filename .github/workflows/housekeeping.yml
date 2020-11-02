@@ -1,0 +1,41 @@
+name: Automatic Housekeeping
+
+on:
+  check_suite:
+    types:
+      - completed
+  pull_request:
+    types:
+      - edited
+      - labeled
+      - opened
+      - ready_for_review
+      - reopened
+      - synchronize
+      - unlabeled
+      - unlocked
+
+jobs:
+
+  label:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/labeler@v2
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        
+  merge-me:
+    name: Dependabot merge
+    runs-on: ubuntu-latest
+    needs:
+          - label
+    steps:
+      - name: Sleep for 180 seconds
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '180s'
+
+      - name: Dependabot merge
+        uses: ridedott/merge-me-action@master
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

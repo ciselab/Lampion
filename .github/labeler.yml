@@ -1,0 +1,37 @@
+Java:
+- JavaObfuscator/src/*
+- ./.github/workflows/BuildObfuscator.yml
+
+Test:
+- JavaObfuscator/src/test/*
+
+Documentation:
+- ./**/*.md
+
+Database:
+- database/*
+
+Docker:
+- ./**/Dockerfile
+- ./**/docker-compose.yml
+
+Configuration:
+- .github/*.yml
+- .github/*.yaml
+- .github/**/*.yml
+- .github/**/*.yaml
+- .github/workflow/*
+- JavaObfuscator/pom.xml
+- ./**/*.yml
+- ./**/*.yaml
+- ./**/*.json
+- ./**/*.xml
+- .gitignore
+
+Git:
+- .github/*
+- .gitignore
+- ./**/.gitignore
+
+Integration:
+- ./**/docker-compose.yml

@@ -10,12 +10,20 @@ import com.github.ciselab.lampion.transformations.TransformerRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Entrypoint for this program.
+ *
+ * Holds two global static variables:
+ * - Configuration
+ * - Transformer-Registry
+ * See their comments for further information. They are intended for read-only purpose.
+ */
 public class App {
 
     private static Logger logger = LogManager.getLogger(App.class);
 
     // The global configuration used throughout the program. It is read from file
-    // They only contain pairs of <String,String> (or it is used that way)
+    // They only contain pairs of <String,String> (or atleast it is used that way)
     public static Properties configuration = new Properties();
 
     // The global registry in which every Transformation registers itself at system startup.
