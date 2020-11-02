@@ -1,11 +1,11 @@
 package com.github.ciselab.lampion.transformations;
 
+import com.github.ciselab.lampion.program.App;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtReturn;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.factory.Factory;
-import spoon.reflect.factory.TypeFactory;
 
 import java.util.HashSet;
 import java.util.List;
@@ -21,8 +21,12 @@ import java.util.function.Predicate;
  */
 public class IfTrueTransformer implements Transformer {
 
-    Random random;              // the random number provider used for picking random methods
-    boolean debug = false;      // whether to add more information to the TransformationResults
+    Random random;                          // the random number provider used for picking random methods
+    boolean debug = false;                  // whether to add more information to the TransformationResults
+    public final String name = "IfTrue";    // The name used for TransformationResults
+
+    // This transformer is build here and registered in the global registry of app
+    private static final IfTrueTransformer delegate = buildAndRegisterDefaultDelegate();
 
     public IfTrueTransformer() {
         this.random = new Random();
@@ -34,7 +38,6 @@ public class IfTrueTransformer implements Transformer {
     public IfTrueTransformer(long seed) {
         this.random = new Random(seed);
     }
-
 
     /**
      * This method applied the class-specific Transformation to a random, valid element of the given AST.
@@ -61,9 +64,9 @@ public class IfTrueTransformer implements Transformer {
         // If debug information is wished for, create a bigger Transformationresult
         // Else, just return a minimal Transformationresult
         if (debug) {
-            return new SimpleTransformationResult(this.getClass().getSimpleName(),safedElement,this.getCategories(),beforeAfterOverview(safedElement,toAlter),ast.clone());
+            return new SimpleTransformationResult(name,safedElement,this.getCategories(),beforeAfterOverview(safedElement,toAlter),ast.clone());
         } else {
-            return new SimpleTransformationResult(this.getClass().getSimpleName(),safedElement,this.getCategories());
+            return new SimpleTransformationResult(name,safedElement,this.getCategories());
         }
     }
 
@@ -109,7 +112,7 @@ public class IfTrueTransformer implements Transformer {
         // Check for all methods
         List<CtMethod> allMethods = ast.filterChildren(c -> c instanceof CtMethod).list();
         // Pick a number between 0 and count(methods)
-        int randomValidIndex = random.nextInt(allMethods.size()-1);
+        int randomValidIndex = random.nextInt(allMethods.size());
         // return the method at the position
         return allMethods.get(randomValidIndex);
     }
@@ -141,6 +144,12 @@ public class IfTrueTransformer implements Transformer {
          */
         Set<Predicate<CtElement>> constraints = new HashSet<>();
 
+        Predicate<CtElement> hasMethods = ct -> {
+           return ! ct.filterChildren(c -> c instanceof CtMethod).list().isEmpty();
+        };
+
+        constraints.add(hasMethods);
+
         return constraints;
     }
 
@@ -164,6 +173,19 @@ public class IfTrueTransformer implements Transformer {
 
     public void setDebug(boolean debug){
         this.debug = debug;
+    }
+
+    /**
+     * This methods builds a transformer using the apps global seed for it's randomness
+     * and registers it in the global default registry.
+     * The return value is the build transformer, set to the toplevel delegate entry,
+     * this behavior helps to build it at startup exploiting the static startup.
+     * @return the IfTrueTransformer that is registered in App's default registry
+     */
+    private static IfTrueTransformer buildAndRegisterDefaultDelegate(){
+        IfTrueTransformer delegate =  new IfTrueTransformer(App.globalRandomSeed);
+        App.globalRegistry.registerTransformer(delegate);
+        return delegate;
     }
 
     //TODO: Equals & HashCode?

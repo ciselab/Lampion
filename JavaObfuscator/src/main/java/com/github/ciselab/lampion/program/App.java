@@ -30,6 +30,8 @@ public class App {
     // Is passed to the engine, and can be exchanged beforehand to set certain scenarios.
     // For further info, see DesignNotes.md "Registration of Transformations"
     public static TransformerRegistry globalRegistry = new TransformerRegistry("default");
+    // Used to instantiate the random seeds of the delegated Transformers in the default TransformerRegistry
+    public static final long globalRandomSeed = 2020;
 
     public static void main(String[] args) {
         logger.info("Starting Lampion Obfuscator");

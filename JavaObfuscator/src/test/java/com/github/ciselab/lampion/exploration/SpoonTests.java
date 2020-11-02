@@ -7,29 +7,20 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import spoon.Launcher;
 import spoon.compiler.Environment;
-import spoon.refactoring.CtRefactoring;
 import spoon.refactoring.CtRenameGenericVariableRefactoring;
-import spoon.refactoring.CtRenameLocalVariableRefactoring;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.*;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.factory.TypeFactory;
-import spoon.reflect.reference.CtTypeReference;
-import spoon.support.CompressionType;
 import spoon.support.reflect.code.CtBlockImpl;
-import spoon.support.reflect.code.CtLiteralImpl;
 import spoon.support.reflect.declaration.CtParameterImpl;
-import spoon.support.reflect.declaration.CtTypeImpl;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * This Class contains exploration-tests to evaluate the behaviour of the Spoon Library.
