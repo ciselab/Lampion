@@ -6,21 +6,33 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public interface Transformation {
+public interface Transformer {
     /**
-     * This class is the toplevel Interface for all Implementations of Metamorphic Transformations.
+     * This class is the toplevel Interface for all Implementations of Metamorphic Transformers.
+     * A metamorphic transformer can apply a metamorphic transformation to code, that is altering the look, syntax
+     * or structure of the code while being effectively equals ("the code does the same").
      *
      * There have been multiple approaches considered all evolving around the principal issues mentioned in
      * DesignNotes.md "Registration of Transformations".
+     * There are verbatim examples in the Lampion/Resources/Transformations.md
      * Despite the need for Java classes for logical separation, most Transformations are somewhat pure functions
      * Transformation :: AST -> (AST,Record)
      *
-     * To implement the Transformations, each Transformation has a method "applyAtRandomPosition(AST)" which returns
+     * To implement the Transformations, each Transformer has a method "applyAtRandomPosition(AST)" which returns
      * and entry on what has been altered. The application is done as a side effect, so the AST put in is altered.
      * This behaviour using side-effects is unfortunate, but I think it will turn out the best code-wise.
      * To use the Transformations in a certain scope, simply just pass a certain scope into the transformation.
      * This "applyAtRandomPosition" enables the Engine to only have a list of functions stored to pick from,
      * without the ugly use of reflections. Extendability is given as this interface is public.
+     *
+     * I thought longer about implementing something with generics or reflections to enable more constrained approaches
+     * but I think it's best to have the Transformer pretty "blind" and unrestricted in its surroundings, relying on the
+     * care of the developer.
+     * To Express this, the constraints where put in place whenever your Transformation cannot be applied.
+     * These are e.g. that you cannot apply a Transformation renaming variables, if there are no variables.
+     * Or the Transformer can collect constraints with each run,
+     * if the transformation cannot be applied twice to an element.
+     * Feel free to declare as many constraints as reasonable.
      *
      * There should be two globally managed and taken care of attributes of a Transformation:
      * - The debug level of the TransformationResult
@@ -40,9 +52,7 @@ public interface Transformation {
      * @param ast The toplevel AST from which to pick a qualified children to transform.
      * @return The TransformationResult, containing all relevant information of the transformation
      */
-    static TransformationResult applyAtRandom(CtElement ast){
-        return new EmptyTransformationResult();
-    }
+    TransformationResult applyAtRandom(CtElement ast);
 
     /**
      * To enable a more correct approach in randomly picking next transformations,
@@ -51,9 +61,8 @@ public interface Transformation {
      *
      * @return a set of Transformation-Types that cannot be applied together with this Transformation.
      */
-    static Set<Class<Transformation>> isExclusiveWith(){
-        return new HashSet<>();
-    }
+    Set<Class<Transformer>> isExclusiveWith();
+
     /**
      * To not break the code when applying Transformations,
      * each transformation can require a set of checks before they are applied.
@@ -61,9 +70,7 @@ public interface Transformation {
      *
      * @return a set of predicates, which have to return "true" in order for the Transformation to be applicable.
      */
-    static Set<Predicate<CtElement>> getRequirements(){
-        return new HashSet<>();
-    }
+    Set<Predicate<CtElement>> getRequirements();
 
     /**
      * This method gives information on what kind of categories a transformation fits in.
@@ -72,7 +79,5 @@ public interface Transformation {
      *
      * @return A set of categories that match for this Transformation
      */
-    static Set<TransformationCategory> getCategories() {
-        return new HashSet<>();
-    }
+    Set<TransformationCategory> getCategories();
 }

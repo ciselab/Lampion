@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
+import com.github.ciselab.lampion.transformations.TransformerRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,7 +14,14 @@ public class App {
 
     private static Logger logger = LogManager.getLogger(App.class);
 
+    // The global configuration used throughout the program. It is read from file
+    // They only contain pairs of <String,String> (or it is used that way)
     public static Properties configuration = new Properties();
+
+    // The global registry in which every Transformation registers itself at system startup.
+    // Is passed to the engine, and can be exchanged beforehand to set certain scenarios.
+    // For further info, see DesignNotes.md "Registration of Transformations"
+    public static TransformerRegistry globalRegistry = new TransformerRegistry("default");
 
     public static void main(String[] args) {
         logger.info("Starting Lampion Obfuscator");
@@ -52,8 +60,9 @@ public class App {
             Properties props = new Properties();
             props.load(reader);
 
-            logger.info("Found " + props.size() + " Properties");
+            logger.debug("Found " + props.size() + " Properties");
 
+            // iterate over the key-value pairs and add them to the global configuration
             for (var kv : props.entrySet()) {
                 App.configuration.put(kv.getKey(),kv.getValue());
             }
