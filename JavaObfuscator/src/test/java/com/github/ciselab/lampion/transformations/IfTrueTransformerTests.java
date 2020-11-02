@@ -61,6 +61,12 @@ public class IfTrueTransformerTests {
         assertTrue(methodAAltered ^ methodBAltered);
     }
 
+    @Test
+    void testExclusive_isExclusiveWithNothing(){
+        IfTrueTransformer transformer = new IfTrueTransformer();
+
+        assertTrue(transformer.isExclusiveWith().isEmpty());
+    }
 
     @Test
     void constraintsAreNotSatisfied_ReturnsEmptyResult(){
@@ -97,6 +103,7 @@ public class IfTrueTransformerTests {
 
         assertEquals("IfTrue",result.getTransformationName());
     }
+
     @Test
     void applyToMethod_CheckTransformationResult_categoriesNotEmpty(){
         CtElement ast = sumExample();
@@ -107,7 +114,6 @@ public class IfTrueTransformerTests {
 
         assertFalse(result.getCategories().isEmpty());
     }
-
 
     @Test
     void applyWithoutDebugSettingOn_TransformationResultShouldHaveNoOptionalInfo(){

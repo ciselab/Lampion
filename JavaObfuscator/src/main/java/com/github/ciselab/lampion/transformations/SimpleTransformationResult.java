@@ -48,6 +48,7 @@ public class SimpleTransformationResult implements TransformationResult {
         this.beforeAfter = Optional.empty();
         this.initialScope = Optional.of(initialScope.clone());
     }
+
     public SimpleTransformationResult(String name, CtElement element, Set<TransformationCategory> categories, String beforeAfter, CtElement initialScope){
         transformationName = name;
         this.element = element.clone();
@@ -115,7 +116,7 @@ public class SimpleTransformationResult implements TransformationResult {
         }
         SimpleTransformationResult otherCasted = (SimpleTransformationResult) o;
         return this.transformationName.equals(otherCasted.getTransformationName())
-                && this.element.equals(otherCasted.getCategories())
+                && this.element.equals(otherCasted.getTransformedElement())
                 && this.categories.equals(otherCasted.getCategories());
     }
 
@@ -124,7 +125,8 @@ public class SimpleTransformationResult implements TransformationResult {
         if (this.hashCode == 0) {
            int result = transformationName.hashCode();
            result = result * 31 + categories.hashCode();
-           result = result * 31 + element.hashCode();
+           // There was an issue with element.hashCode() being equal for completely distinct items, so use the toString() first
+           result = result * 31 + element.toString().hashCode();
            this.hashCode = result;
         }
 

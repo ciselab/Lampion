@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class TransformerRegistryTests {
 
-
     @Test
     void testConstructor_validName_isBuildWithEmptyRegisteredItemsAndName(){
         TransformerRegistry registry = new TransformerRegistry("Test");
@@ -46,7 +45,6 @@ public class TransformerRegistryTests {
 
         assertFalse(registry.getRegisteredTransformers().isEmpty());
     }
-
 
     @Test
     void testGetRegistry_RegisterItem_askForItemsWithExistingCategory_isNotEmpty(){
