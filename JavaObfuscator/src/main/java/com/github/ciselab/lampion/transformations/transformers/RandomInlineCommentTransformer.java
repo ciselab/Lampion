@@ -3,6 +3,7 @@ package com.github.ciselab.lampion.transformations.transformers;
 import com.github.ciselab.lampion.program.App;
 import com.github.ciselab.lampion.transformations.*;
 import spoon.refactoring.CtRenameGenericVariableRefactoring;
+import spoon.reflect.code.CtStatement;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtVariable;
@@ -11,27 +12,24 @@ import spoon.reflect.factory.Factory;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
- * This Transformer changes a parametername of a random method to be a random String.
- * TODO: check if local variables are changed??
+ * This Transformer adds a random String comment into a program
  */
-public class RandomParameterNameTransformer extends BaseTransformer {
+public class RandomInlineCommentTransformer extends BaseTransformer {
 
-    private static final String name = "RandomParameterName";
-
-    // This Map holds all changed Parameternames to not randomize ParameterNames twice.
-    private Map<CtMethod,List<CtVariable>> alreadyAlteredParameterNames = new HashMap<>();
+    private static final String name = "RandomInlineComment";
 
     // This transformer is build here and registered in the global registry of app
-    private static final RandomParameterNameTransformer delegate = buildAndRegisterDefaultDelegate();
+    private static final RandomInlineCommentTransformer delegate = buildAndRegisterDefaultDelegate();
 
-    public RandomParameterNameTransformer(){
+    public RandomInlineCommentTransformer(){
         super();
         setConstraints();
     }
 
-    public RandomParameterNameTransformer(long seed){
+    public RandomInlineCommentTransformer(long seed){
         super(seed);
         setConstraints();
     }
@@ -59,15 +57,9 @@ public class RandomParameterNameTransformer extends BaseTransformer {
         }
         CtMethod toAlter = oToAlter.get();
 
-        Optional<CtVariable> oVarToAlter = pickRandomParameter(toAlter);
-
-        if(oVarToAlter.isEmpty()) {
-            return new EmptyTransformationResult();
-        }
-
         // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
         CtMethod savedElement = toAlter.clone();
-        applyRandomParameterNameTransformation(toAlter, oVarToAlter.get());
+        applyRandomParameterNameTransformation(toAlter);
 
         // If debug information is wished for, create a bigger Transformationresult
         // Else, just return a minimal Transformationresult
@@ -79,45 +71,37 @@ public class RandomParameterNameTransformer extends BaseTransformer {
     }
 
     /**
-     * This method wraps the full body of a method into if(true)
+     * This method adds a random //inlineComment to a random position in the method
      * The toAlter CtMethod is altered in the process.
      *
-     * if there is a return statement in the block, there is a trivial return null in the else block.
-     * @param toAlter the CTMethod to wrap in an if(true){...}
+     * @param toAlter the CTMethod to add a random comment to
      */
-    private void applyRandomParameterNameTransformation(CtMethod toAlter, CtVariable varToAlter) {
-        Factory factory = toAlter.getFactory();
+    private void applyRandomParameterNameTransformation(CtMethod toAlter) {
+        Factory factory  = toAlter.getFactory();
+        var comment =  factory.createInlineComment(getRandomComment());
 
-        CtRenameGenericVariableRefactoring refac = new CtRenameGenericVariableRefactoring();
-        refac.setTarget(varToAlter);
-        refac.setNewName(getRandomString());
-        refac.refactor();
+        var existingStatements = toAlter.getBody().getStatements().size();
 
-        // Add the altered variable to the toplevel map to keep track that it was altered in constraints
-        if(alreadyAlteredParameterNames.containsKey(toAlter)){
-            alreadyAlteredParameterNames.get(toAlter).add(varToAlter);
+        // Exception Case: The method was empty
+        if(existingStatements==0){
+            toAlter.getBody().addStatement(comment);
         } else {
-            List<CtVariable> l = new ArrayList<>();
-            l.add(varToAlter);
-            alreadyAlteredParameterNames.put(toAlter,l);
+            // Add it to a random position
+            toAlter.getBody().addStatement(random.nextInt(existingStatements),comment);
         }
     }
 
     /**
      * Returns a random method of the ast.
      * Check whether ast is empty is done earlier using constraints.
-     * It returns empty if there are either no methods with parameters,
-     * or all parameters are already altered by this transformer.
      *
      * @param ast the toplevel element from which to pick a random method
-     * @return a random method. Empty if there are no suited left. Reference is passed, so altering this element will alter the toplevel ast
+     * @return a random method. Empty if there are none. Reference is passed, so altering this element will alter the toplevel ast
      */
     private Optional<CtMethod> pickRandomMethod(CtElement ast) {
         // Get all Methods with Parameters
         List<CtMethod> allMethods = ast.filterChildren(
                 c -> c instanceof CtMethod                                  // the child is a method
-                        && !((CtMethod) c).getParameters().isEmpty()        // the method has parameters
-                        && pickRandomParameter((CtMethod) c ).isPresent()   // there are free parameters left
         ).list();
 
         if(allMethods.isEmpty()){
@@ -128,37 +112,6 @@ public class RandomParameterNameTransformer extends BaseTransformer {
         int randomValidIndex = random.nextInt(allMethods.size());
         // return the method at the position
         return Optional.of(allMethods.get(randomValidIndex));
-    }
-
-    /**
-     * Short explanation:
-     * The CtParameters "form" a CtVariable as far as I can tell.
-     * The CtParameter is just the VariableDeclaration,
-     * hence the Variable must be altered to alter it in every position.
-     *
-     * @return a CtVariable that has not been randomized by this transformer, empty if there are none available
-     */
-    private Optional<CtVariable> pickRandomParameter(CtMethod method) {
-        List<CtVariable> allParams = method.getParameters();
-
-        // If there are already altered parameternames for this method,
-        // remove all altered parameters from the pool of possible chosen element
-        if(alreadyAlteredParameterNames.containsKey(method)){
-            List<String> alteredParameters = alreadyAlteredParameterNames.get(method).stream()
-                    .map(p -> p.toString()).collect(Collectors.toList());
-
-            allParams.removeIf(p -> alteredParameters.contains(p.toString()));
-        }
-        List<CtVariable> paramsToPickFrom = allParams;
-
-        if(allParams.size()==0){
-            return Optional.empty();
-        } else {
-            // Pick a number between 0 and count(parans)
-            int randomValidIndex = random.nextInt(paramsToPickFrom.size());
-            // return the method at the position
-            return Optional.of(paramsToPickFrom.get(randomValidIndex));
-        }
     }
 
     /**
@@ -184,11 +137,19 @@ public class RandomParameterNameTransformer extends BaseTransformer {
     public Set<TransformationCategory> getCategories() {
         Set<TransformationCategory> categories = new HashSet<>();
 
-        categories.add(TransformationCategory.SMELL);
-        categories.add(TransformationCategory.NAMING);
+        categories.add(TransformationCategory.COMMENT);
         categories.add(TransformationCategory.NLP);
 
         return categories;
+    }
+
+    private String getRandomComment(){
+        // To look a bit more human, there will be spaces added between random strings
+        int numberofwords = 1 + random.nextInt(4);
+        return IntStream.range(0,numberofwords)
+                .mapToObj( t -> getRandomString())
+                .map(t -> (String) t)
+                .collect(Collectors.joining(" "));
     }
 
     /**
@@ -196,11 +157,13 @@ public class RandomParameterNameTransformer extends BaseTransformer {
      * @return a random, alphabetic string that contains no numbers
      */
     private String getRandomString(){
-        int leftLimit = 97; // letter 'a'
+        int leftLimit = 48; // numeral '0'
         int rightLimit = 122; // letter 'z'
-        int targetStringLength = 12;
+        int targetStringLength = random.nextInt(7)+3;
+        //TODO: Add spaces? Are there Spaces?
 
         String generatedString = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
                 .limit(targetStringLength)
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
                 .toString();
@@ -213,10 +176,10 @@ public class RandomParameterNameTransformer extends BaseTransformer {
      * and registers it in the global default registry.
      * The return value is the build transformer, set to the toplevel delegate entry,
      * this behavior helps to build it at startup exploiting the static startup.
-     * @return the RandomParameterNameTransformer that is registered in Apps default registry
+     * @return the RandomInlineCommentTransformer that is registered in Apps default registry
      */
-    private static RandomParameterNameTransformer buildAndRegisterDefaultDelegate(){
-        RandomParameterNameTransformer delegate =  new RandomParameterNameTransformer(App.globalRandomSeed);
+    private static RandomInlineCommentTransformer buildAndRegisterDefaultDelegate(){
+        RandomInlineCommentTransformer delegate =  new RandomInlineCommentTransformer(App.globalRandomSeed);
         App.globalRegistry.registerTransformer(delegate);
         return delegate;
     }
@@ -225,40 +188,11 @@ public class RandomParameterNameTransformer extends BaseTransformer {
      * Adds the required base-line constraints for this class to the constraints.
      * For this Transformer, the constraints are:
      * 1. there are methods in the Ast
-     * 2. the methods have parameters
-     * 3. there are methods that have not-randomized / not altered names (altering them twice would be useless)
      */
     private void setConstraints() {
-        /*
-        These Constraints are self-inclusive to some extend,
-        but they are kept as 3 to make them more expressive.
-        Shrink them once there are performance issues
-         */
-
         Predicate<CtElement> hasMethods = ct -> {
             return ! ct.filterChildren(c -> c instanceof CtMethod).list().isEmpty();
         };
-
-        Predicate<CtElement> methodsHaveParameters = ct -> {
-            return  ct.filterChildren(c -> c instanceof CtMethod)
-                    .list()
-                    .stream()
-                    .map(c -> (CtMethod) c)
-                    .anyMatch( m -> !m.getParameters().isEmpty());
-        };
-
-        // Whether there are any parameters un-altered left available
-        Predicate<CtElement> methodsHaveFreeParameters = ct -> {
-            return  ct.filterChildren(c -> c instanceof CtMethod)
-                    .list()
-                    .stream()
-                    .map(c -> (CtMethod) c)
-                    .filter(m -> !m.getParameters().isEmpty())
-                    .anyMatch( m -> pickRandomParameter(m).isPresent());
-        };
-
         constraints.add(hasMethods);
-        constraints.add(methodsHaveParameters);
-        constraints.add(methodsHaveFreeParameters);
     }
 }

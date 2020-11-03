@@ -199,7 +199,6 @@ public class SpoonTests {
         assertTrue(result.contains("byte yolo"));
     }
 
-
     @Tag("Exploration")
     @Test
     void spoonExploration_AddInlineComment() throws IOException {
