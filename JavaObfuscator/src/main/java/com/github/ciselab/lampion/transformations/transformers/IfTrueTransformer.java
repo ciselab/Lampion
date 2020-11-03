@@ -1,6 +1,7 @@
-package com.github.ciselab.lampion.transformations;
+package com.github.ciselab.lampion.transformations.transformers;
 
 import com.github.ciselab.lampion.program.App;
+import com.github.ciselab.lampion.transformations.*;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtReturn;
 import spoon.reflect.declaration.CtElement;
@@ -19,31 +20,42 @@ import java.util.function.Predicate;
  * See Tranformations.md for an example,
  * See Transformation.java for interface contract
  */
-public class IfTrueTransformer implements Transformer {
+public class IfTrueTransformer extends BaseTransformer {
 
-    Random random;                          // the random number provider used for picking random methods
-    boolean debug = false;                  // whether to add more information to the TransformationResults
     public final String name = "IfTrue";    // The name used for TransformationResults
 
     // This transformer is build here and registered in the global registry of app
     private static final IfTrueTransformer delegate = buildAndRegisterDefaultDelegate();
 
     public IfTrueTransformer() {
-        this.random = new Random();
+        super();
+
+        Predicate<CtElement> hasMethods = ct -> {
+            return ! ct.filterChildren(c -> c instanceof CtMethod).list().isEmpty();
+        };
+
+        constraints.add(hasMethods);
     }
 
     /**
      * @param seed for the random number provider, used for testing and reproducible results
      */
     public IfTrueTransformer(long seed) {
-        this.random = new Random(seed);
+        super(seed);
+
+        Predicate<CtElement> hasMethods = ct -> {
+            return ! ct.filterChildren(c -> c instanceof CtMethod).list().isEmpty();
+        };
+
+        constraints.add(hasMethods);
     }
 
     /**
      * This method applied the class-specific Transformation to a random, valid element of the given AST.
      * It should check itself for constraints given.
-     * <p>
-     * The Transformation returns
+     *
+     * The Transformation returns a TransformationResult-Element, that holds all relevant information.
+     * In case of a failing transformation or unmatched constraints, return an EmptyTransformationResult.
      *
      * @param ast The toplevel AST from which to pick a qualified children to transform.
      * @return The TransformationResult, containing all relevant information of the transformation
@@ -96,10 +108,6 @@ public class IfTrueTransformer implements Transformer {
         toAlter.setBody(ifWrapper);
     }
 
-    private String beforeAfterOverview(CtElement before, CtElement after) {
-        String format = " // BEFORE \n %s \n // AFTER \n %s";
-        return String.format(format,before.toString(),after.toString());
-    }
 
     /**
      * Returns a random method of the ast.
@@ -130,30 +138,6 @@ public class IfTrueTransformer implements Transformer {
     }
 
     /**
-     * To not break the code when applying Transformations,
-     * each transformation can require a set of checks before they are applied.
-     * Can be left empty on own risk.
-     *
-     * @return a set of predicates, which have to return "true" in order for the Transformation to be applicable.
-     */
-    @Override
-    public Set<Predicate<CtElement>> getRequirements() {
-        /*
-         * There are some constraints which are more or less trivial:
-         * 1. There are methods in the ast
-         */
-        Set<Predicate<CtElement>> constraints = new HashSet<>();
-
-        Predicate<CtElement> hasMethods = ct -> {
-           return ! ct.filterChildren(c -> c instanceof CtMethod).list().isEmpty();
-        };
-
-        constraints.add(hasMethods);
-
-        return constraints;
-    }
-
-    /**
      * This method gives information on what kind of categories a transformation fits in.
      * It is used for later visualisation and storing the records apropiatly.
      * Optionally, this could be implemented to be a Set of Strings, but this way it's easier to match across classes.
@@ -169,10 +153,6 @@ public class IfTrueTransformer implements Transformer {
         categories.add(TransformationCategory.STRUCTURE);
         categories.add(TransformationCategory.SMELL);
         return categories;
-    }
-
-    public void setDebug(boolean debug){
-        this.debug = debug;
     }
 
     /**

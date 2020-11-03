@@ -1,5 +1,6 @@
 package com.github.ciselab.lampion.transformations;
 
+import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 

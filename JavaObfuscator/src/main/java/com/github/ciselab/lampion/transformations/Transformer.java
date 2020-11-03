@@ -47,7 +47,10 @@ public interface Transformer {
      * This method applied the class-specific Transformation to a random, valid element of the given AST.
      * It should check itself for constraints given.
      *
-     * The Transformation
+     * The Transformation returns a TransformationResult-Element, that holds all relevant information.
+     * In case of a failing transformation or unmatched constraints, return an EmptyTransformationResult.
+     *
+     * The AST is altered in the process.
      *
      * @param ast The toplevel AST from which to pick a qualified children to transform.
      * @return The TransformationResult, containing all relevant information of the transformation
