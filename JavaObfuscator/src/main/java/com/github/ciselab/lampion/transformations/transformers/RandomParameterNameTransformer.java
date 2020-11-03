@@ -139,7 +139,13 @@ public class RandomParameterNameTransformer extends BaseTransformer {
      * @return a CtVariable that has not been randomized by this transformer, empty if there are none available
      */
     private Optional<CtVariable> pickRandomParameter(CtMethod method) {
-        List<CtVariable> allParams = method.getParameters();
+        /**
+         * There was an issue with "disappearing" parameters, this was due to the "removeIf" on
+         * method.getParameters()
+         * Because the removal removed them from the actual parameters.
+         * There are some regression-tests in place now.
+         */
+        List<CtVariable> allParams = (List<CtVariable>) method.getParameters().stream().collect(Collectors.toList());
 
         // If there are already altered parameternames for this method,
         // remove all altered parameters from the pool of possible chosen element

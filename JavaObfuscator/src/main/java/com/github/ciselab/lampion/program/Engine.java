@@ -1,0 +1,183 @@
+package com.github.ciselab.lampion.program;
+
+import com.github.ciselab.lampion.transformations.TransformationCategory;
+import com.github.ciselab.lampion.transformations.TransformationResult;
+import com.github.ciselab.lampion.transformations.Transformer;
+import com.github.ciselab.lampion.transformations.TransformerRegistry;
+import spoon.Launcher;
+import spoon.reflect.CtModel;
+import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtMethod;
+
+import java.util.*;
+
+/**
+ * This class runs the primary parts of the Program.
+ * It is purposefully separated from the app, to be better testable.
+ *
+ * It takes a registry equipped with all relevant
+ * Transformers, and applies them quantified in a certain configuration to a given AST.
+ * In the end, if wished the TransformationResults are written to an SQL database
+ * and the altered files are written to files.
+ *
+ * The default behaviour is to apply all available transformations evenly distributed.
+ * If others are wanted, a distribution transformation is required, see "setDistribution".
+ *
+ * The primary method is "run" and has similar comments.
+ */
+public class Engine {
+    String codeDirectory;
+    String outputDirectory;
+    TransformerRegistry registry;
+
+    Random random = new Random(App.globalRandomSeed);
+
+    public enum TransformationScope {
+        global,
+        perMethod,
+        perClass
+    }
+    long numberOfTransformationsPerScope = 100;
+    TransformationScope scope = TransformationScope.global;
+
+    // The distribution on how often to apply the Transformers-
+    // if every transformer has the same value, they are applied evenly often.
+    // if e.g. a transformer has 2 and another one has 1, then the 2-transformer is applied twice as much.
+    Map<Transformer,Integer> distribution;
+
+    public Engine(String codeDirectory, String outputDirectory, TransformerRegistry registry){
+        //TODO valuechecks
+        this.codeDirectory = codeDirectory;
+        this.outputDirectory = outputDirectory;
+        this.registry = registry;
+        distribution = new HashMap<>();
+        // default behaviour is to apply all transformations equally often
+        for (Transformer t: registry.getRegisteredTransformers()) {
+            distribution.put(t,1);
+        }
+    }
+
+    public void run(){
+        // Step 1:
+        // Read the Code in
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(codeDirectory);
+        // The CodeRoot is the highest level of available information regarding the AST
+        CtModel codeRoot = launcher.buildModel();
+        List<CtClass> classes = codeRoot.getElements(c -> c instanceof CtClass);
+
+        // Step 2:
+        // Apply the Transformations according to distribution
+        List<TransformationResult> results = new ArrayList<>();
+        // Step 2.1:
+        // set the total number of transformatiosn regarding the scope
+        long totalTransformationsToDo = switch (scope) {
+            case global -> numberOfTransformationsPerScope;
+            case perMethod -> numberOfTransformationsPerScope * codeRoot.filterChildren(c -> c instanceof CtMethod).list().size();
+            case perClass -> numberOfTransformationsPerScope * codeRoot.filterChildren(c -> c instanceof CtMethod).list().size();
+            default ->  0;
+        };
+        // Step 2.2:
+        // For picking transformers, a simple approach was taken to quantify them according to distribution
+        // make a new list of transformers, where every transformer is added a number of times their distribution
+        // then, pick a random number between 0 and list.size() and this is your transformer!
+        List<Transformer> quantifiedTransformers = new ArrayList<>();
+        for (var entry : distribution.entrySet()) {
+            for (int i = 0; i < entry.getValue(); i++) {
+                quantifiedTransformers.add(entry.getKey());
+            }
+        }
+        // Step 2.3:
+        // For every to-be-applied transformation
+        // Pick a random class
+        // Pick a random transfomer
+        // apply the transformer and add the result to the aggregation
+        for (long a = 0; a < totalTransformationsToDo; a++) {
+            CtClass classToAlter = classes.get(random.nextInt(classes.size()));
+            int index = random.nextInt(quantifiedTransformers.size());
+            Transformer transformer = quantifiedTransformers.get(index);
+            TransformationResult result = transformer.applyAtRandom(classToAlter);
+            results.add(result);
+        }
+
+        // Step 3:
+        // Write Transformed Code
+        launcher.setSourceOutputDirectory(outputDirectory);
+        launcher.prettyprint();
+
+        // Step 4:
+        // Create Transformation Manifest
+        // TODO: Full result print
+    }
+
+    /**
+     * This method sets the distribution on how often to apply the Transformers
+     * if every transformer has the same value, they are applied evenly often.
+     * if e.g. a transformer has 2 and another one has 1, then the 2-transformer is applied twice as much.
+     *
+     * They are applied using a random algorithm and not in order.
+     *
+     * You can create certain distributions using factory methods of this class,
+     * building distributions e.g. for a certain set of categories of all available transformations in the registry.
+     *
+     * @param distribution
+     * @throws UnsupportedOperationException when the distribution contains items that are not in the registry.
+     */
+    public void setDistribution(Map<Transformer,Integer> distribution){
+        // check whether all Transformers in the distribution are in the registry
+        if(!distribution.keySet().stream().allMatch(
+                d -> registry.getRegisteredTransformers().contains(d)
+        )){
+            throw new UnsupportedOperationException("The given distribution contains transformation outside of registry");
+        }
+
+        this.distribution = distribution;
+    }
+
+    /**
+     * This method sets the number of transformations and its scope.
+     * They are multiplied with the item under alternation, example:
+     * The system has 2 classes, scope classes and transformations 100 -> 200 Transformations in total.
+     * The system has 10 methods, scope method, and transformations 10 -> 100 Transformations in total.
+     *
+     * The transformations are (currently) applied evenly among all items, so setting the scope to
+     * "perMethod" does not mean that every method is altered 10 times,
+     * but in average there will be 10 alternations per method.
+     *
+     * @param transformations
+     * @param scope
+     * @throws UnsupportedOperationException for negative number of transformations
+     */
+    public void setNumberOfTransformationsPerScope(long transformations, TransformationScope scope){
+        this.scope = scope;
+        this.numberOfTransformationsPerScope = transformations;
+    }
+
+    /**
+     * This method builds a distribution of the transformers in the
+     * registry according to the given distribution of categories.
+     * If the categories all have 1, they are applied evenly often.
+     * If category A has 1, and category B has 2, then B will be used twice as much as A.
+     *
+     * The distribution will contain every transformer of the registry at least once if they have one category.
+     *
+     * @param distributionByCategory
+     * @return A distribution of the registries transformers quantified by categories
+     */
+    public Map<Transformer,Integer> setDistributionByCategory(Map<TransformationCategory,Integer> distributionByCategory) {
+        // TODO: Fill me
+        // TODO: Decide whether the total amount of transformers is twice as much as the others
+        return new HashMap<>();
+    }
+
+    /**
+     * Sets the random number provider to using a certain seed.
+     * Used for testing and repeatable experiments.
+     * The default seed at initialization is the seed provided in App
+     * @param seed
+     */
+    public void setRandomSeed(long seed){
+        this.random = new Random(seed);
+    }
+
+}

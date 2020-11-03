@@ -1,5 +1,9 @@
 package com.github.ciselab.lampion.exploration;
 
+import com.github.ciselab.lampion.transformations.EmptyTransformationResult;
+import com.github.ciselab.lampion.transformations.TransformationResult;
+import com.github.ciselab.lampion.transformations.transformers.RandomParameterNameTransformer;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -20,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -54,7 +59,7 @@ import java.util.Set;
  * Important: The items need a valid position, which is not trivially done by inserting it into a list of all available
  * Statements (e.g. filterChildren(instanceof Statement) and inserting the inline comment is still invisible!)
  *
- * For some items there are "refactorings" availible (mostly for renaming) which only provide interfaces except for
+ * For some items there are "refactorings" available (mostly for renaming) which only provide interfaces except for
  * Variable Renaming (that one is fully implemented).
  * Altering method names requires to provide a new refactoring (atleast to do it properly).
  *
@@ -484,7 +489,40 @@ public class SpoonTests {
         assertTrue(result.contains("class myNewName"));
     }
 
+
+    @Tag("Regression")
     @Tag("Exploration")
+    @RepeatedTest(3)
+    void applyRenameHundredTimesToAMethod_methodShouldNotLooseParameters(){
+        // There was an issue with renaming variables too often, that the parameters are dissappearing
+        // With this test, it seems that the issue is somewhere in the Transformer and not in refactoring
+        CtClass ast = Launcher.parseClass("class A { " +
+                "int sum(int a, int b) { return a + b;} " +
+                "}");
+
+        CtMethod sumMethod = (CtMethod) ast.filterChildren(c -> c instanceof CtMethod).list().get(0);
+
+        Random random = new Random();
+
+        RandomParameterNameTransformer transformer = new RandomParameterNameTransformer();
+
+        for(int i = 0; i<100;i++) {
+            List<CtVariable> localVars = sumMethod.filterChildren(c -> c instanceof CtVariable).list();
+
+            CtRenameGenericVariableRefactoring refac = new CtRenameGenericVariableRefactoring();
+            refac.setTarget(localVars.get(random.nextInt(sumMethod.getParameters().size())));
+            refac.setNewName("var_"+i);
+            refac.refactor();
+        }
+        String result = sumMethod.toString();
+
+        assertFalse(result.contains("return a + b;"));
+        assertEquals(2,sumMethod.getParameters().size());
+    }
+
+    @Tag("Exploration")
+    @Tag("System")
+    @Tag("File")
     @Test
     void spoonExploration_prettyPrintLauncherTest() throws IOException{
         Launcher launcher = new Launcher();

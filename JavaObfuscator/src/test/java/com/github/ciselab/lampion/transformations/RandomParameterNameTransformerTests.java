@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
 import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
 import com.github.ciselab.lampion.transformations.transformers.RandomParameterNameTransformer;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import spoon.Launcher;
 import spoon.reflect.declaration.CtClass;
@@ -140,6 +141,33 @@ public class RandomParameterNameTransformerTests {
         assertEquals(new EmptyTransformationResult(),result);
     }
 
+    @Tag("Regression")
+    @Test
+    void applyTwentyTimesToAMethod_methodShouldNotLooseParameters(){
+        // There was an issue with renaming variables too often, that it is not applied
+        CtClass ast = Launcher.parseClass("class A { " +
+                "int sum(int a, int b) { return a + b;} " +
+                "}");
+
+        CtMethod sumMethod = (CtMethod) ast.filterChildren(c -> c instanceof CtMethod).list().get(0);
+
+        RandomParameterNameTransformer transformer = new RandomParameterNameTransformer();
+
+        TransformationResult result = new EmptyTransformationResult();
+        for(int i = 0; i<20;i++) {
+            // For debugging
+            int beforeAlter = sumMethod.getParameters().size();
+
+            transformer.applyAtRandom(ast);
+
+            if(beforeAlter!=sumMethod.getParameters().size()){
+                // For breakpoints
+                String oh = "oh oh";
+            }
+
+        }
+        assertEquals(2,sumMethod.getParameters().size());
+    }
 
     @Test
     void applyToMethodWithoutParameters_returnsEmptyTransformationResult(){
