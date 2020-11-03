@@ -405,13 +405,71 @@ public class SpoonTests {
     }
 
     /*
+    ===============================================================================================================
+            System Tests
+    ===============================================================================================================
+     */
+
+    @Tag("Exploration")
+    @Tag("System")
+    @Tag("File")
+    @Test
+    void spoonExploration_readAlterAndWriteElements() throws IOException {
+        /**
+         * Use one of the above items,
+         * Run the launcher and write to a new folder in test resources
+         *
+         * This is a primary example of how to build the full pipeline and hence very important.
+         * However, it may file with the side-effects.
+         */
+        String pathToOutput = "./src/test/resources/spooned";
+
+
+        // Fail the test if the file existed - there needs to be a proper cleanup beforehand
+        assertFalse(Files.exists(Path.of(pathToOutput,"example.java")));
+
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(pathToTestFile);
+
+        launcher.buildModel();
+
+        // Here comes the code from ifwrapper above
+        // Ignore for here
+            CtMethod testObject = launcher.getModel().filterChildren(u -> u instanceof CtMethod).first();
+            Factory factory = launcher.getFactory();
+            TypeFactory types = new TypeFactory();
+
+            CtBlock methodBody = testObject.getBody();
+
+            var ifWrapper = factory.createIf();
+            ifWrapper.setCondition(factory.createLiteral(true));
+            ifWrapper.setThenStatement(methodBody);
+            ifWrapper.setElseStatement(factory.createBlock().addStatement(factory.createCodeSnippetStatement("return null")));
+
+            testObject.setBody(ifWrapper);
+        // Here starts the interesting code again
+
+        launcher.setSourceOutputDirectory(pathToOutput);
+        launcher.prettyprint();
+        //var processor = launcher.createOutputWriter();
+        //processor.init();
+        // processor.process();
+
+        assertTrue(Files.exists(Path.of(pathToOutput,"example.java")));
+
+        // CleanUp
+        Files.delete(Path.of(pathToOutput,"example.java"));
+        Files.delete(Path.of(pathToOutput));
+    }
+
+    /*
     ==================================================================================================================
                                     Other Minor Tests and Stuff
     ==================================================================================================================
      */
     @Tag("Exploration")
     @Test
-    void spoonExploration_whatElseCanLauncherDo() throws IOException {
+    void spoonExploration_whatElseCanLauncherDo() {
         Launcher launcher = new Launcher();
 
         Factory factory = launcher.getFactory();
