@@ -37,6 +37,20 @@ public class LambdaIdentityTransformerTests {
         assertTrue(ast.toString().contains(".get()"));
     }
 
+    @Test
+    void testApplyToClassWithLiteralsAsFields_shouldBeApplied(){
+        LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
+
+        CtClass ast = Launcher.parseClass("package lampion.test; class A { public String text = \"hey\";}");
+
+        transformer.applyAtRandom(ast);
+
+        assertTrue(ast.toString().contains("()"));
+        assertTrue(ast.toString().contains("->"));
+        assertTrue(ast.toString().contains("1"));
+        assertTrue(ast.toString().contains(".get()"));
+    }
+
 
     @Test
     void testApplyToClassWithLiterals_StringLiteral_shouldBeApplied(){

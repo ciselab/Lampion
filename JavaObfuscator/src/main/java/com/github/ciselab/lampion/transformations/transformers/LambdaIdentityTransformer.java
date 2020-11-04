@@ -113,7 +113,6 @@ public class LambdaIdentityTransformer extends BaseTransformer {
         lookingForParent.compileAndReplaceSnippets();
     }
 
-
     /**
      * Returns a random literal of the ast.
      * Check whether ast is empty is done earlier using constraints.
