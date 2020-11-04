@@ -66,6 +66,10 @@ import java.util.Set;
  * One of the "run" or "refactor" methods builds a spooned folder with the altered class.
  * There is a "buildModel" method of the Launcher, which does not need to write the spooned folder.
  *
+ * There is a method "CtClass::compileAndReplaceSnippets" which does resolve and replace the snippets.
+ * Statement snippets are kept "as is" until this method is run and have no semantic information until then.
+ * However, the compileAndReplaceSnippets can fail due to weird reasons and should be used carefully?
+ *
  * Further Examples / Reading:
  * - https://github.com/INRIA/spoon
  * - http://spoon.gforge.inria.fr/first_transformation.html introduction to transformations
@@ -145,7 +149,6 @@ public class SpoonTests {
         var maybeSum = methods.stream().filter(m -> m.getSimpleName().equalsIgnoreCase("sum")).findFirst();
         assertTrue(maybeSum.isPresent());
     }
-
 
     @Tag("Exploration")
     @Test
@@ -309,7 +312,8 @@ public class SpoonTests {
 
         String result = testObject.toString();
 
-        assertTrue(result.contains("a + (() -> 1).get()"));
+        assertTrue(result.contains("->"));
+        assertTrue(result.contains("get()"));
         assertFalse(result.contains("a + 1"));
     }
 
@@ -319,11 +323,67 @@ public class SpoonTests {
         CtLambda lambda = factory.createLambda();
         lambda.setExpression(toWrap.clone());
 
-        CtExpression wrapped = factory.createCodeSnippetExpression("("+lambda.toString()+").get()");
+        //Old!
+        //CtExpression wrapped = factory.createCodeSnippetExpression("((Supplier<"+toWrap.getType().getSimpleName()+">)("+lambda.toString()+")).get()");
+        // Working, but noisy
+        CtExpression wrapped = factory.createCodeSnippetExpression("("+toWrap.getType().getSimpleName()+")((java.util.function.Supplier<?>)("+lambda.toString()+")).get()");
         wrapped.setType(toWrap.getType());
         wrapped.setPosition(toWrap.getPosition());
         wrapped.setParent(toWrap.getParent());
         return wrapped;
+    }
+
+
+    @Tag("Exploration")
+    @Tag("Regression")
+    @Test
+    void spoonExploration_AddLambdaIdentityWrapper_WithMapper_RestoreLiterals(){
+        // There was an issue that once the literal is replaced, it is not detected as a literal anymore.
+        // There must be a way to restore its structure
+        CtClass testObject = Launcher.parseClass("package test; class A { int addOne(int a) {return a + 1;} }");
+        CtMethod testMethod = (CtMethod) testObject.getMethods().stream().findFirst().get();
+
+
+        List<CtLiteral> literals = testMethod.filterChildren(c -> c instanceof CtLiteral).list();
+        CtLiteral one = literals.get(0);
+
+        var wrapped = wrapInLambda(one);
+
+        one.replace(wrapped);
+        // at this point, there is no literal anymore as the CtLambda "consumed it"
+        assertTrue(testMethod.filterChildren(u -> u instanceof CtLiteral).list().isEmpty());
+
+        testObject.compileAndReplaceSnippets();
+
+        // at this point, the literal should be "restored"
+        assertFalse(testMethod.filterChildren(u -> u instanceof CtLiteral).list().isEmpty());
+    }
+
+
+    @Tag("Exploration")
+    @Tag("Regression")
+    @Test
+    void spoonExploration_AddLambdaIdentityWrapper_WithMapper_RestoreLiteralsFromMethodUpwards(){
+        // There was an issue that once the literal is replaced, it is not detected as a literal anymore.
+        // There must be a way to restore its structure
+        CtClass testObject = Launcher.parseClass("package test; class A { int addOne(int a) {return a + 1;} }");
+        CtMethod testMethod = (CtMethod) testObject.getMethods().stream().findFirst().get();
+
+
+        List<CtLiteral> literals = testMethod.filterChildren(c -> c instanceof CtLiteral).list();
+        CtLiteral one = literals.get(0);
+
+        var wrapped = wrapInLambda(one);
+
+        one.replace(wrapped);
+        // at this point, there is no literal anymore as the CtLambda "consumed it"
+        assertTrue(testMethod.filterChildren(u -> u instanceof CtLiteral).list().isEmpty());
+
+        CtClass lookingForParent = one.getParent(p -> p instanceof CtClass);
+        lookingForParent.compileAndReplaceSnippets();
+
+        // at this point, the literal should be "restored"
+        assertFalse(testMethod.filterChildren(u -> u instanceof CtLiteral).list().isEmpty());
     }
 
     @Tag("Exploration")
