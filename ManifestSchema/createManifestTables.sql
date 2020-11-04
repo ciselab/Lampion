@@ -11,9 +11,10 @@ CREATE TABLE IF NOT EXISTS positions (
     -- Optional
     file_name TEXT ,                                    -- path/name of the file if there is any
     method_name TEXT,                                   -- simple name of the method
-    full_method_name TEXT                               -- including parameters / signature 
-    -- TODO: Add Uniqueness over combination of all attributes
+    full_method_name TEXT                               -- including parameters / signature
 );
+CREATE UNIQUE INDEX IF NOT EXISTS iPositions 
+    ON positions(simple_class_name,fully_qualified_class_name,file_name,method_name,full_method_name);
 
 CREATE TABLE IF NOT EXISTS transformation_names (
     transformation_name TEXT UNIQUE NOT NULL
@@ -23,6 +24,8 @@ CREATE TABLE IF NOT EXISTS transformation_categories(
     category_name TEXT UNIQUE NOT NULL
 );
 
+-- Note: 
+-- No Uniqueness over transformations - some transformations can be applied multiple times at the same method
 CREATE TABLE IF NOT EXISTS transformations (
     name_reference INTEGER NOT NULL,
     position_reference INTEGER NOT NULL,
@@ -30,15 +33,16 @@ CREATE TABLE IF NOT EXISTS transformations (
     FOREIGN KEY(position_reference) REFERENCES positions(oid)
 );
 
--- 1 to many 
 CREATE TABLE IF NOT EXISTS transformation_name_category_mapping ( 
     name_reference INTEGER NOT NULL,
     category_reference INTEGER NOT NULL,
     FOREIGN KEY(name_reference) REFERENCES transformation_names(oid),
     FOREIGN KEY(category_reference) REFERENCES transformation_categories(oid)
 );
+CREATE UNIQUE INDEX IF NOT EXISTS iTransformation_name_category_mapping 
+    ON transformation_name_category_mapping(name_reference,category_reference);
 
--- TODO: I do not like this layout lol 
+-- TODO: This layout looks like a massaker
 CREATE VIEW  IF NOT EXISTS transformations_resolved 
 AS 
 SELECT * 
