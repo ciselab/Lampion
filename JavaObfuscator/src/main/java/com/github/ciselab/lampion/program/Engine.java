@@ -1,14 +1,16 @@
 package com.github.ciselab.lampion.program;
 
-import com.github.ciselab.lampion.transformations.TransformationCategory;
-import com.github.ciselab.lampion.transformations.TransformationResult;
-import com.github.ciselab.lampion.transformations.Transformer;
-import com.github.ciselab.lampion.transformations.TransformerRegistry;
+import com.github.ciselab.lampion.manifest.ManifestWriter;
+import com.github.ciselab.lampion.transformations.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 /**
@@ -23,15 +25,19 @@ import java.util.*;
  * The default behaviour is to apply all available transformations evenly distributed.
  * If others are wanted, a distribution transformation is required, see "setDistribution".
  *
- * The primary method is "run" and has similar comments.
+ * The primary method is "run" and has similar comments laying out what's happening.
  */
 public class Engine {
+    private static Logger logger = LogManager.getLogger(Engine.class);
+
     String codeDirectory;
     String outputDirectory;
     TransformerRegistry registry;
+    Optional<ManifestWriter> writer = Optional.empty();
 
     Random random = new Random(App.globalRandomSeed);
 
+    // The scope by which to quantify the number of transformations, "setNumberOfTransformationsPerScope" for more info
     public enum TransformationScope {
         global,
         perMethod,
@@ -46,7 +52,20 @@ public class Engine {
     Map<Transformer,Integer> distribution;
 
     public Engine(String codeDirectory, String outputDirectory, TransformerRegistry registry){
-        //TODO valuechecks
+        // Sanity Checks
+        if (codeDirectory == null || codeDirectory.isEmpty() || codeDirectory.isBlank()) {
+            throw new UnsupportedOperationException("Code Directory cannot be null or empty");
+        }
+        if (outputDirectory == null || outputDirectory.isEmpty() || outputDirectory.isBlank()) {
+            throw new UnsupportedOperationException("Output Directory cannot be null or empty");
+        }
+        if (registry == null ) {
+            throw new UnsupportedOperationException("Registry cannot be null");
+        }
+        if (registry.getRegisteredTransformers().size() == 0) {
+            logger.warn("Received Registry " + registry.name + " without any registered transformers.");
+        }
+        // Setting fields
         this.codeDirectory = codeDirectory;
         this.outputDirectory = outputDirectory;
         this.registry = registry;
@@ -58,6 +77,10 @@ public class Engine {
     }
 
     public void run(){
+        logger.info("Starting Engine with Registry " + registry.name + "["+registry.getRegisteredTransformers().size()
+            + " transformers] reading from " + codeDirectory + " writing to " + outputDirectory);
+
+        Instant startOfEngine = Instant.now();
         // Step 1:
         // Read the Code in
         Launcher launcher = new Launcher();
@@ -65,6 +88,9 @@ public class Engine {
         // The CodeRoot is the highest level of available information regarding the AST
         CtModel codeRoot = launcher.buildModel();
         List<CtClass> classes = codeRoot.getElements(c -> c instanceof CtClass);
+
+        logger.info("Found " + classes.size() + " Classes and "
+                + codeRoot.getElements(f -> f instanceof CtMethod).size() + " Methods");
 
         // Step 2:
         // Apply the Transformations according to distribution
@@ -74,9 +100,10 @@ public class Engine {
         long totalTransformationsToDo = switch (scope) {
             case global -> numberOfTransformationsPerScope;
             case perMethod -> numberOfTransformationsPerScope * codeRoot.filterChildren(c -> c instanceof CtMethod).list().size();
-            case perClass -> numberOfTransformationsPerScope * codeRoot.filterChildren(c -> c instanceof CtMethod).list().size();
+            case perClass -> numberOfTransformationsPerScope * codeRoot.filterChildren(c -> c instanceof CtClass).list().size();
             default ->  0;
         };
+        logger.info("Applying " + totalTransformationsToDo + " Transformations evenly distributed amongst all classes");
         // Step 2.2:
         // For picking transformers, a simple approach was taken to quantify them according to distribution
         // make a new list of transformers, where every transformer is added a number of times their distribution
@@ -100,14 +127,29 @@ public class Engine {
             results.add(result);
         }
 
+        Instant endOfTransformations = Instant.now();
+        logger.info("Applying the Transformations took "
+                + Duration.between(startOfEngine,endOfTransformations) + " seconds");
+        logger.info("Of the " + results.size() + " Transformations applied, "
+                + results.stream().filter(u -> u.equals(new EmptyTransformationResult())).count() + " where malformed");
+
         // Step 3:
         // Write Transformed Code
+        logger.debug("Starting to prettyprint  altered files to " + outputDirectory );
         launcher.setSourceOutputDirectory(outputDirectory);
         launcher.prettyprint();
 
         // Step 4:
         // Create Transformation Manifest
-        // TODO: Full result print
+        if(writer.isPresent()){
+            writer.get().writeManifest(results);
+        } else {
+            logger.debug("There was no ManifestWriter specified - skipping writing the Manifest.");
+        }
+
+        Instant endOfWriting = Instant.now();
+        logger.info("Writing files and Manifest took " + Duration.between(endOfTransformations,endOfWriting).getSeconds() + " seconds");
+        logger.info("Engine ran successfully");
     }
 
     /**
@@ -130,6 +172,9 @@ public class Engine {
         )){
             throw new UnsupportedOperationException("The given distribution contains transformation outside of registry");
         }
+        if(distribution.values().stream().anyMatch(v -> v < 0)) {
+            throw new UnsupportedOperationException("The given distribution negative amounts for transformations");
+        }
 
         this.distribution = distribution;
     }
@@ -149,6 +194,9 @@ public class Engine {
      * @throws UnsupportedOperationException for negative number of transformations
      */
     public void setNumberOfTransformationsPerScope(long transformations, TransformationScope scope){
+        if (transformations < 0) {
+           throw new UnsupportedOperationException("Number of transformations cannot be negative");
+        }
         this.scope = scope;
         this.numberOfTransformationsPerScope = transformations;
     }
@@ -168,6 +216,21 @@ public class Engine {
         // TODO: Fill me
         // TODO: Decide whether the total amount of transformers is twice as much as the others
         return new HashMap<>();
+    }
+
+    /**
+     * Sets a writer for this engine.
+     * Overwrites existing writers if there are any.
+     *
+     * @param writer
+     * @throws UnsupportedOperationException when an null-writer is entered
+     */
+    public void setManifestWriter(ManifestWriter writer){
+        if(writer == null){
+            throw new UnsupportedOperationException("Received null for writer");
+        } else {
+            this.writer = Optional.of(writer);
+        }
     }
 
     /**
