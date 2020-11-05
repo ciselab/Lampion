@@ -1,8 +1,10 @@
 package com.github.ciselab.lampion.exploration;
 
 import com.github.ciselab.lampion.manifest.SqliteManifestWriter;
+import com.github.ciselab.lampion.transformations.TransformationCategory;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import spoon.reflect.declaration.CtElement;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,9 +15,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * These tests are to "explore" SQLite, which is obviously not a heavy technology or anything,
@@ -30,10 +30,7 @@ import java.util.Properties;
  * The following this should be done to be ready for copy pasting:
  *
  * TODO:
- * - Insert Value
- * - Read Value
- * - All with Prepared Statements
- * - Close connection
+ * - Write a full linked entry over all items of a Transformation
  *
  * Further Reading:
  * - https://www.sqlitetutorial.net/sqlite-java/        Tutorial Site
@@ -294,5 +291,88 @@ public class SqliteTests {
         // Without the close, the files cannot be deleted
         conn.close();
     }
+
+
+    /**
+     * This Test is the biggest one here, which represents a "full run" of the manifestWriter
+     * It takes a (real) transformationResult, builds the categories and names lookup
+     * And inserts the Transformation itself.
+     *
+     * It's a bit long.
+     * @throws SQLException
+     * @throws IOException
+     */
+    @Tag("System")
+    @Tag("Exploration")
+    @Test
+    void testFullRun() throws SQLException, IOException {
+        /**
+         * To check what the response is when I do an insert statement.
+         */
+        String url = "jdbc:sqlite::memory:";
+        String pathToDBSchema = "./src/main/resources/createManifestTables.sql";
+        String schemaSQL = Files.readString(Path.of(pathToDBSchema));
+
+        // Build TransformationResult List
+
+        // Sort into "Categories To Write", "Names to Write", "Positions to Write"
+
+        List<TransformationCategory> categoriesToWrite = new ArrayList<>();
+        List<CtElement> positionToWrite = new ArrayList<>();
+        List<String> namesToWrite = new ArrayList<>();
+
+        Connection conn = DriverManager.getConnection(url);
+        if (conn != null) {
+            // Create Schema
+            fireMultiStatement(schemaSQL,conn);
+            // Insert Categories
+            String insertCategorySQL = "INSERT INTO transformation_categories (category_name) VALUES (?);";
+            var insertCategoryStmt = conn.prepareStatement(insertCategorySQL);
+            for(TransformationCategory category : categoriesToWrite) {
+                insertCategoryStmt.setString(1,category.name());
+                insertCategoryStmt.execute();
+            }
+            // Build Category Lookup
+            String seeAllCategoriesSQL = "SELECT ROWID, category_name FROM transformation_categories;";
+            var categoryReadStmt = conn.prepareStatement(seeAllCategoriesSQL);
+            var categoryReadResult = categoryReadStmt.executeQuery();
+
+            Map<String,Long> categoryLookup = new HashMap<>();
+
+            while(categoryReadResult.next()){
+                categoryLookup.put(categoryReadResult.getString("category_name"),categoryReadResult.getLong("ROWID"));
+            }
+
+            // Insert Transformation Names
+            String insertNameSQL = "INSERT INTO transformation_names (transformation_name) VALUES (?);";
+            var insertTransformationNameStmt = conn.prepareStatement(insertCategorySQL);
+            for(String name : namesToWrite) {
+                insertTransformationNameStmt.setString(1,name);
+                insertTransformationNameStmt.execute();
+            }
+            // Build Transformations Lookup
+            String readAllNamesSql = "SELECT ROWID, transformation_name FROM transformation_names;";
+            var nameReadStmt = conn.prepareStatement(readAllNamesSql);
+            var nameReadResult = nameReadStmt.executeQuery();
+
+            Map<String,Long> nameLookup = new HashMap<>();
+
+            while(nameReadResult.next()){
+                nameLookup.put(nameReadResult.getString("transformation_name"),nameReadResult.getLong("ROWID"));
+            }
+
+            // Insert ClassLevel Positions
+
+            // Insert MethodLevel Positions
+
+            // Build ClassLevel Position Lookup
+
+            // Insert the Transformation using lookups
+
+        }
+        // Without the close, the files cannot be deleted
+        conn.close();
+    }
+
 
 }
