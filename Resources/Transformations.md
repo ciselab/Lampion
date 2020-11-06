@@ -199,11 +199,23 @@ Risks: None
 public void plusOne (int a) {
     return a + 1;
 }
-// after
+// (intended) after
 public void plusOne (int a) {
     return a + (() -> 1).supply();
 }
 ```
+
+Atleast, this was the idea. However, due to Java-Compilation Problems, 
+it is a bit uglier: 
+
+```Java
+// actual after
+public void plusOne (int a) {
+    return a = ((int)(java.util.function.Supplier<?>)(()->1).get());
+}
+```
+
+Note: This transformation requires Java to be version 8 or higher.
 
 Excludes: None
 
