@@ -2,24 +2,35 @@ package com.github.ciselab.lampion.manifest;
 
 import com.github.ciselab.lampion.transformations.TransformationCategory;
 import com.github.ciselab.lampion.transformations.TransformationResult;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import spoon.reflect.declaration.CtElement;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class provides an interface to write a set of transformations into an SQLite Database, which will be newly created for this.
  *
- * The class covers everything from building the schema, doing a little healthcheck,
+ * The class covers everything from building the schema, doing a little health-check,
  * sorting and writing the results into different tables.
  *
+ * In terms of writing to SQLite, most of the tables are ought to be very small.
+ * The categories e.g. are exactly as much as you have defined in @TransformationCategory and for the TransformationNames
+ * it is the very same, there are no more transformation_names as you have transformations in this program.
+ * The Mapping Table can be atmost categories times names, which means that there should be at most ~200 mapping entries.
+ * The only two big tables are the position table, which grows with the altered CTElements and the transformations table.
+ * These scale directly with
+ *  a) program size of the system under change
+ *  b) configuration of the Obfuscator
+ * These are the only two write processes worth of tuning.
  *
  * It is very much an extraction of the "SQLiteTests.java", which hold a set of exploration tests around SQLite.
  *
@@ -28,6 +39,7 @@ import java.util.Map;
  * - SQLite prepared Statements start setting their parameters from "1", replacing the first "?".
  */
 public class SqliteManifestWriter implements ManifestWriter {
+    private static Logger logger = LogManager.getLogger(SqliteManifestWriter.class);
 
     private String pathToSchemaFile;
     private String pathToDatabase;
@@ -42,7 +54,8 @@ public class SqliteManifestWriter implements ManifestWriter {
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            logger.error("There was an error not finding the JDBC-SQLite Driver in the classpath",e);
+            return;
         }
 
         if (pathToSchemaFile == null || pathToSchemaFile.isEmpty() || pathToSchemaFile.isBlank()) {
@@ -56,29 +69,94 @@ public class SqliteManifestWriter implements ManifestWriter {
         }
         this.pathToDatabase = pathToDatabase;
         this.pathToSchemaFile = pathToSchemaFile;
+
+        try (Connection con = connectToSQLite(pathToDatabase)){
+            String schemaSQL = readSchemaFile(pathToSchemaFile);
+            createSchemaFromSQLString(con,schemaSQL);
+        } catch (SQLException sqlException) {
+            logger.error("There was an SQL Error creating the Schema. Scheck your SQLFile for validity.",sqlException);
+        } catch (IOException ioException) {
+            logger.error("There was an error finding/reading the Schema File.",ioException);
+        }
+    }
+
+    public Connection connectToSQLite(String pathToDb) throws SQLException {
+        String url = "jdbc:sqlite:"+pathToDb;
+        Properties props = new Properties();
+
+        Connection conn = DriverManager.getConnection(url,props);
+        return conn;
     }
 
     @Override
     public void writeManifest(List<TransformationResult> results) {
+        // Schema is created on startup
 
-        // Create Schema on Startup
+        // Sort relevant items to write beforehand, derive them from TransformationResults
+        List<String> transformationNames =
+                results.stream().map(r -> r.getTransformationName()).distinct().collect(Collectors.toList());
+        List<TransformationCategory> categories =
+                results.stream().flatMap(r -> r.getCategories().stream()).distinct().collect(Collectors.toList());
+        List<CtElement> positionElements =
+                results.stream().map(r -> r.getTransformedElement()).collect(Collectors.toList());
 
-        // Sort results by class or method scope
-        // Do so using checking for parents being methods
-
-        // Check that they are still in order of their application after sorting / splitting
-
-        // For all items check
+        try (Connection con = connectToSQLite(pathToDatabase)) {
+            // For all items check
             // Insert Transformation Names,
+            writeTransformationNames(con,transformationNames);
             // Insert Category Names,
+            writeCategoryNames(con,categories);
             // Insert Positions
+            writePositions(con,positionElements);
 
-        // Create a Map to Lookup Name -> oid
-        // Create a Map to lookup position -> oid
+            // Create a Map to Lookup Name -> oid
+            this.name_lookup = buildTransformationNameLookup(con);
+            // Create a Map to lookup Category -> oid
+            this.category_lookup = buildCategoryLookup(con);
+            // Create a Map to lookup position -> oid
+            this.position_lookup = createPositionLookup(con,positionElements);
 
-        // iterate over all items and write to transformations_table
+            // iterate over all items and write to transformations_table
+            writeTransformations(con,results);
 
-        // Extra: Add a version / info table
+            // Extra: Add a version / info table
+            writeExtraInfo(con);
+        } catch (SQLException throwables) {
+            logger.error("There was an error writing the manifest to SQLite",throwables);
+        }
+    }
+
+    /**
+     * This method adds the JavaObfuscator-Version and the Date of Write to the "info" Table
+     * @param con the connection to the SQLite database
+     * @throws SQLException
+     */
+    private void writeExtraInfo(Connection con) throws SQLException {
+        //TODO: De-Hardcode the version
+        con.prepareStatement("INSERT INTO info (info_key,info_value) " +
+                "VALUES ('java_obfuscator_version','1.0')" +
+                ",('obfuscator_touched'," + Instant.now().toString() + ");").execute();
+    }
+
+    /**
+     * Writes the Transformations into the SQLite Database.
+     * Requires the lookup tables to be filled beforehand.
+     *
+     * TODO: Do proper Batch-writing if its slow?
+     *
+     * @param con The SQLite Database Connection to Write to
+     * @param results All transformations to be written to the Database
+     * @throws SQLException whenever something with the connection is wrong.
+     */
+    private void writeTransformations(Connection con, List<TransformationResult> results) throws SQLException{
+        final String INSERT_TRANSFORMATION_SQL = "INSERT INTO transformations (name_reference,position_reference) VALUES (?,?);";
+        var insertTransformationStmt = con.prepareStatement(INSERT_TRANSFORMATION_SQL);
+
+        for (TransformationResult r : results) {
+            insertTransformationStmt.setLong(1,name_lookup.get(r.getTransformationName()));
+            insertTransformationStmt.setLong(2,position_lookup.get(r.getTransformedElement()));
+            insertTransformationStmt.execute();
+        }
     }
 
     private String readSchemaFile(String pathToDBSchema) throws IOException {
@@ -88,7 +166,7 @@ public class SqliteManifestWriter implements ManifestWriter {
 
     private void createSchemaFromSQLString(Connection con, String schemaSQL) throws SQLException {
         var parts = schemaSQL.split(";");
-
+        logger.debug("There were " + parts.length + " SQL-Statements in the given file.");
         for (var p : parts){
             con.prepareStatement(p).execute();
         }
@@ -202,6 +280,5 @@ public class SqliteManifestWriter implements ManifestWriter {
             }
         }
     }
-
 
 }
