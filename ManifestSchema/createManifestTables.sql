@@ -4,6 +4,16 @@
 -- It can be accessed with "rowid" or "oid"
 -- In this file, "oid" is used
 
+-- This table holds some info to be read in program for checking validity
+CREATE TABLE IF NOT EXISTS info (
+    key TEXT NOT NULL,
+    value TEXT
+);
+
+INSERT INTO info (key, value) 
+VALUES ("version","1.0"), ("status","healthy");
+
+
 CREATE TABLE IF NOT EXISTS positions (
     -- must have for every position, can never be null
     simple_class_name TEXT NOT NULL,                    -- the name of the class

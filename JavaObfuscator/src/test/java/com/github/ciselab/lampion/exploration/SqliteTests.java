@@ -1,7 +1,9 @@
 package com.github.ciselab.lampion.exploration;
 
 import com.github.ciselab.lampion.manifest.SqliteManifestWriter;
+import com.github.ciselab.lampion.transformations.SimpleTransformationResult;
 import com.github.ciselab.lampion.transformations.TransformationCategory;
+import com.github.ciselab.lampion.transformations.TransformationResult;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import spoon.reflect.declaration.CtElement;
@@ -292,6 +294,64 @@ public class SqliteTests {
         conn.close();
     }
 
+    /**
+     * This Test is the biggest one here, which represents a "full run" of the manifestWriter
+     * It takes a (real) transformationResult, builds the categories and names lookup
+     * And inserts the Transformation itself.
+     *
+     * It's a bit long.
+     * @throws SQLException
+     * @throws IOException
+     */
+    @Tag("Exploration")
+    @Test
+    void testBuildSchemaAndInsertTransformation_AssumingThatIdsAreOne() throws SQLException, IOException {
+        /**
+         * Simplification of the FUll run, assuming that the database was empty and the row-id was
+         * 1 for all names and categories
+         */
+        String url = "jdbc:sqlite::memory:";
+        String pathToDBSchema = "./src/main/resources/createManifestTables.sql";
+        String schemaSQL = Files.readString(Path.of(pathToDBSchema));
+
+        Connection conn = DriverManager.getConnection(url);
+        if (conn != null) {
+            // Create Schema
+            fireMultiStatement(schemaSQL,conn);
+            // Insert Categories
+            String insertCategorySQL = "INSERT INTO transformation_categories (category_name) VALUES ('TEST_CATEGORY');";
+            var insertCategoryStmt = conn.prepareStatement(insertCategorySQL);
+            insertCategoryStmt.execute();
+
+            // Insert Transformation Names
+            String insertNameSQL = "INSERT INTO transformation_names (transformation_name) VALUES ('TEST');";
+            var insertTransformationNameStmt = conn.prepareStatement(insertNameSQL);
+            insertTransformationNameStmt.execute();
+
+            String insertPositionSQL =
+                    "INSERT INTO positions " +
+                            "(simple_class_name,fully_qualified_class_name,file_name,method_name,full_method_name) " +
+                            "VALUES ('TEST_CLASS','lampion.test.TEST_CLASS','../src/test/TEST_CLASS','','');";
+            var insertPositionStmt = conn.prepareStatement(insertPositionSQL);
+            insertPositionStmt.execute();
+
+            // Insert the Transformation without using lookups
+            // As the others are first entries on a fresh db, they have ROWID 1
+            String insertTransformationSQL = "INSERT INTO transformations (name_reference,position_reference) VALUES (1,1);";
+            var insertTransformationStmt = conn.prepareStatement(insertTransformationSQL);
+            insertTransformationStmt.execute();
+
+            // Check that it was inserted
+            String seeAllTransformationsSQL = "SELECT ROWID FROM transformations;";
+            var preppedRead = conn.prepareStatement(seeAllTransformationsSQL);
+            var readResult = preppedRead.executeQuery();
+
+            assertEquals(1,readResult.getLong("ROWID"));
+        }
+        // Without the close, the files cannot be deleted
+        conn.close();
+    }
+
 
     /**
      * This Test is the biggest one here, which represents a "full run" of the manifestWriter
@@ -366,6 +426,8 @@ public class SqliteTests {
             // Insert MethodLevel Positions
 
             // Build ClassLevel Position Lookup
+
+            // Insert into Mapping Name -> Category
 
             // Insert the Transformation using lookups
 
