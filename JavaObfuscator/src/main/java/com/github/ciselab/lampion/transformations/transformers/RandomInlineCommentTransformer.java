@@ -59,6 +59,9 @@ public class RandomInlineCommentTransformer extends BaseTransformer {
 
         // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
         CtMethod savedElement = toAlter.clone();
+        savedElement.setParent(toAlter.getParent());
+        savedElement.getParent().updateAllParentsBelow();
+
         applyRandomParameterNameTransformation(toAlter);
 
         // If debug information is wished for, create a bigger Transformationresult

@@ -128,8 +128,8 @@ public class Engine {
         }
 
         // Step 2.4:
-        // Repair parent relation ships which maybe break
-        classes.stream().forEach(c -> c.updateAllParentsBelow());
+        // Repair parent relation ships which may have broken
+        // classes.stream().forEach(c -> c.updateAllParentsBelow());
 
         Instant endOfTransformations = Instant.now();
         logger.info("Applying the Transformations took "

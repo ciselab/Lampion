@@ -28,6 +28,7 @@ public class SimpleTransformationResult implements TransformationResult {
     public SimpleTransformationResult(String name, CtElement element, Set<TransformationCategory> categories){
         transformationName = name;
         this.element = element.clone();
+        this.element.setParent(element.getParent());
         this.categories = categories;
         beforeAfter = Optional.empty();
         initialScope = Optional.empty();
@@ -36,6 +37,7 @@ public class SimpleTransformationResult implements TransformationResult {
     public SimpleTransformationResult(String name, CtElement element, Set<TransformationCategory> categories, String beforeAfter){
         transformationName = name;
         this.element = element.clone();
+        this.element.setParent(element.getParent());
         this.categories = categories;
         this.beforeAfter = Optional.of(beforeAfter);
         initialScope = Optional.empty();
@@ -44,6 +46,7 @@ public class SimpleTransformationResult implements TransformationResult {
     public SimpleTransformationResult(String name, CtElement element, Set<TransformationCategory> categories, CtElement initialScope){
         transformationName = name;
         this.element = element.clone();
+        this.element.setParent(element.getParent());
         this.categories = categories;
         this.beforeAfter = Optional.empty();
         this.initialScope = Optional.of(initialScope.clone());
@@ -52,6 +55,7 @@ public class SimpleTransformationResult implements TransformationResult {
     public SimpleTransformationResult(String name, CtElement element, Set<TransformationCategory> categories, String beforeAfter, CtElement initialScope){
         transformationName = name;
         this.element = element.clone();
+        this.element.setParent(element.getParent());
         this.categories = categories;
         this.beforeAfter = Optional.of(beforeAfter);
         this.initialScope = Optional.of(initialScope.clone());

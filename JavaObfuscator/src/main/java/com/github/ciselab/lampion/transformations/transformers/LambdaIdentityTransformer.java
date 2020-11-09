@@ -68,16 +68,18 @@ public class LambdaIdentityTransformer extends BaseTransformer {
 
         CtLiteral toAlter = pickRandomLiteral(ast);
         // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
-        CtLiteral safedElement = toAlter.clone();
+        CtLiteral savedElement = toAlter.clone();
+        savedElement.setParent(toAlter.getParent());
+        savedElement.getParent().updateAllParentsBelow();
 
         applyWrapInIdentityLambdaTransformation(toAlter);
 
         // If debug information is wished for, create a bigger Transformationresult
         // Else, just return a minimal Transformationresult
         if (debug) {
-            return new SimpleTransformationResult(name,safedElement,this.getCategories(),beforeAfterOverview(safedElement,toAlter),ast.clone());
+            return new SimpleTransformationResult(name,savedElement,this.getCategories(),beforeAfterOverview(savedElement,toAlter),ast.clone());
         } else {
-            return new SimpleTransformationResult(name,safedElement,this.getCategories());
+            return new SimpleTransformationResult(name,savedElement,this.getCategories());
         }
     }
 

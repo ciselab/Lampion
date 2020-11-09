@@ -102,6 +102,38 @@ public class EngineTests {
 
     @Tag("System")
     @Tag("File")
+    @Tag("Regression")
+    @Test
+    void testRun_WithMockManifest_MockManifestResultsHaveParents() throws IOException {
+        //Short check whether there was proper cleanup
+        assertFalse(Files.exists(Path.of(outputTestFolder,"example.java","Error in cleanup")));
+
+        int transformations = 5;
+
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfTrueTransformer());
+        registry.registerTransformer(new RandomInlineCommentTransformer());
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+
+        testObject.setNumberOfTransformationsPerScope(transformations, Engine.TransformationScope.global);
+
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+
+        testObject.run();
+
+        for(var result : mock.receivedResults) {
+            assertNotNull(result.getTransformedElement().getParent());
+        }
+
+        // CleanUp
+        Files.delete(Path.of(outputTestFolder,"example.java"));
+        Files.delete(Path.of(outputTestFolder));
+    }
+
+    @Tag("System")
+    @Tag("File")
     @Test
     void testRun_WithMockManifest_ManifestSetAfterRun_MockManifestIsNotTouched() throws IOException {
         //Short check whether there was proper cleanup

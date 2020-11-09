@@ -1,5 +1,6 @@
 package com.github.ciselab.lampion.transformations;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import spoon.Launcher;
 import spoon.reflect.declaration.CtClass;
@@ -29,6 +30,15 @@ public class TransformationResultTests {
         assertTrue(result.equals(result));
     }
 
+    @Tag("Regression")
+    @Test
+    void testSimpleTransformationResult_TransformationElementHasParent(){
+        CtElement element = sumExample();
+
+        TransformationResult result = new SimpleTransformationResult("Test",element,new HashSet<>());
+
+        assertNotNull(result.getTransformedElement().getParent());
+    }
 
     @Test
     void testSimpleTransformationResult_NotEqualToSomethingCompletelyDifferent(){
