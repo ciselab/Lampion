@@ -98,6 +98,8 @@ public class SqliteManifestWriter implements ManifestWriter {
     public void writeManifest(List<TransformationResult> transformations) {
         // Schema is created on startup
 
+        // TODO: filter out empty transformations
+
         // Sort relevant items to write beforehand, derive them from TransformationResults
         List<String> transformationNames =
                 transformations.stream().map(r -> r.getTransformationName()).distinct().collect(Collectors.toList());
