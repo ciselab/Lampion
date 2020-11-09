@@ -126,3 +126,26 @@ These Attributes should enable a managing component to
 
 1. pick only valid, none code breaking, Transformations for any method
 2. pick Transformations based on a specified distribution
+
+## TroubleShooting / Error Registry 
+
+This section holds some of the issues encountered.
+
+### Missing Spoon Parents
+
+Some of the position-parts of the SQLiteWriter failed, due to the TransformedElements having no parent. 
+
+This originates from the `CtElement::clone`-method which does not copy the parent.
+The likely reason for this is that spoon will have some internal logic where the children are used for building and processing items.
+It did not appear on pretty printing, so it seems to be non-malicious for what this project needs.
+
+To work around this, take care of setting the parent to the clone.
+
+### SQLite cannot do Multiple Statements
+
+When working with SQLite, an issue occured that the schema could not be written from a single file. 
+Reason for this is that SQLite does not support multiple statements in a single query. 
+
+As a workaround, the file gets separated by `;` and every statement is run after each other. 
+
+The only databases which seem to support multi-statements are MariaDB/MySQL and Microsoft SQL.

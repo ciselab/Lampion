@@ -1,6 +1,7 @@
 package com.github.ciselab.lampion.manifest;
 
 import com.github.ciselab.lampion.program.App;
+import com.github.ciselab.lampion.transformations.EmptyTransformationResult;
 import com.github.ciselab.lampion.transformations.TransformationCategory;
 import com.github.ciselab.lampion.transformations.TransformationResult;
 import org.apache.logging.log4j.LogManager;
@@ -16,6 +17,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,6 +43,8 @@ import java.util.stream.Collectors;
  * General Watch-Out points:
  * - SQLite does not support multiple statements in a single query. These need to be split into multiple queries.
  * - SQLite prepared Statements start setting their parameters from "1", replacing the first "?".
+ * - When you have an SQLException - Read it. This will solve a lot of issues much quicker. Not all SQL-Exception are the same.
+ * - There was an issue that the elements had no parents. See "DesignNotes.md" "Missing Spoon Parents"
  */
 public class SqliteManifestWriter implements ManifestWriter {
     private static Logger logger = LogManager.getLogger(SqliteManifestWriter.class);
@@ -80,7 +84,7 @@ public class SqliteManifestWriter implements ManifestWriter {
             String schemaSQL = readSchemaFile(pathToSchemaFile);
             createSchemaFromSQLString(con,schemaSQL);
         } catch (SQLException sqlException) {
-            logger.error("There was an SQL Error creating the Schema. Scheck your SQLFile for validity.",sqlException);
+            logger.error("There was an SQL Error creating the Schema. Check your SQLFile for validity.",sqlException);
         } catch (IOException ioException) {
             logger.error("There was an error finding/reading the Schema File.",ioException);
         }
@@ -94,11 +98,22 @@ public class SqliteManifestWriter implements ManifestWriter {
         return conn;
     }
 
-    @Override
+    /**
+     * This method write a List of transformation-results orderly to an SQLite Database.
+     * The schema can be seen under Lampion/ManifestSchema
+     * For more detail on the procedure, follow the comments written throughout the method.
+     *
+     * All exceptions are caught, so refer to the logs if anything is missing.
+     *
+     * @param transformations the Transformations that have been created. Empty Results can be entered but will be filtered out.
+     */
     public void writeManifest(List<TransformationResult> transformations) {
         // Schema is created on startup
 
-        // TODO: filter out empty transformations
+        logger.info("Writing Manifest for " + transformations.size() + " Transformations");
+        var startManifestWrite = Instant.now();
+        transformations.removeIf(t -> t instanceof EmptyTransformationResult);
+        logger.debug("After removing Empty/Failed Transformations, there were " + transformations.size() + " left to write.");
 
         // Sort relevant items to write beforehand, derive them from TransformationResults
         List<String> transformationNames =
@@ -119,10 +134,13 @@ public class SqliteManifestWriter implements ManifestWriter {
 
             // Create a Map to Lookup Name -> oid
             this.name_lookup = buildTransformationNameLookup(con);
+            logger.debug("There were " + name_lookup.size() + " different transformation names in the Database found.");
             // Create a Map to lookup Category -> oid
             this.category_lookup = buildCategoryLookup(con);
+            logger.debug("There were " + category_lookup.size() + " different categories in the Database found.");
             // Create a Map to lookup position -> oid
             this.position_lookup = createPositionLookup(con,positionElements);
+            logger.debug("There were " + position_lookup.size() + " different  positions in the Database found.");
 
             // Fill the Name-Category-Mapping Table
             writeNameToCategoryMapping(con,transformations);
@@ -132,6 +150,8 @@ public class SqliteManifestWriter implements ManifestWriter {
 
             // Extra: Add a version / info table
             writeExtraInfo(con);
+            var endManifestWrite = Instant.now();
+            logger.info("Successfully finished writing the Manifest. It took " + Duration.between(startManifestWrite,endManifestWrite));
         } catch (SQLException throwables) {
             logger.error("There was an error writing the manifest to SQLite",throwables);
         }
@@ -393,6 +413,7 @@ public class SqliteManifestWriter implements ManifestWriter {
                     && elem.getPosition().getFile().getAbsolutePath().equalsIgnoreCase(file);
         }
     }
+
     /**
      * As Categories and Transformation Names are stored separately using a mapping table,
      * the mapping table need to be filled as well.

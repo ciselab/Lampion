@@ -1,6 +1,7 @@
 package com.github.ciselab.lampion.manifest;
 
 import com.github.ciselab.lampion.program.Engine;
+import com.github.ciselab.lampion.transformations.EmptyTransformationResult;
 import com.github.ciselab.lampion.transformations.TransformationResult;
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
 import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
@@ -20,6 +21,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -191,6 +193,62 @@ public class SQLiteManifestWriterTests {
     @Tag("System")
     @Tag("File")
     @Test
+    void runManifestWriting_shouldHave10Transformations() throws SQLException, IOException {
+        String total_db_name= pathToDatabase+"readTransformations.db";
+        // Check if there was a proper cleanup
+        assertFalse(Files.exists(Path.of(total_db_name)));
+
+        ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
+        var pseudo_results = sampleResults;
+        writer.writeManifest(pseudo_results);
+
+        Connection con = DriverManager.getConnection("jdbc:sqlite:"+total_db_name);
+
+        // Check if the schema was written
+        var info_results = con.prepareStatement("SELECT name_reference,position_reference FROM transformations;").executeQuery();
+
+        int result_counter = 0;
+        while (info_results.next())
+            result_counter++;
+
+        assertEquals(sampleResults.size(),result_counter);
+
+        con.close();
+        Files.delete(Path.of(total_db_name));
+    }
+
+    @Tag("System")
+    @Tag("File")
+    @Test
+    void runManifestWriting_10TransformationsAndTwoEmptyTransformations_shouldHave10Transformations() throws SQLException, IOException {
+        String total_db_name= pathToDatabase+"readTransformations.db";
+        // Check if there was a proper cleanup
+        assertFalse(Files.exists(Path.of(total_db_name)));
+
+        ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
+        var pseudo_results = sampleResults.stream().collect(Collectors.toList());
+        pseudo_results.add(new EmptyTransformationResult());
+        pseudo_results.add(new EmptyTransformationResult());
+        writer.writeManifest(pseudo_results);
+
+        Connection con = DriverManager.getConnection("jdbc:sqlite:"+total_db_name);
+
+        // Check if the schema was written
+        var info_results = con.prepareStatement("SELECT name_reference,position_reference FROM transformations;").executeQuery();
+
+        int result_counter = 0;
+        while (info_results.next())
+            result_counter++;
+
+        assertEquals(sampleResults.size(),result_counter);
+
+        con.close();
+        Files.delete(Path.of(total_db_name));
+    }
+
+    @Tag("System")
+    @Tag("File")
+    @Test
     void runManifestWriting_shouldHaveExtraInformation() throws SQLException, IOException {
         String total_db_name= pathToDatabase+"readExtraInfo.db";
         // Check if there was a proper cleanup
@@ -234,7 +292,6 @@ public class SQLiteManifestWriterTests {
         con.close();
         Files.delete(Path.of(total_db_name));
     }
-
 
     /*
     ================================================================================================================
@@ -291,13 +348,24 @@ public class SQLiteManifestWriterTests {
     }
 
     @Test
-    void testConstructor_DbSchemaFileDoesNotExist_throwsException () {
+    void testConstructor_DbSchemaFileDoesNotExist_failsGracefully () {
         String total_db_name= pathToDatabase+"failingConstructor.db";
-        assertThrows(UnsupportedOperationException.class, () ->
-                new SqliteManifestWriter(pathToDBSchema," \n")
-        );
+        var writer = new SqliteManifestWriter("src/test/resources/there_is_noFileHere.sql",total_db_name);
+
+        return;
     }
 
+    @Tag("File")
+    @Test
+    void testConstructor_DbSchemaFileIsMalformed_throwsException () {
+        String total_db_name= pathToDatabase+"failingConstructor_badSchema.db";
+
+        String pathToBadSchema = "./src/test/java/resources/bad_sql_schema.sql";
+
+        assertThrows(UnsupportedOperationException.class, () ->
+                new SqliteManifestWriter(pathToBadSchema,total_db_name)
+        );
+    }
 
     /*
     ============================================================================

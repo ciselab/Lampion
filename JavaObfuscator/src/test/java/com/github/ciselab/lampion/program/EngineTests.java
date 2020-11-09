@@ -160,6 +160,7 @@ public class EngineTests {
         Files.delete(Path.of(outputTestFolder));
     }
 
+    /*
     @Tag("System")
     @Tag("File")
     @Tag("Exploration")
@@ -184,6 +185,7 @@ public class EngineTests {
 
         assertTrue(Files.exists(Path.of(outputTestFolder+"_exploration","example.java")));
     }
+    */
 
     @Test
     void testSetDistribution_DistributionHasUknownElements_ShouldThrowException(){
