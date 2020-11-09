@@ -1,16 +1,20 @@
 package com.github.ciselab.lampion.manifest;
 
+import com.github.ciselab.lampion.program.App;
 import com.github.ciselab.lampion.transformations.TransformationCategory;
 import com.github.ciselab.lampion.transformations.TransformationResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtMethod;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
@@ -25,7 +29,7 @@ import java.util.stream.Collectors;
  * In terms of writing to SQLite, most of the tables are ought to be very small.
  * The categories e.g. are exactly as much as you have defined in @TransformationCategory and for the TransformationNames
  * it is the very same, there are no more transformation_names as you have transformations in this program.
- * The Mapping Table can be atmost categories times names, which means that there should be at most ~200 mapping entries.
+ * The Mapping Table can be at most (categories times names), which means that there should be at most ~200 mapping entries.
  * The only two big tables are the position table, which grows with the altered CTElements and the transformations table.
  * These scale directly with
  *  a) program size of the system under change
@@ -50,14 +54,14 @@ public class SqliteManifestWriter implements ManifestWriter {
 
     public SqliteManifestWriter(String pathToSchemaFile, String pathToDatabase){
         // Check if the SQLite JDBC is properly configured and in Path
-        // This is a regression check
+        // This is a regression check, may need to be adjusted for different drivers
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
             logger.error("There was an error not finding the JDBC-SQLite Driver in the classpath",e);
             return;
         }
-
+        // Value Checks
         if (pathToSchemaFile == null || pathToSchemaFile.isEmpty() || pathToSchemaFile.isBlank()) {
             throw new UnsupportedOperationException("Path To Database Schema cannot be null or empty");
         }
@@ -67,9 +71,11 @@ public class SqliteManifestWriter implements ManifestWriter {
         if (Files.notExists(Path.of(pathToSchemaFile))) {
             throw new UnsupportedOperationException("There was no Schema-Files found under: " + pathToSchemaFile);
         }
+        // Setting Attributes
         this.pathToDatabase = pathToDatabase;
         this.pathToSchemaFile = pathToSchemaFile;
-
+        // Write Schema to database
+        // If Database exists, nothing will be changed (Schema stmts are "Create if not exists ..."-only)
         try (Connection con = connectToSQLite(pathToDatabase)){
             String schemaSQL = readSchemaFile(pathToSchemaFile);
             createSchemaFromSQLString(con,schemaSQL);
@@ -89,16 +95,16 @@ public class SqliteManifestWriter implements ManifestWriter {
     }
 
     @Override
-    public void writeManifest(List<TransformationResult> results) {
+    public void writeManifest(List<TransformationResult> transformations) {
         // Schema is created on startup
 
         // Sort relevant items to write beforehand, derive them from TransformationResults
         List<String> transformationNames =
-                results.stream().map(r -> r.getTransformationName()).distinct().collect(Collectors.toList());
+                transformations.stream().map(r -> r.getTransformationName()).distinct().collect(Collectors.toList());
         List<TransformationCategory> categories =
-                results.stream().flatMap(r -> r.getCategories().stream()).distinct().collect(Collectors.toList());
+                transformations.stream().flatMap(r -> r.getCategories().stream()).distinct().collect(Collectors.toList());
         List<CtElement> positionElements =
-                results.stream().map(r -> r.getTransformedElement()).collect(Collectors.toList());
+                transformations.stream().map(r -> r.getTransformedElement()).collect(Collectors.toList());
 
         try (Connection con = connectToSQLite(pathToDatabase)) {
             // For all items check
@@ -116,8 +122,11 @@ public class SqliteManifestWriter implements ManifestWriter {
             // Create a Map to lookup position -> oid
             this.position_lookup = createPositionLookup(con,positionElements);
 
+            // Fill the Name-Category-Mapping Table
+            writeNameToCategoryMapping(con,transformations);
+
             // iterate over all items and write to transformations_table
-            writeTransformations(con,results);
+            writeTransformations(con,transformations);
 
             // Extra: Add a version / info table
             writeExtraInfo(con);
@@ -127,15 +136,17 @@ public class SqliteManifestWriter implements ManifestWriter {
     }
 
     /**
-     * This method adds the JavaObfuscator-Version and the Date of Write to the "info" Table
+     * This method adds the JavaObfuscator-Version and the Date of Write to the "info" Table.
+     * This method can be freely left out or enhanced, it does not contribute to any logic
+     * and is only providing information for later debugging / archiving.
      * @param con the connection to the SQLite database
      * @throws SQLException
      */
     private void writeExtraInfo(Connection con) throws SQLException {
-        //TODO: De-Hardcode the version
         con.prepareStatement("INSERT INTO info (info_key,info_value) " +
-                "VALUES ('java_obfuscator_version','1.0')" +
-                ",('obfuscator_touched'," + Instant.now().toString() + ");").execute();
+                "VALUES ('java_obfuscator_version'," + App.configuration.get("version") + ")" +
+                ",('obfuscator_touched'," + Instant.now().toString() + ")" +
+                ",('obfuscator_seed'," + App.globalRandomSeed + ");").execute();
     }
 
     /**
@@ -148,7 +159,11 @@ public class SqliteManifestWriter implements ManifestWriter {
      * @param results All transformations to be written to the Database
      * @throws SQLException whenever something with the connection is wrong.
      */
-    private void writeTransformations(Connection con, List<TransformationResult> results) throws SQLException{
+    private void writeTransformations(Connection con, List<TransformationResult> results) throws SQLException {
+        if (name_lookup == null || position_lookup == null) {
+            throw new UnsupportedOperationException("Either Position or Name Lookup are not initialized - cannot insert transformations.");
+        }
+
         final String INSERT_TRANSFORMATION_SQL = "INSERT INTO transformations (name_reference,position_reference) VALUES (?,?);";
         var insertTransformationStmt = con.prepareStatement(INSERT_TRANSFORMATION_SQL);
 
@@ -225,15 +240,63 @@ public class SqliteManifestWriter implements ManifestWriter {
      * Some CtElements are Methods and "well formed", some are classes, but others are e.g. CtLiterals
      * If a literal or anything similar occurs, it needs a way to find it's correct parents and read attributes
      * from there.
+     *
+     * TODO: Batch Writing here, if it's slow
      */
     private void writePositions(Connection con, Collection<CtElement> elementWithPosition) throws SQLException {
+        final String INSERT_POSITION_SQL = "INSERT INTO positions " +
+                "(simple_class_name,fully_qualified_class_name,file_name,method_name,full_method_name) " +
+                "VALUES (?,?,?,?,?);";
 
+        var insertPositionStmt = con.prepareStatement(INSERT_POSITION_SQL);
+
+        // For every element, get the items as precise as possible
+        for (CtElement elem : elementWithPosition) {
+            // Initialize variables empty
+            String className,fullClassName,file,methodName,fullMethodName;
+            file = elem.getPosition().getFile().getAbsolutePath();
+            // Set the names according to their respective element
+            if (elem instanceof CtClass) {
+                // Check for classes - they have no method names
+                CtClass elemCasted = (CtClass) elem;
+                className = elemCasted.getSimpleName();
+                fullClassName = elemCasted.getQualifiedName();
+                // set methodNames to default
+                methodName = "NONE";
+                fullMethodName = "NONE";
+            } else if (elem instanceof CtMethod) {
+                // Check for methods - go to parents for getting class names
+                CtMethod elemCasted = (CtMethod) elem;
+                methodName = elemCasted.getSimpleName();
+                fullMethodName = elemCasted.getSignature();
+                // Get the class in which the method is defined
+                CtClass methodParent = elemCasted.getParent(u -> u instanceof CtClass);
+                className = methodParent.getSimpleName();
+                fullClassName = methodParent.getQualifiedName();
+            } else {
+                // This is the case for everything below method
+                // Get the method in which the transformation happened
+                CtMethod methodChanged = elem.getParent(p -> p instanceof CtMethod);
+                methodName = methodChanged.getSimpleName();
+                fullMethodName = methodChanged.getSignature();
+                // Get the class in which the transformation happened
+                CtClass methodParent = methodChanged.getParent(u -> u instanceof CtClass);
+                className = methodParent.getSimpleName();
+                fullClassName = methodParent.getQualifiedName();
+            }
+
+            insertPositionStmt.setString(1,className);
+            insertPositionStmt.setString(2,fullClassName);
+            insertPositionStmt.setString(3,file);
+            insertPositionStmt.setString(4,methodName);
+            insertPositionStmt.setString(5,fullMethodName);
+
+            insertPositionStmt.execute();
+        }
     }
 
-
     private Map<CtElement,Long> createPositionLookup(Connection con, Collection<CtElement> elementToBeInMapping) throws SQLException {
-        /* This is a bit trickier than categories,
-           some issues are:
+        /* This is a bit trickier than categories, some issues are:
            1. Two elements can have the same position
            2. Maybe an Element has different set of results
            Therefore, this method also needs the elements as inputs to be semi-pure.
@@ -248,9 +311,83 @@ public class SqliteManifestWriter implements ManifestWriter {
          */
         HashMap<CtElement,Long> lookup = new HashMap<>();
 
+        // Read all required parts of positions
+        final String SELECT_POSITION_SQL =
+                "SELECT ROWID, fully_qualified_class_name, full_method_name,file_name FROM positions;";
+
+        ResultSet position_results = con.prepareStatement(SELECT_POSITION_SQL).executeQuery();
+
+        // Check for every result, whether there is a matching element in the elements to map
+        while(position_results.next()){
+            Long index = position_results.getLong("ROWID");
+            String positionFullClassName = position_results.getString("fully_qualified_class_name");
+            String positionFullMethodName = position_results.getString("full_method_name");
+            String positionFileName = position_results.getString("file_name");
+
+            // Filter the elements for matching ones
+            // for every matching one, add it to the lookup
+            elementToBeInMapping.stream()
+                    .filter(e -> similarPosition(e,positionFullClassName,positionFullMethodName,positionFileName))
+                    .forEach(p -> lookup.put(p,index));
+        }
+
+        //There should be as many keys in the lookup as there are elements given into this method
+        //A missmatch is not enough to fail the program, but warn about it
+        if (elementToBeInMapping.size() != lookup.keySet().size()) {
+            logger.warn("There was a miss-match in positions - some CtElements have no corresponding position");
+        }
+
         return lookup;
     }
 
+    /**
+     * This method is a helper to compare the results of the database read to the elements attributes in order
+     * to build the Position Dictionary.
+     *
+     * The fully qualified names are enough - the simple names are not required.
+     *
+     * The file can be left out i guess, but I am not sure.
+     * TODO: Check whether file is necessary and benefitial
+     *
+     * @param elem the Element to check for it's maching position
+     * @param fullClassName the full Classname read from SQLite
+     * @param fullMethodName the full Method name read from SQLite, ignored if there is "NONE"
+     * @param file the file reaf from SQLIte
+     * @return
+     */
+    private boolean similarPosition(CtElement elem, String fullClassName, String fullMethodName, String file) {
+
+        if (elem instanceof CtClass) {
+            // Check for classes - they have no method names
+            CtClass elemCasted = (CtClass) elem;
+            return elemCasted.getQualifiedName().equalsIgnoreCase(fullClassName)
+                    && elem.getPosition().getFile().getAbsolutePath().equalsIgnoreCase(file);
+        } else if (elem instanceof CtMethod) {
+            // Check for methods - go to parents for getting class names
+            CtMethod elemCasted = (CtMethod) elem;
+            String elemFullMethodName = elemCasted.getSignature();
+            // Get the class in which the method is defined
+            CtClass methodParent = elemCasted.getParent(u -> u instanceof CtClass);
+            String elemFullClassName = methodParent.getQualifiedName();
+
+
+            return elemFullClassName.equalsIgnoreCase(fullClassName)
+                    && elemFullMethodName.equalsIgnoreCase(fullMethodName)
+                    && elem.getPosition().getFile().getAbsolutePath().equalsIgnoreCase(file);
+        } else {
+            // This is the case for everything below method
+            // Get the method in which the transformation happened
+            CtMethod methodChanged = elem.getParent(p -> p instanceof CtMethod);
+            String elemFullMethodName = methodChanged.getSignature();
+            // Get the class in which the transformation happened
+            CtClass methodParent = methodChanged.getParent(u -> u instanceof CtClass);
+            String elemFullClassName = methodParent.getQualifiedName();
+
+            return elemFullClassName.equalsIgnoreCase(fullClassName)
+                    && elemFullMethodName.equalsIgnoreCase(fullMethodName)
+                    && elem.getPosition().getFile().getAbsolutePath().equalsIgnoreCase(file);
+        }
+    }
     /**
      * As Categories and Transformation Names are stored separately using a mapping table,
      * the mapping table need to be filled as well.
@@ -258,13 +395,21 @@ public class SqliteManifestWriter implements ManifestWriter {
      *
      * It uses the toplevel lookups, that already must be initialized when this method is run.
      */
-    private void writeNameToCategoryMapping(Connection con, Collection<TransformationResult> resultsWithDistinctNames ) throws SQLException {
+    private void writeNameToCategoryMapping(Connection con, Collection<TransformationResult> transformations ) throws SQLException {
         if (name_lookup == null || category_lookup == null) {
            throw new UnsupportedOperationException("Either Category or Name Lookup are not initialized - cannot build mapping.");
         }
 
+        // This Stream iterates over the transformations and creates a distinct list by Transformation Name
+        // The resulting List will have one transformation of each name.
+        var distinctTransformations =
+                transformations.stream()
+                        .collect(
+                                Collectors.toMap(TransformationResult::getTransformationName, p -> p, (p, q) -> p)
+                        ).values();
+
         Map<String, Collection<TransformationCategory>> mapping = new HashMap<>();
-        for (TransformationResult r : resultsWithDistinctNames) {
+        for (TransformationResult r : distinctTransformations) {
             mapping.put(r.getTransformationName(),r.getCategories());
         }
 
