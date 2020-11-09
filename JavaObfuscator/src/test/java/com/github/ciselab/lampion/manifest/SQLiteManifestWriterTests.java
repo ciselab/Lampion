@@ -6,6 +6,7 @@ import com.github.ciselab.lampion.transformations.TransformerRegistry;
 import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
 import com.github.ciselab.lampion.transformations.transformers.RandomInlineCommentTransformer;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -37,6 +38,7 @@ public class SQLiteManifestWriterTests {
         }
     }
 
+    @BeforeAll
     @AfterAll
     private static void folder_cleanup(){
         for(File file: Paths.get(pathToDatabase).toFile().listFiles())
@@ -50,7 +52,7 @@ public class SQLiteManifestWriterTests {
     void createManifestWriter_AllElementsAreValid_ShouldCreateFile() throws IOException {
         String total_db_name= pathToDatabase+"createSchema.db";
 
-        // Check if there was a proper cleanuo
+        // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
         ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
@@ -67,7 +69,7 @@ public class SQLiteManifestWriterTests {
     @Test
     void createManifestWriter_AllElementsAreValid_CheckSchemaToBeCreated() throws SQLException, IOException {
         String total_db_name= pathToDatabase+"readSchemaAfterCreation.db";
-        // Check if there was a proper cleanuo
+        // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
         ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
@@ -94,7 +96,7 @@ public class SQLiteManifestWriterTests {
     @Test
     void runManifestWriting_shouldHavePositions() throws SQLException, IOException {
         String total_db_name= pathToDatabase+"readPositions.db";
-        // Check if there was a proper cleanuo
+        // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
         ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
@@ -117,7 +119,7 @@ public class SQLiteManifestWriterTests {
     @Test
     void runManifestWriting_shouldHaveCategoriesAndNames() throws SQLException, IOException {
         String total_db_name= pathToDatabase+"readCategoriesAndNames.db";
-        // Check if there was a proper cleanuo
+        // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
         ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
@@ -127,7 +129,7 @@ public class SQLiteManifestWriterTests {
         Connection con = DriverManager.getConnection("jdbc:sqlite:"+total_db_name);
 
         // Check if the schema was written
-        var category_result = con.prepareStatement("SELECT category_name FROM categories;").executeQuery();
+        var category_result = con.prepareStatement("SELECT category_name FROM transformation_categories;").executeQuery();
 
         assertNotNull(category_result.getString("category_name"));
 
@@ -145,7 +147,7 @@ public class SQLiteManifestWriterTests {
     @Test
     void runManifestWriting_shouldHaveNameCategoryMappings() throws SQLException, IOException {
         String total_db_name= pathToDatabase+"readCategoryMappings.db";
-        // Check if there was a proper cleanuo
+        // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
         ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
@@ -154,8 +156,7 @@ public class SQLiteManifestWriterTests {
 
         Connection con = DriverManager.getConnection("jdbc:sqlite:"+total_db_name);
 
-        // Check if the schema was written
-        var info_results = con.prepareStatement("SELECT ROWID FROM name_category_mapping;").executeQuery();
+        var info_results = con.prepareStatement("SELECT ROWID FROM transformation_name_category_mapping;").executeQuery();
 
         assertNotNull(info_results.getLong("ROWID"));
 
@@ -168,7 +169,7 @@ public class SQLiteManifestWriterTests {
     @Test
     void runManifestWriting_shouldHaveTransformations() throws SQLException, IOException {
         String total_db_name= pathToDatabase+"readTransformations.db";
-        // Check if there was a proper cleanuo
+        // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
         ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
@@ -178,9 +179,10 @@ public class SQLiteManifestWriterTests {
         Connection con = DriverManager.getConnection("jdbc:sqlite:"+total_db_name);
 
         // Check if the schema was written
-        var info_results = con.prepareStatement("SELECT name_reference FROM transformations;").executeQuery();
+        var info_results = con.prepareStatement("SELECT name_reference,position_reference FROM transformations;").executeQuery();
 
-        assertNotNull(info_results.getString("name_reference"));
+        assertNotNull(info_results.getLong("name_reference"));
+        assertNotNull(info_results.getLong("position_reference"));
 
         con.close();
         Files.delete(Path.of(total_db_name));
@@ -190,8 +192,8 @@ public class SQLiteManifestWriterTests {
     @Tag("File")
     @Test
     void runManifestWriting_shouldHaveExtraInformation() throws SQLException, IOException {
-    String total_db_name= pathToDatabase+"readExtraInfo.db";
-        // Check if there was a proper cleanuo
+        String total_db_name= pathToDatabase+"readExtraInfo.db";
+        // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
         ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
@@ -201,7 +203,7 @@ public class SQLiteManifestWriterTests {
         Connection con = DriverManager.getConnection("jdbc:sqlite:"+total_db_name);
 
         // Check if the schema was written
-        var info_results = con.prepareStatement("SELECT * FROM info WHERE key='obfuscator_version';").executeQuery();
+        var info_results = con.prepareStatement("SELECT info_key FROM info WHERE info_key='java_obfuscator_version';").executeQuery();
 
         assertNotNull(info_results.getString("info_key"));
 
@@ -214,8 +216,8 @@ public class SQLiteManifestWriterTests {
     @Tag("File")
     @Test
     void runManifestWriting_withEmptyTransformations_shouldHaveExtraInformation() throws SQLException, IOException {
-        String total_db_name= pathToDatabase+"readExtraInfo.db";
-        // Check if there was a proper cleanuo
+        String total_db_name= pathToDatabase+"readExtraInfo2.db";
+        // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
         ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
@@ -225,7 +227,7 @@ public class SQLiteManifestWriterTests {
         Connection con = DriverManager.getConnection("jdbc:sqlite:"+total_db_name);
 
         // Check if the schema was written
-        var info_results = con.prepareStatement("SELECT * FROM info WHERE info_key='java_obfuscator_version';").executeQuery();
+        var info_results = con.prepareStatement("SELECT info_key FROM info WHERE info_key='java_obfuscator_version';").executeQuery();
 
         assertNotNull(info_results.getString("info_key"));
 

@@ -145,10 +145,13 @@ public class SqliteManifestWriter implements ManifestWriter {
      * @throws SQLException
      */
     private void writeExtraInfo(Connection con) throws SQLException {
-        con.prepareStatement("INSERT INTO info (info_key,info_value) " +
-                "VALUES ('java_obfuscator_version'," + App.configuration.get("version") + ")" +
-                ",('obfuscator_touched'," + Instant.now().toString() + ")" +
-                ",('obfuscator_seed'," + App.globalRandomSeed + ");").execute();
+        //TODO: version is null?
+        //TODO: use properly prepared statement with "?" instead
+        String INSERT_INTO_INFO_SQL = "INSERT OR IGNORE INTO info (info_key,info_value) " +
+                "VALUES ('java_obfuscator_version','" + App.configuration.get("version") + "')" +
+                ",('obfuscator_touched','" + Instant.now().toString() + "')" +
+                ",('obfuscator_seed','" + App.globalRandomSeed + "');";
+        con.prepareStatement(INSERT_INTO_INFO_SQL).execute();
     }
 
     /**
@@ -190,7 +193,7 @@ public class SqliteManifestWriter implements ManifestWriter {
     }
 
     private void writeCategoryNames(Connection con, Collection<TransformationCategory> categories) throws SQLException {
-        final String INSERT_CATEGORY_SQL = "INSERT INTO transformation_categories (category_name) VALUES (?);";
+        final String INSERT_CATEGORY_SQL = "INSERT OR IGNORE INTO transformation_categories (category_name) VALUES (?);";
         var insertCategoryStmt = con.prepareStatement(INSERT_CATEGORY_SQL);
         for(TransformationCategory category : categories) {
             insertCategoryStmt.setString(1,category.name());
@@ -213,7 +216,7 @@ public class SqliteManifestWriter implements ManifestWriter {
     }
 
     private void writeTransformationNames(Connection con, Collection<String> names) throws SQLException {
-        final String INSERT_NAME_SQL = "INSERT INTO transformation_names (transformation_name) VALUES (?);";
+        final String INSERT_NAME_SQL = "INSERT OR IGNORE INTO transformation_names (transformation_name) VALUES (?);";
         var insertTransformationNameStmt = con.prepareStatement(INSERT_NAME_SQL);
 
         for(String name : names) {
@@ -246,7 +249,7 @@ public class SqliteManifestWriter implements ManifestWriter {
      * TODO: Batch Writing here, if it's slow
      */
     private void writePositions(Connection con, Collection<CtElement> elementWithPosition) throws SQLException {
-        final String INSERT_POSITION_SQL = "INSERT INTO positions " +
+        final String INSERT_POSITION_SQL = "INSERT OR IGNORE INTO positions " +
                 "(simple_class_name,fully_qualified_class_name,file_name,method_name,full_method_name) " +
                 "VALUES (?,?,?,?,?);";
 
@@ -416,7 +419,7 @@ public class SqliteManifestWriter implements ManifestWriter {
         }
 
         final String WRITE_NAME_CATEGORY_MAPPING_SQL =
-                "INSERT INTO transformation_name_category_mapping (name_reference,category_reference) VALUES (?,?);";
+                "INSERT OR IGNORE INTO transformation_name_category_mapping (name_reference,category_reference) VALUES (?,?);";
         var writeNameCategoryMappingSQL = con.prepareStatement(WRITE_NAME_CATEGORY_MAPPING_SQL);
 
         for(String transformation_name : mapping.keySet()) {
