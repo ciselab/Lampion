@@ -69,16 +69,18 @@ public class IfTrueTransformer extends BaseTransformer {
 
         CtMethod toAlter = pickRandomMethod(ast);
         // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
-        CtMethod safedElement = toAlter.clone();
+        CtMethod savedElement = toAlter.clone();
+        savedElement.setParent(toAlter.getParent());
+        savedElement.getParent().updateAllParentsBelow();
 
         applyIfTrueTransformation(toAlter);
 
         // If debug information is wished for, create a bigger Transformationresult
         // Else, just return a minimal Transformationresult
         if (debug) {
-            return new SimpleTransformationResult(name,safedElement,this.getCategories(),beforeAfterOverview(safedElement,toAlter),ast.clone());
+            return new SimpleTransformationResult(name,savedElement,this.getCategories(),beforeAfterOverview(savedElement,toAlter),ast.clone());
         } else {
-            return new SimpleTransformationResult(name,safedElement,this.getCategories());
+            return new SimpleTransformationResult(name,savedElement,this.getCategories());
         }
     }
 

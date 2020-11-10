@@ -1,7 +1,5 @@
 package com.github.ciselab.lampion.transformations;
 
-import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
-import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
 import com.github.ciselab.lampion.transformations.transformers.RandomParameterNameTransformer;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;

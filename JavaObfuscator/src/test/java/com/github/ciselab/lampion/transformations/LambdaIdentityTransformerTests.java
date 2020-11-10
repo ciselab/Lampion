@@ -47,7 +47,7 @@ public class LambdaIdentityTransformerTests {
 
         assertTrue(ast.toString().contains("()"));
         assertTrue(ast.toString().contains("->"));
-        assertTrue(ast.toString().contains("1"));
+        assertTrue(ast.toString().contains("hey"));
         assertTrue(ast.toString().contains(".get()"));
     }
 

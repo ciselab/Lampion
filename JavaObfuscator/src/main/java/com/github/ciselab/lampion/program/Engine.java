@@ -127,6 +127,10 @@ public class Engine {
             results.add(result);
         }
 
+        // Step 2.4:
+        // Repair parent relation ships which may have broken
+        // classes.stream().forEach(c -> c.updateAllParentsBelow());
+
         Instant endOfTransformations = Instant.now();
         logger.info("Applying the Transformations took "
                 + Duration.between(startOfEngine,endOfTransformations) + " seconds");
