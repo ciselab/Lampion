@@ -83,7 +83,7 @@ public class Engine {
         Instant startOfEngine = Instant.now();
         // Step 1:
         // Read the Code in
-        Launcher launcher = new Launcher();
+        Launcher launcher = new spoon.Launcher();
         launcher.addInputResource(codeDirectory);
         // The CodeRoot is the highest level of available information regarding the AST
         CtModel codeRoot = launcher.buildModel();
