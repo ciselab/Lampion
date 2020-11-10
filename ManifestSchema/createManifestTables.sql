@@ -6,13 +6,12 @@
 
 -- This table holds some info to be read in program for checking validity
 CREATE TABLE IF NOT EXISTS info (
-    key TEXT NOT NULL,
-    value TEXT
+    info_key TEXT NOT NULL,
+    info_value TEXT
 );
 
-INSERT INTO info (key, value) 
-VALUES ("version","1.0"), ("status","healthy");
-
+INSERT INTO info (info_key,info_value)
+VALUES ('schema_version','1.0'), ('status','healthy');
 
 CREATE TABLE IF NOT EXISTS positions (
     -- must have for every position, can never be null
@@ -23,6 +22,7 @@ CREATE TABLE IF NOT EXISTS positions (
     method_name TEXT,                                   -- simple name of the method
     full_method_name TEXT                               -- including parameters / signature
 );
+
 CREATE UNIQUE INDEX IF NOT EXISTS iPositions 
     ON positions(simple_class_name,fully_qualified_class_name,file_name,method_name,full_method_name);
 
