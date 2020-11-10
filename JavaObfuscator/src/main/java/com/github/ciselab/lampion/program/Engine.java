@@ -87,6 +87,9 @@ public class Engine {
         launcher.addInputResource(codeDirectory);
         // The CodeRoot is the highest level of available information regarding the AST
         CtModel codeRoot = launcher.buildModel();
+        // With the imports set to true, on second application the import will disappear, making Lambdas uncompilable.
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+
         List<CtClass> classes = codeRoot.getElements(c -> c instanceof CtClass);
 
         logger.info("Found " + classes.size() + " Classes and "
@@ -96,7 +99,7 @@ public class Engine {
         // Apply the Transformations according to distribution
         List<TransformationResult> results = new ArrayList<>();
         // Step 2.1:
-        // set the total number of transformatiosn regarding the scope
+        // set the total number of transformations regarding the scope
         long totalTransformationsToDo = switch (scope) {
             case global -> numberOfTransformationsPerScope;
             case perMethod -> numberOfTransformationsPerScope * codeRoot.filterChildren(c -> c instanceof CtMethod).list().size();
@@ -139,7 +142,7 @@ public class Engine {
 
         // Step 3:
         // Write Transformed Code
-        logger.debug("Starting to prettyprint  altered files to " + outputDirectory );
+        logger.debug("Starting to pretty-print  altered files to " + outputDirectory );
         launcher.setSourceOutputDirectory(outputDirectory);
         launcher.prettyprint();
 

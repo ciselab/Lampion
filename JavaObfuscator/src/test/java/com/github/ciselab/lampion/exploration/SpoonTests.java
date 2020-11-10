@@ -386,6 +386,60 @@ public class SpoonTests {
         assertFalse(testMethod.filterChildren(u -> u instanceof CtLiteral).list().isEmpty());
     }
 
+    @Tag("Regression")
+    @Test
+    void spoonRegression_CompilingLambdaIssue_shouldCompile(){
+        // This issue occured while running the app on the example file,
+        // the lambdas had issues compiling the snippet below
+
+        String reportedFaultySnippet = " package lampion.test.examples;class Example {\n" +
+                "    public int sum(int myzolxxamwiu, int b) {\n" +
+                "        if (true) {\n" +
+                "            if (((boolean)((java.util.function.Supplier<?>)(() -> true)).get())) {\n" +
+                "                return myzolxxamwiu + b;\n" +
+                "            } else {\n" +
+                "                return null;\n" +
+                "            }\n" +
+                "        } else {\n" +
+                "            return null;\n" +
+                "        }\n" +
+                "    }\n" +
+                "}";
+
+        CtClass testObject = Launcher.parseClass(reportedFaultySnippet);
+        testObject.compileAndReplaceSnippets();
+
+    }
+
+    @Tag("Exploration")
+    @Tag("Regression")
+    @Test
+    void spoonRegression_CompilingLambdaIssue_shouldCompile_Tryfix(){
+        // This issue occured while running the app on the example file,
+        // the lambdas had issues compiling the snippet below
+
+        String reportedFaultySnippet = " package lampion.test.examples;class Example {\n" +
+                "    public int sum(int myzolxxamwiu, int b) {\n" +
+                "        if (true) {\n" +
+                "            if (((boolean)((java.util.function.Supplier<?>)(() -> true)).get())) {\n" +
+                "                return myzolxxamwiu + b;\n" +
+                "            } else {\n" +
+                "                return 0;\n" +
+                "            }\n" +
+                "        } else {\n" +
+                "            return 0;\n" +
+                "        }\n" +
+                "    }\n" +
+                "}";
+
+        CtClass testObject = Launcher.parseClass(reportedFaultySnippet);
+
+        // With the imports set to true, on second application the import will disappear, making Lambdas uncompilable.
+        testObject.getFactory().getEnvironment().setAutoImports(false);
+
+        testObject.compileAndReplaceSnippets();
+
+    }
     @Tag("Exploration")
     @Test
     void spoonExploration_WrapInIfStatement() throws IOException {

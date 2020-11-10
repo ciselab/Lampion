@@ -21,9 +21,6 @@ public class RandomInlineCommentTransformer extends BaseTransformer {
 
     private static final String name = "RandomInlineComment";
 
-    // This transformer is build here and registered in the global registry of app
-    private static final RandomInlineCommentTransformer delegate = buildAndRegisterDefaultDelegate();
-
     public RandomInlineCommentTransformer(){
         super();
         setConstraints();
@@ -172,19 +169,6 @@ public class RandomInlineCommentTransformer extends BaseTransformer {
                 .toString();
 
         return generatedString;
-    }
-
-    /**
-     * This methods builds a transformer using the apps global seed for it's randomness
-     * and registers it in the global default registry.
-     * The return value is the build transformer, set to the toplevel delegate entry,
-     * this behavior helps to build it at startup exploiting the static startup.
-     * @return the RandomInlineCommentTransformer that is registered in Apps default registry
-     */
-    private static RandomInlineCommentTransformer buildAndRegisterDefaultDelegate(){
-        RandomInlineCommentTransformer delegate =  new RandomInlineCommentTransformer(App.globalRandomSeed);
-        App.globalRegistry.registerTransformer(delegate);
-        return delegate;
     }
 
     /**

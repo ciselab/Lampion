@@ -24,9 +24,6 @@ public class IfTrueTransformer extends BaseTransformer {
 
     public final String name = "IfTrue";    // The name used for TransformationResults
 
-    // This transformer is build here and registered in the global registry of app
-    private static final IfTrueTransformer delegate = buildAndRegisterDefaultDelegate();
-
     public IfTrueTransformer() {
         super();
 
@@ -155,19 +152,6 @@ public class IfTrueTransformer extends BaseTransformer {
         categories.add(TransformationCategory.STRUCTURE);
         categories.add(TransformationCategory.SMELL);
         return categories;
-    }
-
-    /**
-     * This methods builds a transformer using the apps global seed for it's randomness
-     * and registers it in the global default registry.
-     * The return value is the build transformer, set to the toplevel delegate entry,
-     * this behavior helps to build it at startup exploiting the static startup.
-     * @return the IfTrueTransformer that is registered in App's default registry
-     */
-    private static IfTrueTransformer buildAndRegisterDefaultDelegate(){
-        IfTrueTransformer delegate =  new IfTrueTransformer(App.globalRandomSeed);
-        App.globalRegistry.registerTransformer(delegate);
-        return delegate;
     }
 
     //TODO: Equals & HashCode?

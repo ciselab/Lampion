@@ -23,9 +23,6 @@ public class RandomParameterNameTransformer extends BaseTransformer {
     // This Map holds all changed Parameternames to not randomize ParameterNames twice.
     private Map<CtMethod,List<CtVariable>> alreadyAlteredParameterNames = new HashMap<>();
 
-    // This transformer is build here and registered in the global registry of app
-    private static final RandomParameterNameTransformer delegate = buildAndRegisterDefaultDelegate();
-
     public RandomParameterNameTransformer(){
         super();
         setConstraints();
@@ -214,19 +211,6 @@ public class RandomParameterNameTransformer extends BaseTransformer {
                 .toString();
 
         return generatedString;
-    }
-
-    /**
-     * This methods builds a transformer using the apps global seed for it's randomness
-     * and registers it in the global default registry.
-     * The return value is the build transformer, set to the toplevel delegate entry,
-     * this behavior helps to build it at startup exploiting the static startup.
-     * @return the RandomParameterNameTransformer that is registered in Apps default registry
-     */
-    private static RandomParameterNameTransformer buildAndRegisterDefaultDelegate(){
-        RandomParameterNameTransformer delegate =  new RandomParameterNameTransformer(App.globalRandomSeed);
-        App.globalRegistry.registerTransformer(delegate);
-        return delegate;
     }
 
     /**

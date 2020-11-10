@@ -6,15 +6,11 @@ import spoon.Launcher;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.*;
 import spoon.reflect.factory.Factory;
-import spoon.reflect.reference.CtReference;
-import spoon.reflect.reference.CtTypeReference;
-import spoon.support.reflect.reference.CtReferenceImpl;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 /**
  * This Transformer wraps a literal into an identity lambda.
@@ -24,7 +20,7 @@ import java.util.function.Supplier;
  * After
      * int addOne(int a){return a + (()->1).get()}
  *
- * Atleast, that was the intention. However, a small adjustment had to me made:
+ * At least, that was the intention. However, a small adjustment had to me made:
  * To be compilable, casts and fully qualified imports were necessary.
  * Hence, the after looks like:
      * int addOne(int a) {
@@ -37,7 +33,6 @@ import java.util.function.Supplier;
 public class LambdaIdentityTransformer extends BaseTransformer {
 
     String name = "LambdaIdentity";
-    private static final LambdaIdentityTransformer delegate = buildAndRegisterDefaultDelegate();
 
     public LambdaIdentityTransformer(){
         super();
@@ -168,17 +163,4 @@ public class LambdaIdentityTransformer extends BaseTransformer {
         constraints.add(hasLiterals);
     }
 
-
-    /**
-     * This methods builds a transformer using the apps global seed for it's randomness
-     * and registers it in the global default registry.
-     * The return value is the build transformer, set to the toplevel delegate entry,
-     * this behavior helps to build it at startup exploiting the static startup.
-     * @return the LambdaIdentityTransformer that is registered in App's default registry
-     */
-    private static LambdaIdentityTransformer buildAndRegisterDefaultDelegate(){
-        LambdaIdentityTransformer delegate =  new LambdaIdentityTransformer(App.globalRandomSeed);
-        App.globalRegistry.registerTransformer(delegate);
-        return delegate;
-    }
 }

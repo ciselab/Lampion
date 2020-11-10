@@ -13,6 +13,10 @@ import java.util.Properties;
 import com.github.ciselab.lampion.manifest.ManifestWriter;
 import com.github.ciselab.lampion.manifest.SqliteManifestWriter;
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
+import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
+import com.github.ciselab.lampion.transformations.transformers.LambdaIdentityTransformer;
+import com.github.ciselab.lampion.transformations.transformers.RandomInlineCommentTransformer;
+import com.github.ciselab.lampion.transformations.transformers.RandomParameterNameTransformer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,7 +39,7 @@ public class App {
     // The global registry in which every Transformation registers itself at system startup.
     // Is passed to the engine, and can be exchanged beforehand to set certain scenarios.
     // For further info, see DesignNotes.md "Registration of Transformations"
-    public static TransformerRegistry globalRegistry = new TransformerRegistry("default");
+    public static TransformerRegistry globalRegistry = createDefaultRegistry();
 
     // Used to instantiate the random seeds of the delegated Transformers in the default TransformerRegistry
     public static final long globalRandomSeed = 2020;
@@ -198,64 +202,15 @@ public class App {
     See "AppTests::testDefaultRegistry_ShouldNotBeEmpty" for a broader explanation
      */
 
-    static {
-        try {
-            getClasses("com.github.ciselab.lampion.transformations.transformers");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-        }
+    private static TransformerRegistry createDefaultRegistry() {
+        TransformerRegistry registry = new TransformerRegistry("default");
+
+        registry.registerTransformer(new IfTrueTransformer(globalRandomSeed));
+        registry.registerTransformer(new LambdaIdentityTransformer(globalRandomSeed));
+        registry.registerTransformer(new RandomInlineCommentTransformer(globalRandomSeed));
+        registry.registerTransformer(new RandomParameterNameTransformer(globalRandomSeed));
+
+        return registry;
     }
 
-    /**
-     * Scans all classes accessible from the context class loader which belong to the given package and subpackages.
-     *
-     * @param packageName The base package
-     * @return The classes in the basepackage.
-     * @throws ClassNotFoundException
-     * @throws IOException
-     */
-    private static Class[] getClasses(String packageName)
-            throws ClassNotFoundException, IOException {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        assert classLoader != null;
-        String path = packageName.replace('.', '/');
-        Enumeration<URL> resources = classLoader.getResources(path);
-        List<File> dirs = new ArrayList<File>();
-        while (resources.hasMoreElements()) {
-            URL resource = resources.nextElement();
-            dirs.add(new File(resource.getFile()));
-        }
-        ArrayList<Class> classes = new ArrayList<Class>();
-        for (File directory : dirs) {
-            classes.addAll(findClasses(directory, packageName));
-        }
-        return classes.toArray(new Class[classes.size()]);
-    }
-
-    /**
-     * Recursive method used to find all classes in a given directory and subdirs.
-     *
-     * @param directory   The base directory
-     * @param packageName The package name for classes found inside the base directory
-     * @return The classes
-     * @throws ClassNotFoundException
-     */
-    private static List<Class> findClasses(File directory, String packageName) throws ClassNotFoundException {
-        List<Class> classes = new ArrayList<Class>();
-        if (!directory.exists()) {
-            return classes;
-        }
-        File[] files = directory.listFiles();
-        for (File file : files) {
-            if (file.isDirectory()) {
-                assert !file.getName().contains(".");
-                classes.addAll(findClasses(file, packageName + "." + file.getName()));
-            } else if (file.getName().endsWith(".class")) {
-                classes.add(Class.forName(packageName + '.' + file.getName().substring(0, file.getName().length() - 6)));
-            }
-        }
-        return classes;
-    }
 }
