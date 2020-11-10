@@ -153,12 +153,14 @@ public class SQLiteManifestWriterTests {
         assertFalse(Files.exists(Path.of(total_db_name)));
 
         ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
-        var pseudo_results = sampleResults;
+        var pseudo_results = fakeResultsUsingEngine(5);
         writer.writeManifest(pseudo_results);
 
         Connection con = DriverManager.getConnection("jdbc:sqlite:"+total_db_name);
 
-        var info_results = con.prepareStatement("SELECT ROWID FROM transformation_name_category_mapping;").executeQuery();
+        var info_results = con
+                .prepareStatement("SELECT ROWID FROM transformation_name_category_mapping;")
+                .executeQuery();
 
         assertNotNull(info_results.getLong("ROWID"));
 
@@ -378,7 +380,7 @@ public class SQLiteManifestWriterTests {
          */
 
         String pathToTestFileFolder = "./src/test/resources/javafiles";
-        String outputTestFolder = "./src/test/resources/engine_spooned";
+        String outputTestFolder = "./src/test/resources/sqlite_engine_spooned";
 
         TransformerRegistry registry = new TransformerRegistry("Test");
         registry.registerTransformer(new IfTrueTransformer());
@@ -394,7 +396,12 @@ public class SQLiteManifestWriterTests {
         testObject.run();
 
         // Clean the spooned folder
-        Files.delete(Path.of(outputTestFolder,"example.java"));
+        if(Files.exists(Paths.get(outputTestFolder))) {
+            Files.walk(Paths.get(outputTestFolder))
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
 
         return mock.receivedResults;
     }

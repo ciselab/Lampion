@@ -2,6 +2,7 @@ package com.github.ciselab.lampion.transformations;
 
 import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,7 +24,7 @@ public class IfTrueTransformerTests {
 
         assertTrue(ast.toString().contains("if (true)"));
         assertTrue(ast.toString().contains("else"));
-        assertTrue(ast.toString().contains("return null;"));
+        assertTrue(ast.toString().contains("return 0;"));
     }
 
     @Test
@@ -39,9 +40,65 @@ public class IfTrueTransformerTests {
         assertFalse(ast.toString().contains("return null;"));
     }
 
+
+    @Tag("Regression")
+    @Test
+    void applyToMethodWithFloatReturn_ElseBlockShouldHave0fInIt(){
+        CtClass testObject = Launcher.parseClass(
+                "package lampion.test.examples; class A { float sum(float a, float b) { return a + b;} }");
+
+        IfTrueTransformer transformer = new IfTrueTransformer();
+
+        transformer.applyAtRandom(testObject);
+
+        assertTrue(testObject.toString().contains("if (true)"));
+        assertTrue(testObject.toString().contains("return 0.0F;"));
+        assertFalse(testObject.toString().contains("return null;"));
+    }
+
+    @Tag("Regression")
+    @Test
+    void applyToMethodWithDoubleReturn_ElseBlockShouldHave0dInIt(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { double sum(double a, double b) { return a + b;} }");
+
+        IfTrueTransformer transformer = new IfTrueTransformer();
+
+        transformer.applyAtRandom(testObject);
+
+        assertTrue(testObject.toString().contains("if (true)"));
+        assertTrue(testObject.toString().contains("return 0.0;"));
+        assertFalse(testObject.toString().contains("return null;"));
+    }
+
+    @Tag("Regression")
+    @Test
+    void applyToMethodWithStringReturn_ElseBlockShouldReturnNull(){
+        CtClass testObject = Launcher.parseClass(
+                "package lampion.test.examples; class A { String sum(String a, String b) { return a + b;} }");
+
+        IfTrueTransformer transformer = new IfTrueTransformer();
+
+        transformer.applyAtRandom(testObject);
+
+        assertTrue(testObject.toString().contains("if (true)"));
+        assertTrue(testObject.toString().contains("return null;"));
+    }
+
+    @Tag("Regression")
+    @Test
+    void applyToMethodWithFloatReturn_ShouldCompile(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { float sum(float a, float b) { return a + b;} }");
+
+        IfTrueTransformer transformer = new IfTrueTransformer();
+
+        transformer.applyAtRandom(testObject);
+
+        testObject.compileAndReplaceSnippets();
+    }
+
     @RepeatedTest(10)
     void applyToClassWithTwoMethods_onlyOneIsAltered(){
-        CtClass ast = Launcher.parseClass("class A { " +
+        CtClass ast = Launcher.parseClass("package lampion.test.examples; class A { " +
                 "int sum(int a, int b) { return a + b;} " +
                 "void some(){System.out.println(\"hey!\");}" +
                 "}");
@@ -146,13 +203,13 @@ public class IfTrueTransformerTests {
 
 
     static CtElement classWithoutReturnMethod(){
-        CtClass testObject = Launcher.parseClass("class A { void m() { System.out.println(\"yeah\");} }");
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { void m() { System.out.println(\"yeah\");} }");
 
         return testObject;
     }
 
     static CtElement sumExample(){
-        CtClass testObject = Launcher.parseClass("class A { int sum(int a, int b) { return a + b;} }");
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { int sum(int a, int b) { return a + b;} }");
 
         return testObject;
     }

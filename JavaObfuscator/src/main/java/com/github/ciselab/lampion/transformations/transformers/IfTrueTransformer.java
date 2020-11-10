@@ -4,9 +4,11 @@ import com.github.ciselab.lampion.program.App;
 import com.github.ciselab.lampion.transformations.*;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtReturn;
+import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.factory.Factory;
+import spoon.reflect.reference.CtTypeReference;
 
 import java.util.HashSet;
 import java.util.List;
@@ -100,13 +102,50 @@ public class IfTrueTransformer extends BaseTransformer {
         // If yes, add the trivial return null statement in the else block
         if(! toAlter.filterChildren(c -> c instanceof CtReturn).list().isEmpty()){
             ifWrapper.setElseStatement(
-                    factory.createBlock().addStatement(factory.createCodeSnippetStatement("return null"))
+                    factory.createBlock().addStatement(
+                            factory.createCodeSnippetStatement("return "+getNullElement(toAlter.getType()))
+                    )
             );
         }
 
         toAlter.setBody(ifWrapper);
+
+        // The snippets need to be compiled, but compiling is a "toplevel" function that only compilation units have.
+        // Take the closest compilable unit (the class) and compile it
+        // otherwise, the snippet is kept as a snippet, hence has no literals and no operands and casts etc.
+        // Without compiling the snipped, the transformation can only be applied once and maybe blocks other transformations as well.
+        CtClass lookingForParent = toAlter.getParent(p -> p instanceof CtClass);
+        // With the imports set to true, on second application the import will disappear, making it uncompilable.
+        lookingForParent.getFactory().getEnvironment().setAutoImports(false);
+        lookingForParent.compileAndReplaceSnippets();
     }
 
+    /**
+     * This method helps with building the else block of an if-true transformations.
+     * The reason for this is, that the "return null" is not sufficient for primitive datatypes.
+     * "return null" is an ok statement for "Integer" but not for "int".
+     *
+     * This method returns
+     * 0 for numeric types (.0d for double, .0f for float)
+     * '\u0000' for Char
+     * false for boolean
+     * null for anything else
+     *
+     * @param type
+     * @return
+     */
+    private String getNullElement(CtTypeReference type){
+        switch(type.getSimpleName()){
+            case "byte": return "0";
+            case "short": return "0";
+            case "int": return "0";
+            case "long": return "0L";
+            case "char": return "'\u0000'";
+            case "float": return "0.0f";
+            case "double": return "0.0d";
+            default: return "null";
+        }
+    }
 
     /**
      * Returns a random method of the ast.
