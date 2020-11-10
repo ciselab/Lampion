@@ -6,7 +6,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
+import com.github.ciselab.lampion.manifest.ManifestWriter;
+import com.github.ciselab.lampion.manifest.SqliteManifestWriter;
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
+import com.github.ciselab.lampion.transformations.transformers.BaseTransformer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -48,7 +51,9 @@ public class App {
             return;
         }
 
-        System.out.println("Hello "+ configuration.get("greeting")+"!");
+        Engine engine = buildEngineFromProperties(App.configuration);
+
+        engine.run();
 
         logger.info("Everything done - closing Lampion Obfuscator");
     }
@@ -85,5 +90,102 @@ public class App {
             logger.error(ex);
             // I/O error
         }
+    }
+
+    /**
+     * This method builds an engine according to the found / given properties
+     * It will build a registry or take the default ones, look for IO-Directories and check the value correctness.
+     * It returns a fully functional Engine to be run.
+     *
+     * Later, this function will also contain builders for more or less transformations as well as distributions.
+     *
+     * @param properties The key-value pairs read at system startup.
+     * @return A fully configured, ready to go Engine
+     * @throws UnsupportedOperationException whenever properties where missing or invalid
+     */
+    private static Engine buildEngineFromProperties(Properties properties){
+        // Build Registry
+        // Currently skipped for default
+        TransformerRegistry registry = globalRegistry;
+
+        // Read Input and Output Dir
+        String inputDir,outputDir;
+        if(properties.get("inputDirectory") != null){
+            inputDir = (String) properties.getProperty("inputDirectory");
+        } else {
+            throw new UnsupportedOperationException("There was no input-directory specified in the properties");
+        }
+        if(properties.get("outputDirectory") != null) {
+            outputDir = (String) properties.get("outputDirectory");
+        } else {
+            throw new UnsupportedOperationException("There was no output-directory specified in the properties");
+        }
+
+        // Build Base-Engine
+        Engine engine = new Engine(inputDir,outputDir,registry);
+
+        // Set Transformation-Scopes
+        Engine.TransformationScope transformationScope = Engine.TransformationScope.global;
+        long transformations = 100;
+        if(properties.get("transformationscope") != null){
+            Engine.TransformationScope.valueOf(properties.getProperty("transformationscope"));
+        } else {
+            logger.warn("There was no TransformationScope specified in the configuration - defaulting to global scope.");
+        }
+        if(properties.get("transformations") != null) {
+
+        } else {
+            logger.warn("There was no number of transformations specified in configuration - defaulting to " + transformations);
+        }
+        engine.setNumberOfTransformationsPerScope(transformations,transformationScope);
+
+        // Read Items for SQLite
+        String databaseName="TransformationManifest.db";
+        String databaseDirectory="./manifest";
+        String pathToSchema="./createSQLiteManifest";
+        if(properties.get("databaseName") != null){
+            databaseName = (String) properties.get("databaseName");
+        } else {
+            logger.debug("There was no DatabaseName specified in the configuration - defaulting to " + databaseName);
+        }
+        if(properties.get("databaseDirectory") != null){
+            databaseDirectory = (String) properties.get("databaseDirectory");
+        } else {
+            logger.debug("There was no Directory specified to write manifest in the configuration - defaulting to " + databaseDirectory);
+        }
+        if(properties.get("pathToSchema") != null){
+            pathToSchema = (String) properties.get("pathToSchema");
+        } else {
+            // The check for Schema validity and existance is done in the constructor of SQLite Writer
+            logger.warn("There was no SchemaPath specified in the configuration - defaulting to "+pathToSchema);
+        }
+
+        String fullDatabasePath = databaseDirectory.endsWith("/") ? databaseDirectory+databaseName : databaseDirectory+"/"+databaseName;
+        logger.debug("Full SQLite-Database Path: " + fullDatabasePath);
+
+        // Build SQLite Writer Schema
+        ManifestWriter writer = new SqliteManifestWriter(pathToSchema,fullDatabasePath);
+
+        // Socket Writer into Base Engine
+        engine.setManifestWriter(writer);
+
+        // Set Seed(s)
+        long seed = globalRandomSeed;
+        if(properties.get("seed") != null){
+            seed = Long.parseLong((String) properties.get("seed"));
+        } else {
+            logger.warn("There was no Seed specified - defaulting to " + seed);
+        }
+
+        engine.setRandomSeed(seed);
+        for(var t: registry.getRegisteredTransformers()){
+            t.setSeed(seed);
+        }
+
+        // Alter / Change Distributions
+        // Currently skipped
+
+        // Return the build engine
+        return engine;
     }
 }

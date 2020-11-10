@@ -350,9 +350,8 @@ public class SQLiteManifestWriterTests {
     @Test
     void testConstructor_DbSchemaFileDoesNotExist_failsGracefully () {
         String total_db_name= pathToDatabase+"failingConstructor.db";
-        var writer = new SqliteManifestWriter("src/test/resources/there_is_noFileHere.sql",total_db_name);
-
-        return;
+        assertThrows(UnsupportedOperationException.class,
+                () -> new SqliteManifestWriter("src/test/resources/there_is_noFileHere.sql",total_db_name));
     }
 
     @Tag("File")

@@ -1,5 +1,6 @@
 package com.github.ciselab.lampion.transformations.transformers;
 
+import com.github.ciselab.lampion.program.App;
 import com.github.ciselab.lampion.transformations.Transformer;
 import spoon.reflect.declaration.CtElement;
 
@@ -18,7 +19,7 @@ public abstract class BaseTransformer implements Transformer {
     Set<Predicate<CtElement>> constraints = new HashSet<Predicate<CtElement>>();
 
     public BaseTransformer() {
-        this.random = new Random();
+        this.random = new Random(App.globalRandomSeed);
     }
 
     /**
@@ -47,6 +48,10 @@ public abstract class BaseTransformer implements Transformer {
     @Override
     public Set<Predicate<CtElement>> getRequirements() {
         return constraints;
+    }
+
+    public void setSeed(long seed){
+        this.random = new Random(seed);
     }
 
 }

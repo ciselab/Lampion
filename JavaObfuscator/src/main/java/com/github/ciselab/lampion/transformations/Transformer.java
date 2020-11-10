@@ -83,4 +83,13 @@ public interface Transformer {
      * @return A set of categories that match for this Transformation
      */
     Set<TransformationCategory> getCategories();
+
+    /**
+     * Re-Initializes the random machine of the Transformer, if there is any.
+     * For non-random transformers, this can be defaulted to doing nothing.
+     * All others should reset their `random`.
+     *
+     * @param seed used for setting the random machine.
+     */
+    void setSeed(long seed);
 }
