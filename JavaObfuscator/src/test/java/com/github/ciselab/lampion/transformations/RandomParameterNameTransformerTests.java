@@ -263,13 +263,13 @@ public class RandomParameterNameTransformerTests {
 
 
     static CtElement addOneExample(){
-        CtClass testObject = Launcher.parseClass("class A { int addOne(int a) { return a + 1 }");
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { int addOne(int a) { return a + 1 }");
 
         return testObject;
     }
 
     static CtElement sumExample(){
-        CtClass testObject = Launcher.parseClass("class A { int sum(int a, int b) { return a + b;} }");
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { int sum(int a, int b) { return a + b;} }");
 
         return testObject;
     }

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * This Transformer wraps the block of a (random) Method into an "if(true){...}"
@@ -148,7 +149,7 @@ public class IfTrueTransformer extends BaseTransformer {
     }
 
     /**
-     * Returns a random method of the ast.
+     * Returns a random (non-empty) method of the ast.
      * Check whether ast is empty is done earlier using constraints.
      *
      * @param ast the toplevel element from which to pick a random method
@@ -156,7 +157,13 @@ public class IfTrueTransformer extends BaseTransformer {
      */
     private CtMethod pickRandomMethod(CtElement ast) {
         // Check for all methods
-        List<CtMethod> allMethods = ast.filterChildren(c -> c instanceof CtMethod).list();
+        List<CtMethod> allMethods = ast
+                .filterChildren(c -> c instanceof CtMethod)
+                .list()
+                .stream()
+                .map(o -> (CtMethod) o)
+                .filter(c -> ! c.getBody().getStatements().isEmpty())
+                .collect(Collectors.toList());
         // Pick a number between 0 and count(methods)
         int randomValidIndex = random.nextInt(allMethods.size());
         // return the method at the position

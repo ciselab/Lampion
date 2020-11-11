@@ -14,10 +14,7 @@ import com.github.ciselab.lampion.manifest.ManifestWriter;
 import com.github.ciselab.lampion.manifest.SqliteManifestWriter;
 import com.github.ciselab.lampion.support.RandomNameFactory;
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
-import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
-import com.github.ciselab.lampion.transformations.transformers.LambdaIdentityTransformer;
-import com.github.ciselab.lampion.transformations.transformers.RandomInlineCommentTransformer;
-import com.github.ciselab.lampion.transformations.transformers.RandomParameterNameTransformer;
+import com.github.ciselab.lampion.transformations.transformers.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -213,6 +210,7 @@ public class App {
         //registry.registerTransformer(new LambdaIdentityTransformer(globalRandomSeed));
         registry.registerTransformer(new RandomInlineCommentTransformer(globalRandomSeed));
         registry.registerTransformer(new RandomParameterNameTransformer(globalRandomSeed));
+        registry.registerTransformer(new EmptyMethodTransformer(globalRandomSeed));
 
         return registry;
     }
