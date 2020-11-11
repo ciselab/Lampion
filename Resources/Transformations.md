@@ -31,6 +31,7 @@ public void some (String text) {
 
 If the method has a return statement, to produce valid code it is necessary to have a return statement in the other path. 
 Yes, this is trivial and likely your IDE will detect / change / warn about this, but some compilers will be harsh on you.
+Another issue is, that *primitive datatypes* cannot return null, so "int" returning methods return 0, while "char" returning methods return `Char.empty()`. Every object-returning method returns `null`.
 
 ```Java
 // before
@@ -42,7 +43,7 @@ public int sum(int a, int b) {
     if (true) {
         return a + b;
     } else {
-        return null;
+        return 0;
     }
 }
 ```

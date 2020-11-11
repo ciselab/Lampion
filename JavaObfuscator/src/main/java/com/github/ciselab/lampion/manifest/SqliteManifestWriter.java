@@ -279,7 +279,11 @@ public class SqliteManifestWriter implements ManifestWriter {
         for (CtElement elem : elementWithPosition) {
             // Initialize variables empty
             String className,fullClassName,file,methodName,fullMethodName;
-            file = elem.getPosition().getFile().getAbsolutePath();
+            if (elem.getPosition() != null && elem.getPosition().getFile() != null) {
+                file = elem.getPosition().getFile().getAbsolutePath();
+            } else {
+                file = "UNKNOWN";
+            }
             // Set the names according to their respective element
             if (elem instanceof CtClass) {
                 // Check for classes - they have no method names
@@ -397,8 +401,7 @@ public class SqliteManifestWriter implements ManifestWriter {
 
 
             return elemFullClassName.equalsIgnoreCase(fullClassName)
-                    && elemFullMethodName.equalsIgnoreCase(fullMethodName)
-                    && elem.getPosition().getFile().getAbsolutePath().equalsIgnoreCase(file);
+                    && elemFullMethodName.equalsIgnoreCase(fullMethodName);
         } else {
             // This is the case for everything below method
             // Get the method in which the transformation happened
@@ -409,8 +412,7 @@ public class SqliteManifestWriter implements ManifestWriter {
             String elemFullClassName = methodParent.getQualifiedName();
 
             return elemFullClassName.equalsIgnoreCase(fullClassName)
-                    && elemFullMethodName.equalsIgnoreCase(fullMethodName)
-                    && elem.getPosition().getFile().getAbsolutePath().equalsIgnoreCase(file);
+                    && elemFullMethodName.equalsIgnoreCase(fullMethodName);
         }
     }
 
