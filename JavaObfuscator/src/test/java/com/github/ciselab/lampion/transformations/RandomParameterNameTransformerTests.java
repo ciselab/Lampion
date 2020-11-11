@@ -25,7 +25,7 @@ public class RandomParameterNameTransformerTests {
 
     @RepeatedTest(10)
     void applyToClassWithTwoMethods_onlyOneIsAltered(){
-        CtClass ast = Launcher.parseClass("class A { " +
+        CtClass ast = Launcher.parseClass("package lampion.test; class A { " +
                 "int sum(int a, int b) { return a + b;} " +
                 "int sam(int a, int b) { return a + b;}" +
                 "}");
@@ -111,7 +111,7 @@ public class RandomParameterNameTransformerTests {
 
     @RepeatedTest(3)
     void applyFiveTimesToClassWithTwoMethods_returnsEmptyTransformationResult_AndAltersAllItems(){
-        CtClass ast = Launcher.parseClass("class A { " +
+        CtClass ast = Launcher.parseClass("package lampion.test; class A { " +
                 "int sum(int a, int b) { return a + b;} " +
                 "int sam(int a, int b) { return a + b;}" +
                 "}");
@@ -143,7 +143,7 @@ public class RandomParameterNameTransformerTests {
     @Test
     void applyTwentyTimesToAMethod_methodShouldNotLooseParameters(){
         // There was an issue with renaming variables too often, that it is not applied
-        CtClass ast = Launcher.parseClass("class A { " +
+        CtClass ast = Launcher.parseClass("package lampion.test; class A { " +
                 "int sum(int a, int b) { return a + b;} " +
                 "}");
 
@@ -169,7 +169,7 @@ public class RandomParameterNameTransformerTests {
 
     @Test
     void applyToMethodWithoutParameters_returnsEmptyTransformationResult(){
-        CtClass ast = Launcher.parseClass("class A { " +
+        CtClass ast = Launcher.parseClass("package lampion.test; class A { " +
                 "int noParams() { return 1;} " +
                 "}");
 

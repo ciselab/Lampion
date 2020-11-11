@@ -108,6 +108,8 @@ public class EmptyMethodTransformer extends BaseTransformer {
 
         containingClass.addMethod(emptyMethod);
 
+        containingClass.compileAndReplaceSnippets();
+
         int statementsInInitialMethod = methodToAlter.getBody().getStatements().size();
         int invocationIndex = random.nextInt(statementsInInitialMethod);
         methodToAlter.getBody().addStatement(invocationIndex,
