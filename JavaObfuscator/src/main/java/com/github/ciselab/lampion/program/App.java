@@ -12,6 +12,7 @@ import java.util.Properties;
 
 import com.github.ciselab.lampion.manifest.ManifestWriter;
 import com.github.ciselab.lampion.manifest.SqliteManifestWriter;
+import com.github.ciselab.lampion.support.RandomNameFactory;
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
 import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
 import com.github.ciselab.lampion.transformations.transformers.LambdaIdentityTransformer;
@@ -186,6 +187,7 @@ public class App {
         }
 
         engine.setRandomSeed(seed);
+        RandomNameFactory.setSeed(seed);
         for(var t: registry.getRegisteredTransformers()){
             t.setSeed(seed);
         }

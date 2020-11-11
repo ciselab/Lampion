@@ -24,7 +24,7 @@ import java.util.function.Predicate;
  * To be compilable, casts and fully qualified imports were necessary.
  * Hence, the after looks like:
      * int addOne(int a) {
-     *  return a + ((int) (((java.util.function.Supplier<?>) (() -> 1)).get()));
+     *  return a + ((int) (((java.util.function.Supplier<\?>) (() -> 1)).get()));
      * }
  *
  * In general, this Transformer will require java to be of at least version 8 and will break older projects,

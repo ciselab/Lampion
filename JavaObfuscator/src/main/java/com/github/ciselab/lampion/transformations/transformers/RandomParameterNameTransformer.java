@@ -1,6 +1,6 @@
 package com.github.ciselab.lampion.transformations.transformers;
 
-import com.github.ciselab.lampion.program.App;
+import com.github.ciselab.lampion.support.RandomNameFactory;
 import com.github.ciselab.lampion.transformations.*;
 import spoon.refactoring.CtRenameGenericVariableRefactoring;
 import spoon.reflect.declaration.CtElement;
@@ -89,7 +89,7 @@ public class RandomParameterNameTransformer extends BaseTransformer {
 
         CtRenameGenericVariableRefactoring refac = new CtRenameGenericVariableRefactoring();
         refac.setTarget(varToAlter);
-        refac.setNewName(getRandomString());
+        refac.setNewName(RandomNameFactory.getRandomString());
         refac.refactor();
 
         // Add the altered variable to the toplevel map to keep track that it was altered in constraints
@@ -194,23 +194,6 @@ public class RandomParameterNameTransformer extends BaseTransformer {
         categories.add(TransformationCategory.NLP);
 
         return categories;
-    }
-
-    /**
-     * Shamelessly copied from https://www.baeldung.com/java-random-string
-     * @return a random, alphabetic string that contains no numbers
-     */
-    private String getRandomString(){
-        int leftLimit = 97; // letter 'a'
-        int rightLimit = 122; // letter 'z'
-        int targetStringLength = 12;
-
-        String generatedString = random.ints(leftLimit, rightLimit + 1)
-                .limit(targetStringLength)
-                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                .toString();
-
-        return generatedString;
     }
 
     /**

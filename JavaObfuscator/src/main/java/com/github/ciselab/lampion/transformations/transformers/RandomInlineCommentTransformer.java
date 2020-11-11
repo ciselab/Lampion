@@ -1,6 +1,7 @@
 package com.github.ciselab.lampion.transformations.transformers;
 
 import com.github.ciselab.lampion.program.App;
+import com.github.ciselab.lampion.support.RandomNameFactory;
 import com.github.ciselab.lampion.transformations.*;
 import spoon.refactoring.CtRenameGenericVariableRefactoring;
 import spoon.reflect.code.CtStatement;
@@ -78,7 +79,7 @@ public class RandomInlineCommentTransformer extends BaseTransformer {
      */
     private void applyRandomParameterNameTransformation(CtMethod toAlter) {
         Factory factory  = toAlter.getFactory();
-        var comment =  factory.createInlineComment(getRandomComment());
+        var comment =  factory.createInlineComment(RandomNameFactory.getRandomComment());
 
         var existingStatements = toAlter.getBody().getStatements().size();
 
@@ -101,7 +102,7 @@ public class RandomInlineCommentTransformer extends BaseTransformer {
     private Optional<CtMethod> pickRandomMethod(CtElement ast) {
         // Get all Methods with Parameters
         List<CtMethod> allMethods = ast.filterChildren(
-                c -> c instanceof CtMethod                                  // the child is a method
+                c -> c instanceof CtMethod // the child is a method
         ).list();
 
         if(allMethods.isEmpty()){
@@ -141,34 +142,6 @@ public class RandomInlineCommentTransformer extends BaseTransformer {
         categories.add(TransformationCategory.NLP);
 
         return categories;
-    }
-
-    private String getRandomComment(){
-        // To look a bit more human, there will be spaces added between random strings
-        int numberofwords = 1 + random.nextInt(4);
-        return IntStream.range(0,numberofwords)
-                .mapToObj( t -> getRandomString())
-                .map(t -> (String) t)
-                .collect(Collectors.joining(" "));
-    }
-
-    /**
-     * Shamelessly copied from https://www.baeldung.com/java-random-string
-     * @return a random, alphabetic string that contains no numbers
-     */
-    private String getRandomString(){
-        int leftLimit = 48; // numeral '0'
-        int rightLimit = 122; // letter 'z'
-        int targetStringLength = random.nextInt(7)+3;
-        //TODO: Add spaces? Are there Spaces?
-
-        String generatedString = random.ints(leftLimit, rightLimit + 1)
-                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
-                .limit(targetStringLength)
-                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                .toString();
-
-        return generatedString;
     }
 
     /**
