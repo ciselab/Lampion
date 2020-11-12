@@ -23,7 +23,7 @@ public class RandomParameterNameTransformerTests {
      * string.contains("int a") is still true.
      */
 
-    @RepeatedTest(10)
+    @RepeatedTest(5)
     void applyToClassWithTwoMethods_onlyOneIsAltered(){
         CtClass ast = Launcher.parseClass("package lampion.test; class A { " +
                 "int sum(int a, int b) { return a + b;} " +
@@ -54,7 +54,7 @@ public class RandomParameterNameTransformerTests {
         assertTrue(methodAAltered ^ methodBAltered);
     }
 
-    @RepeatedTest(20)
+    @RepeatedTest(5)
     void applyToMethodWithTwoParameters_onlyOneIsAltered(){
         CtElement ast = sumExample();
 
@@ -94,6 +94,26 @@ public class RandomParameterNameTransformerTests {
 
         // The operator "^" is the XOR operator
         assertTrue(aAltered && bAltered);
+    }
+
+
+    @Test
+    void applyToMethodWithMainMethod_returnsEmptyTransformationResult(){
+        //This test checks that the main method is kept untouched
+        CtElement ast = Launcher.parseClass("" +
+                "package lampion.test.examples; class A {" +
+                "public void main(String[] args){" +
+                "System.out.println(\"Hello World!\");" +
+                "}" +
+                "}" +
+                "");
+
+        RandomParameterNameTransformer transformer = new RandomParameterNameTransformer();
+
+        transformer.applyAtRandom(ast);
+        var result = transformer.applyAtRandom(ast);
+
+        assertEquals(new EmptyTransformationResult(),result);
     }
 
 

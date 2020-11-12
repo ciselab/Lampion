@@ -153,7 +153,14 @@ public class RandomParameterNameTransformer extends BaseTransformer {
          * Because the removal removed them from the actual parameters.
          * There are some regression-tests in place now.
          */
-        List<CtVariable> allParams = (List<CtVariable>) method.getParameters().stream().collect(Collectors.toList());
+        List<CtVariable> allParams = (List<CtVariable>) method
+                .getParameters()
+                .stream()
+                .map(p -> (CtVariable) p)
+                // This is a short check to not alter the main(String[] args)
+                // While it should be ok to change it, rather not touch that hot potato
+                .filter(p -> ! ((CtVariable<?>) p).getSimpleName().equalsIgnoreCase("args"))
+                .collect(Collectors.toList());
 
         // If there are already altered parameternames for this method,
         // remove all altered parameters from the pool of possible chosen element
