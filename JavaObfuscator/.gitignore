@@ -1,5 +1,6 @@
 .idea
 *iml
+dependency-reduced-pom.xml
 spooned
 target
 src/test/resources/engine_spooned_exploration/

@@ -205,6 +205,7 @@ public class App {
         TransformerRegistry registry = new TransformerRegistry("default");
 
         registry.registerTransformer(new IfTrueTransformer(globalRandomSeed));
+        registry.registerTransformer(new IfFalseElseTransformer(globalRandomSeed));
 
         registry.registerTransformer(new LambdaIdentityTransformer(globalRandomSeed));
         // There are many issues with this one ...
