@@ -18,4 +18,4 @@ jobs:
       with:
         java-version: 15
     - name: Build Java Obfuscator
-      run: mvn package verify --file JavaObfuscator/pom.xml
+      run: mvn package verify --file JavaObfuscator/pom.xml -Pnofiles
