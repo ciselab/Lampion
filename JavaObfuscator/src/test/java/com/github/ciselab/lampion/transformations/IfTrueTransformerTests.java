@@ -1,5 +1,6 @@
 package com.github.ciselab.lampion.transformations;
 
+import com.github.ciselab.lampion.transformations.transformers.IfFalseElseTransformer;
 import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
@@ -40,6 +41,21 @@ public class IfTrueTransformerTests {
         assertFalse(ast.toString().contains("return null;"));
     }
 
+    @Tag("Regression")
+    @Test
+    void applyInMethod_ShouldHaveClassParent(){
+        // This appeared after adding either the Lambda Transformer or IfFalseElse Transformer
+        // There was an issue that there was no parent method element which (can) be true for lambdas
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { double sum(double a, double b) { return a + b;} }");
+
+        IfTrueTransformer transformer = new IfTrueTransformer();
+
+        var result = transformer.applyAtRandom(testObject);
+
+        var classParent = result.getTransformedElement().getParent(u -> u instanceof CtClass);
+
+        assertNotNull(classParent);
+    }
 
     @Tag("Regression")
     @Test

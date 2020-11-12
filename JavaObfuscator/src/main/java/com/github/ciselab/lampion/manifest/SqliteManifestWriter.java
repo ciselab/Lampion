@@ -269,6 +269,7 @@ public class SqliteManifestWriter implements ManifestWriter {
      * TODO: Batch Writing here, if it's slow
      */
     private void writePositions(Connection con, Collection<CtElement> elementWithPosition) throws SQLException {
+        //TODO: Regression Issue with Looking for parentMethod while the altered element is the method itself
         final String INSERT_POSITION_SQL = "INSERT OR IGNORE INTO positions " +
                 "(simple_class_name,fully_qualified_class_name,file_name,method_name,full_method_name) " +
                 "VALUES (?,?,?,?,?);";
@@ -278,11 +279,13 @@ public class SqliteManifestWriter implements ManifestWriter {
         // For every element, get the items as precise as possible
         for (CtElement elem : elementWithPosition) {
             // Initialize variables empty
-            String className,fullClassName,file,methodName,fullMethodName;
+            String className = "UNKNOWN";
+            String fullClassName= "UNKNOWN";
+            String file= "UNKNOWN";
+            String methodName= "UNKNOWN";
+            String fullMethodName = "UNKNOWN";
             if (elem.getPosition() != null && elem.getPosition().getFile() != null) {
                 file = elem.getPosition().getFile().getAbsolutePath();
-            } else {
-                file = "UNKNOWN";
             }
             // Set the names according to their respective element
             if (elem instanceof CtClass) {
@@ -305,13 +308,17 @@ public class SqliteManifestWriter implements ManifestWriter {
             } else {
                 // This is the case for everything below method
                 // Get the method in which the transformation happened
-                CtMethod methodChanged = elem.getParent(p -> p instanceof CtMethod);
-                methodName = methodChanged.getSimpleName();
-                fullMethodName = methodChanged.getSignature();
+                CtMethod parentMethod = elem.getParent(p -> p instanceof CtMethod);
+                if (parentMethod != null) {
+                    methodName = parentMethod.getSimpleName();
+                    fullMethodName = parentMethod.getSignature();
+                }
                 // Get the class in which the transformation happened
-                CtClass methodParent = methodChanged.getParent(u -> u instanceof CtClass);
-                className = methodParent.getSimpleName();
-                fullClassName = methodParent.getQualifiedName();
+                CtClass parentClass = elem.getParent(u -> u instanceof CtClass);
+                if(parentClass != null) {
+                    className = parentClass.getSimpleName();
+                    fullClassName = parentClass.getQualifiedName();
+                }
             }
 
             insertPositionStmt.setString(1,className);
@@ -385,6 +392,7 @@ public class SqliteManifestWriter implements ManifestWriter {
      * @return
      */
     private boolean similarPosition(CtElement elem, String fullClassName, String fullMethodName, String file) {
+        //TODO: Regression Issue with Looking for parentMethod while the altered element is the method itself
 
         if (elem instanceof CtClass) {
             // Check for classes - they have no method names
@@ -405,11 +413,11 @@ public class SqliteManifestWriter implements ManifestWriter {
         } else {
             // This is the case for everything below method
             // Get the method in which the transformation happened
-            CtMethod methodChanged = elem.getParent(p -> p instanceof CtMethod);
-            String elemFullMethodName = methodChanged.getSignature();
+            CtMethod parentMethod = elem.getParent(p -> p instanceof CtMethod);
+            String elemFullMethodName = parentMethod != null ? parentMethod.getSignature() : "UNKNOWN";
             // Get the class in which the transformation happened
-            CtClass methodParent = methodChanged.getParent(u -> u instanceof CtClass);
-            String elemFullClassName = methodParent.getQualifiedName();
+            CtClass parentClass = elem.getParent(u -> u instanceof CtClass);
+            String elemFullClassName = parentClass != null ? parentClass.getQualifiedName() : "UNKNOWN";
 
             return elemFullClassName.equalsIgnoreCase(fullClassName)
                     && elemFullMethodName.equalsIgnoreCase(fullMethodName);

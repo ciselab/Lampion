@@ -134,12 +134,12 @@ public class App {
         Engine.TransformationScope transformationScope = Engine.TransformationScope.global;
         long transformations = 100;
         if(properties.get("transformationscope") != null){
-            Engine.TransformationScope.valueOf(properties.getProperty("transformationscope"));
+            transformationScope = Engine.TransformationScope.valueOf(properties.getProperty("transformationscope"));
         } else {
             logger.warn("There was no TransformationScope specified in the configuration - defaulting to global scope.");
         }
         if(properties.get("transformations") != null) {
-
+            transformations = Long.parseLong((String)properties.get("transformations"));
         } else {
             logger.warn("There was no number of transformations specified in configuration - defaulting to " + transformations);
         }

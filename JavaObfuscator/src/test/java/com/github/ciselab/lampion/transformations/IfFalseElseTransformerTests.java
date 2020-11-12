@@ -1,6 +1,7 @@
 package com.github.ciselab.lampion.transformations;
 
 import com.github.ciselab.lampion.transformations.transformers.IfFalseElseTransformer;
+import com.github.ciselab.lampion.transformations.transformers.LambdaIdentityTransformer;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -69,6 +70,40 @@ public class IfFalseElseTransformerTests {
         assertTrue(testObject.toString().contains("if (false)"));
         assertTrue(testObject.toString().contains("return 0.0;"));
         assertFalse(testObject.toString().contains("return null;"));
+    }
+
+    @Tag("Regression")
+    @Test
+    void applyInMethod_ShouldHaveClassParent(){
+        // This appeared after adding either the Lambda Transformer or IfFalseElse Transformer
+        // There was an issue that there was no parent method element which (can) be true for lambdas
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { double sum(double a, double b) { return a + b;} }");
+
+        IfFalseElseTransformer transformer = new IfFalseElseTransformer();
+
+        var result = transformer.applyAtRandom(testObject);
+
+        var classParent = result.getTransformedElement().getParent(u -> u instanceof CtClass);
+
+        assertNotNull(classParent);
+    }
+
+    @Tag("Regression")
+    @Test
+    void applyInMethod_changedElementShouldBeMethod_andHaveSimpleName(){
+        // This appeared after adding either the Lambda Transformer or IfFalseElse Transformer
+        // There was an issue that there was no parent method element which (can) be true for lambdas
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { double sum(double a, double b) { return a + b;} }");
+
+        IfFalseElseTransformer transformer = new IfFalseElseTransformer();
+
+        var result = transformer.applyAtRandom(testObject);
+
+        var elem = result.getTransformedElement();
+
+        assertTrue(elem instanceof CtMethod);
+
+        assertNotNull(((CtMethod<?>) elem).getSimpleName());
     }
 
     @Tag("Regression")

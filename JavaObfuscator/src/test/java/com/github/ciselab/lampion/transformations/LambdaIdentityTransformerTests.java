@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import spoon.Launcher;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtPackage;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -98,6 +99,46 @@ public class LambdaIdentityTransformerTests {
         LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
 
         assertTrue(transformer.isExclusiveWith().isEmpty());
+    }
+
+    @Tag("Regression")
+    @Test
+    void applyOnGlobalVariable_ShouldNotHaveMethodParent_ShouldHaveClassParent(){
+        // This appeared after adding either the Lambda Transformer or IfFalseElse Transformer
+        // There was an issue that there was no parent method element which (can) be true for lambdas
+
+        CtElement ast = Launcher.parseClass("package lampion.test.examples; class A {" +
+                "int a = 2;" +
+                "}");
+
+        LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
+
+        TransformationResult result = transformer.applyAtRandom(ast);
+
+        var methodParent = result.getTransformedElement().getParent(u -> u instanceof CtMethod);
+        var classParent = result.getTransformedElement().getParent(u -> u instanceof CtClass);
+
+        assertNull(methodParent);
+        assertNotNull(classParent);
+    }
+
+    @Tag("Regression")
+    @Test
+    void applyInMethod_ShouldHaveMethodParent_ShouldHaveClassParent(){
+        // This appeared after adding either the Lambda Transformer or IfFalseElse Transformer
+        // There was an issue that there was no parent method element which (can) be true for lambdas
+
+        CtElement ast = addOneExample();
+
+        LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
+
+        TransformationResult result = transformer.applyAtRandom(ast);
+
+        var methodParent = result.getTransformedElement().getParent(u -> u instanceof CtMethod);
+        var classParent = result.getTransformedElement().getParent(u -> u instanceof CtClass);
+
+        assertNotNull(methodParent);
+        assertNotNull(classParent);
     }
 
     @Test
