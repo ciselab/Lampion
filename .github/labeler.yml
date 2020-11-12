@@ -9,7 +9,7 @@ Documentation:
 - ./**/*.md
 
 Database:
-- database/*
+- ManifestSchema/*
 
 Docker:
 - ./**/Dockerfile
