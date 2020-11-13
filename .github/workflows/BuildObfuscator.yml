@@ -32,8 +32,8 @@ jobs:
         - uses: whoan/docker-build-with-cache-action@v1
           name: Build Java Obfuscator in Docker
           with:
-            username: ${{ secrets.DOCKER_GITHUB_USERNAME }}
-            password: ${{ secrets.DOCKER_GITHUB_TOKEN }}
+            username: Twonki
+            password: "${{ secrets.GITHUB_TOKEN }}"
             image_name: lampion/java-obfuscator
             image_tag: latest
             registry: docker.pkg.github.com
