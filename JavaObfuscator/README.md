@@ -33,7 +33,7 @@ If you just want to look at existing Transformations and how they work, see [Tra
 
 If you want to add Transformations, have a look at 
 
-1. The Transformation Interface
+1. The Transformer Interface
 2. The Spoon Exploration Tests
 3. Express what you want to do in a Spoon Test
 4. Write your own Transformation in such a exploration test

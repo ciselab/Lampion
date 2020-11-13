@@ -6,10 +6,7 @@ import com.github.ciselab.lampion.transformations.TransformationResult;
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
 import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
 import com.github.ciselab.lampion.transformations.transformers.RandomInlineCommentTransformer;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -43,9 +40,18 @@ public class SQLiteManifestWriterTests {
     @BeforeAll
     @AfterAll
     private static void folder_cleanup(){
-        for(File file: Paths.get(pathToDatabase).toFile().listFiles())
-            if (!file.isDirectory())
-                file.delete();
+        if(Paths.get(pathToDatabase) != null && Paths.get(pathToDatabase).toFile() != null)
+            if(Paths.get(pathToDatabase).toFile().listFiles() != null)
+                for(File file: Paths.get(pathToDatabase).toFile().listFiles())
+                    if (!file.isDirectory())
+                        file.delete();
+    }
+
+    @BeforeEach
+    private void createTestOutputFolderIfNotExists() throws IOException {
+        if(!Files.exists(Paths.get(pathToDatabase))){
+            Files.createDirectory(Paths.get(pathToDatabase));
+        }
     }
 
     @Tag("System")
@@ -57,7 +63,7 @@ public class SQLiteManifestWriterTests {
         // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
-        ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
+        SqliteManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
 
         // DB should be created with no issues thrown
         assertTrue(Files.exists(Path.of(total_db_name)));
@@ -74,7 +80,7 @@ public class SQLiteManifestWriterTests {
         // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
-        ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
+        SqliteManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
 
         Connection con = DriverManager.getConnection("jdbc:sqlite:"+total_db_name);
 
@@ -90,7 +96,7 @@ public class SQLiteManifestWriterTests {
     @Tag("System")
     @Test
     void createManifestWriter_AllElementsAreValid_WithInMemoryDB_shouldNotThrowError() {
-        ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,":memory:");
+        SqliteManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,":memory:");
     }
 
     @Tag("System")
@@ -101,7 +107,7 @@ public class SQLiteManifestWriterTests {
         // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
-        ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
+        SqliteManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
         var pseudo_results = sampleResults;
         writer.writeManifest(pseudo_results);
 
@@ -124,7 +130,7 @@ public class SQLiteManifestWriterTests {
         // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
-        ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
+        SqliteManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
         var pseudo_results = sampleResults;
         writer.writeManifest(pseudo_results);
 
@@ -152,7 +158,7 @@ public class SQLiteManifestWriterTests {
         // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
-        ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
+        SqliteManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
         var pseudo_results = fakeResultsUsingEngine(5);
         writer.writeManifest(pseudo_results);
 
@@ -200,7 +206,7 @@ public class SQLiteManifestWriterTests {
         // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
-        ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
+        SqliteManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
         var pseudo_results = sampleResults;
         writer.writeManifest(pseudo_results);
 
@@ -227,7 +233,7 @@ public class SQLiteManifestWriterTests {
         // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
-        ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
+        SqliteManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
         var pseudo_results = sampleResults.stream().collect(Collectors.toList());
         pseudo_results.add(new EmptyTransformationResult());
         pseudo_results.add(new EmptyTransformationResult());
@@ -256,7 +262,7 @@ public class SQLiteManifestWriterTests {
         // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
-        ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
+        SqliteManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
         var pseudo_results = sampleResults;
         writer.writeManifest(pseudo_results);
 
@@ -280,7 +286,7 @@ public class SQLiteManifestWriterTests {
         // Check if there was a proper cleanup
         assertFalse(Files.exists(Path.of(total_db_name)));
 
-        ManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
+        SqliteManifestWriter writer = new SqliteManifestWriter(pathToDBSchema,total_db_name);
         var pseudo_results = new ArrayList<TransformationResult>();
         writer.writeManifest(pseudo_results);
 
