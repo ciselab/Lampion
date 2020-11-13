@@ -29,7 +29,7 @@ The exploration-test profile will **only** run Tests tagged as `@Tag("Exploratio
 To build with Docker: 
 
 ```sh
-docker build . -t lampion/javaobfuscator:latest
+docker build . -t lampion/java-obfuscator:latest
 ```
 
 To run with Docker:
