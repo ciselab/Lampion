@@ -25,6 +25,19 @@ mvn clean test -pExploration
 ```
 The exploration-test profile will **only** run Tests tagged as `@Tag("Exploration")`.
 
+
+To build with Docker: 
+
+```sh
+docker build . -t lampion/javaobfuscator:latest
+```
+
+To run with Docker:
+
+```md
+To be done, but you need a lot of mountings, so it`s best to provide a docker compose
+```
+
 ## How to get started
 
 It's highly recommended to start your reading on project level scope, e.g. the [projects README](../README.md) and the Skim over Objects of interests in the [Design Notes](../Resources/DesignNotes.md).
@@ -50,3 +63,5 @@ If you want to alter something in terms of program flow or IO behaviour, the bes
 ## Troubleshooting 
 
 *When running the SQL-Lite parts from IDE, it tells me there is no valid SQLite Driver*: This is due to a missing classpath-entry for the SQLite driver. The concrete solution is linked in the SQLiteTests.java. 
+
+*Some of the tests fail and tell me that files do not exist*: depending on your OS, the files are case-sensitive. I tried to avoid it, but you can check if all the expected folders are there, if you can find an issue with the naming of files, but you can also run `mvn test -Pnofiles` - however, this will run less tests. 

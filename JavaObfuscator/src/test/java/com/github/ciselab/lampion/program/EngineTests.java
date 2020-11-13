@@ -6,10 +6,7 @@ import com.github.ciselab.lampion.transformations.TransformerRegistry;
 import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
 import com.github.ciselab.lampion.transformations.transformers.RandomInlineCommentTransformer;
 import com.github.ciselab.lampion.transformations.transformers.RandomParameterNameTransformer;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +23,8 @@ public class EngineTests {
 
     private static String pathToTestFileFolder = "./src/test/resources/javafiles";
     private static String outputTestFolder = "./src/test/resources/engine_spooned/";
-    private static String expectedJavaFile = "lampion/test/examples/example.java";
+    // Note: The file matching is case sensitive on some systems, be careful!
+    private static String expectedJavaFile = "./lampion/test/examples/Example.java";
 
     @BeforeAll
     @AfterAll
@@ -36,6 +34,13 @@ public class EngineTests {
                     .sorted(Comparator.reverseOrder())
                     .map(Path::toFile)
                     .forEach(File::delete);
+        }
+    }
+
+    @BeforeEach
+    private void createOutputFolderIfNotExists() throws IOException {
+        if(!Files.exists(Paths.get(outputTestFolder))){
+            Files.createDirectory(Paths.get(outputTestFolder));
         }
     }
 
