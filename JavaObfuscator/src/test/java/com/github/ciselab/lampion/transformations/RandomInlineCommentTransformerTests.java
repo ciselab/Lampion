@@ -108,6 +108,19 @@ public class RandomInlineCommentTransformerTests {
         assertTrue(result.getBeforeAfterComparison().isPresent());
     }
 
+    @Test
+    void applyWithFullRandom_shouldGiveNonEmptyResult(){
+        CtElement ast = sumExample();
+
+        RandomInlineCommentTransformer transformer = new RandomInlineCommentTransformer();
+
+        transformer.setFullRandomStrings(true);
+
+        TransformationResult result = transformer.applyAtRandom(ast);
+
+        assertNotEquals(new EmptyTransformationResult(),result);
+    }
+
 
     static CtElement addOneExample(){
         CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { int addOne(int a) { return a + 1 }");

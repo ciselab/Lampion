@@ -1,5 +1,6 @@
 package com.github.ciselab.lampion.transformations;
 
+import com.github.ciselab.lampion.transformations.transformers.RandomInlineCommentTransformer;
 import com.github.ciselab.lampion.transformations.transformers.RandomParameterNameTransformer;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
@@ -185,6 +186,19 @@ public class RandomParameterNameTransformerTests {
 
         }
         assertEquals(2,sumMethod.getParameters().size());
+    }
+
+    @Test
+    void applyWithFullRandom_shouldGiveNonEmptyResult(){
+        CtElement ast = sumExample();
+
+        RandomParameterNameTransformer transformer = new RandomParameterNameTransformer();
+
+        transformer.setFullRandomStrings(true);
+
+        TransformationResult result = transformer.applyAtRandom(ast);
+
+        assertNotEquals(new EmptyTransformationResult(),result);
     }
 
     @Test

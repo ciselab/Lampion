@@ -1,6 +1,7 @@
 package com.github.ciselab.lampion.transformations;
 
 import com.github.ciselab.lampion.transformations.transformers.EmptyMethodTransformer;
+import com.github.ciselab.lampion.transformations.transformers.RandomParameterNameTransformer;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -74,6 +75,20 @@ public class EmptyMethodTransformerTests {
                         .count();
         assertEquals(10,emptyMethods);
     }
+
+    @Test
+    void applyWithFullRandom_shouldGiveNonEmptyResult(){
+        CtElement ast = sumExample();
+
+        EmptyMethodTransformer transformer = new EmptyMethodTransformer();
+
+        transformer.setFullRandomStrings(true);
+
+        TransformationResult result = transformer.applyAtRandom(ast);
+
+        assertNotEquals(new EmptyTransformationResult(),result);
+    }
+
 
     @Tag("Regression")
     @RepeatedTest(3)

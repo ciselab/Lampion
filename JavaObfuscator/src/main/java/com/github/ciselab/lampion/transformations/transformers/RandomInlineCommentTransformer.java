@@ -23,6 +23,9 @@ public class RandomInlineCommentTransformer extends BaseTransformer {
 
     private static final String name = "RandomInlineComment";
 
+    // Whether this Transformer will produce pseudo-random names or full character-soup
+    private boolean fullRandomStrings = false;
+
     public RandomInlineCommentTransformer(){
         super();
         setConstraints();
@@ -80,7 +83,8 @@ public class RandomInlineCommentTransformer extends BaseTransformer {
      */
     private void applyRandomParameterNameTransformation(CtMethod toAlter) {
         Factory factory  = toAlter.getFactory();
-        var comment =  factory.createInlineComment(RandomNameFactory.getRandomComment(random));
+        var comment = factory.createInlineComment(
+                fullRandomStrings ? RandomNameFactory.getRandomComment(random) : RandomNameFactory.getAnimalComment(3,random));
 
         var existingStatements = toAlter.getBody().getStatements().size();
 
@@ -152,6 +156,20 @@ public class RandomInlineCommentTransformer extends BaseTransformer {
         categories.add(TransformationCategory.NLP);
 
         return categories;
+    }
+
+    /**
+     * Sets the value of being full random or semi random.
+     * If set to true, you get full random strings such as zhüojqyjjke
+     * If set to false, you get pseudo random string such as getSlyElefantLawyer
+     * @param value whether to use pseudo random strings (false) or full random strings (true)
+     */
+    public void setFullRandomStrings(boolean value){
+        this.fullRandomStrings=value;
+    }
+
+    public boolean isFullRandomStrings(){
+        return fullRandomStrings;
     }
 
     /**

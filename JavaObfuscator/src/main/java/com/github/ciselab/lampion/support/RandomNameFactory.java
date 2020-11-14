@@ -39,6 +39,20 @@ public abstract class RandomNameFactory {
     }
 
     /**
+     * Creates a String with random camelcased animal words separated by spaces.
+     * @param words number of random animal in the string
+     * @return a string consisting of "words" random words, separated by strings. Does not contain numbers.
+     */
+    public static String getAnimalComment(int words,Random random){
+        // To look a bit more human, there will be spaces added between random strings
+        return IntStream.range(0,words)
+                .mapToObj( t -> getCamelcasedAnimalString(random))
+                .collect(Collectors.joining(" "));
+    }
+
+
+
+    /**
      * @return a random, alphabetic string of length 3 to 10 that contains no numbers and no blanks
      */
     public static String getRandomString(Random random){

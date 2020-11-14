@@ -9,6 +9,7 @@ import spoon.reflect.declaration.ModifierKind;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -22,6 +23,9 @@ public class EmptyMethodTransformer extends BaseTransformer {
 
     // This List holds all by this Transformer created methods, and is used to not pick (artificial) methods created by this
     private List<CtMethod> createdMethods = new ArrayList<>();
+
+    // Whether this Transformer will produce pseudo-random names or full character-soup
+    private boolean fullRandomStrings = false;
 
     public EmptyMethodTransformer(){
         super();
@@ -82,7 +86,10 @@ public class EmptyMethodTransformer extends BaseTransformer {
     private void applyEmptyMethodTransformer(CtMethod methodToAlter){
         CtClass containingClass = methodToAlter.getParent(p -> p instanceof CtClass);
 
-        String methodName = RandomNameFactory.getRandomString(random);
+        Supplier<String> stringSupplier =
+                fullRandomStrings ?
+                () -> RandomNameFactory.getRandomString(random) :  () -> RandomNameFactory.getCamelcasedAnimalString(true,random);
+        String methodName = stringSupplier.get();
         //Short check, redo if there is already such a method
         String finalMethodName = methodName;
         while(containingClass.getMethods().stream()
@@ -90,7 +97,7 @@ public class EmptyMethodTransformer extends BaseTransformer {
                 .map(c -> (CtMethod) c)
                 .anyMatch(m -> ((CtMethod<?>) m).getSimpleName().equalsIgnoreCase(finalMethodName)))
         {
-            methodName = RandomNameFactory.getRandomString(random);
+            methodName = stringSupplier.get();
         }
 
         CtMethod emptyMethod = containingClass.getFactory().createMethod();
@@ -178,6 +185,19 @@ public class EmptyMethodTransformer extends BaseTransformer {
         return Optional.of(allMethods.get(randomValidIndex));
     }
 
+    /**
+     * Sets the value of being full random or semi random.
+     * If set to true, you get full random strings such as zhüojqyjjke
+     * If set to false, you get pseudo random string such as getSlyElefantLawyer
+     * @param value whether to use pseudo random strings (false) or full random strings (true)
+     */
+    public void setFullRandomStrings(boolean value){
+        this.fullRandomStrings=value;
+    }
+
+    public boolean isFullRandomStrings(){
+        return fullRandomStrings;
+    }
 
     private void setConstraints(){
         Predicate<CtElement> hasMethods = c -> {

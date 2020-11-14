@@ -20,6 +20,9 @@ public class RandomParameterNameTransformer extends BaseTransformer {
 
     private static final String name = "RandomParameterName";
 
+    // Whether this Transformer will produce pseudo-random names or full character-soup
+    private boolean fullRandomStrings = false;
+
     // This Map holds all changed Parameternames to not randomize ParameterNames twice.
     private Map<CtMethod,List<CtVariable>> alreadyAlteredParameterNames = new HashMap<>();
 
@@ -87,7 +90,8 @@ public class RandomParameterNameTransformer extends BaseTransformer {
     private void applyRandomParameterNameTransformation(CtMethod toAlter, CtVariable varToAlter) {
         CtRenameGenericVariableRefactoring refac = new CtRenameGenericVariableRefactoring();
         refac.setTarget(varToAlter);
-        refac.setNewName(RandomNameFactory.getRandomString(random));
+        String name = fullRandomStrings ? RandomNameFactory.getRandomString(random) : RandomNameFactory.getCamelcasedAnimalString(false,random);
+        refac.setNewName(name);
         refac.refactor();
 
         // Add the altered variable to the toplevel map to keep track that it was altered in constraints
@@ -177,6 +181,20 @@ public class RandomParameterNameTransformer extends BaseTransformer {
             // return the method at the position
             return Optional.of(paramsToPickFrom.get(randomValidIndex));
         }
+    }
+
+    /**
+     * Sets the value of being full random or semi random.
+     * If set to true, you get full random strings such as zhüojqyjjke
+     * If set to false, you get pseudo random string such as getSlyElefantLawyer
+     * @param value whether to use pseudo random strings (false) or full random strings (true)
+     */
+    public void setFullRandomStrings(boolean value){
+        this.fullRandomStrings=value;
+    }
+
+    public boolean isFullRandomStrings(){
+        return fullRandomStrings;
     }
 
     /**
