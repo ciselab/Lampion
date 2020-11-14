@@ -82,7 +82,7 @@ public class EmptyMethodTransformer extends BaseTransformer {
     private void applyEmptyMethodTransformer(CtMethod methodToAlter){
         CtClass containingClass = methodToAlter.getParent(p -> p instanceof CtClass);
 
-        String methodName = RandomNameFactory.getRandomString();
+        String methodName = RandomNameFactory.getRandomString(random);
         //Short check, redo if there is already such a method
         String finalMethodName = methodName;
         while(containingClass.getMethods().stream()
@@ -90,7 +90,7 @@ public class EmptyMethodTransformer extends BaseTransformer {
                 .map(c -> (CtMethod) c)
                 .anyMatch(m -> ((CtMethod<?>) m).getSimpleName().equalsIgnoreCase(finalMethodName)))
         {
-            methodName = RandomNameFactory.getRandomString();
+            methodName = RandomNameFactory.getRandomString(random);
         }
 
         CtMethod emptyMethod = containingClass.getFactory().createMethod();

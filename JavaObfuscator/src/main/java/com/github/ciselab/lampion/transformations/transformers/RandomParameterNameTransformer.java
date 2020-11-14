@@ -7,7 +7,6 @@ import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtVariable;
-import spoon.reflect.factory.Factory;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -86,11 +85,9 @@ public class RandomParameterNameTransformer extends BaseTransformer {
      * @param toAlter the CTMethod to wrap in an if(true){...}
      */
     private void applyRandomParameterNameTransformation(CtMethod toAlter, CtVariable varToAlter) {
-        Factory factory = toAlter.getFactory();
-
         CtRenameGenericVariableRefactoring refac = new CtRenameGenericVariableRefactoring();
         refac.setTarget(varToAlter);
-        refac.setNewName(RandomNameFactory.getRandomString());
+        refac.setNewName(RandomNameFactory.getRandomString(random));
         refac.refactor();
 
         // Add the altered variable to the toplevel map to keep track that it was altered in constraints

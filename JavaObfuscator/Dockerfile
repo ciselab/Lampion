@@ -3,12 +3,7 @@
 FROM maven:3.6.3-openjdk-15 as builder
 
 WORKDIR /app
-
-# Copy project files to the docker image
 COPY . .
-
-WORKDIR /app
-
 RUN mvn package verify
 
 #### STAGE 2

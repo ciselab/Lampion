@@ -184,7 +184,6 @@ public class App {
         }
 
         engine.setRandomSeed(seed);
-        RandomNameFactory.setSeed(seed);
         for(var t: registry.getRegisteredTransformers()){
             t.setSeed(seed);
         }

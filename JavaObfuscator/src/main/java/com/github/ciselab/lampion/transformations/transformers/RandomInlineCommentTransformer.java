@@ -80,7 +80,7 @@ public class RandomInlineCommentTransformer extends BaseTransformer {
      */
     private void applyRandomParameterNameTransformation(CtMethod toAlter) {
         Factory factory  = toAlter.getFactory();
-        var comment =  factory.createInlineComment(RandomNameFactory.getRandomComment());
+        var comment =  factory.createInlineComment(RandomNameFactory.getRandomComment(random));
 
         var existingStatements = toAlter.getBody().getStatements().size();
 
