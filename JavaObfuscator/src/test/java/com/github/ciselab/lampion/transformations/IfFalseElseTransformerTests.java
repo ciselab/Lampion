@@ -1,7 +1,6 @@
 package com.github.ciselab.lampion.transformations;
 
 import com.github.ciselab.lampion.transformations.transformers.IfFalseElseTransformer;
-import com.github.ciselab.lampion.transformations.transformers.LambdaIdentityTransformer;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;

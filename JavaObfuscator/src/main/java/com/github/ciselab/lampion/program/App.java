@@ -4,15 +4,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
 import java.util.Properties;
 
 import com.github.ciselab.lampion.manifest.ManifestWriter;
 import com.github.ciselab.lampion.manifest.SqliteManifestWriter;
-import com.github.ciselab.lampion.support.RandomNameFactory;
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
 import com.github.ciselab.lampion.transformations.transformers.*;
 import org.apache.logging.log4j.LogManager;
@@ -21,9 +16,10 @@ import org.apache.logging.log4j.Logger;
 /**
  * Entrypoint for this program.
  *
- * Holds two global static variables:
+ * Holds three global static variables:
  * - Configuration
  * - Transformer-Registry
+ * - An default seed
  * See their comments for further information. They are intended for read-only purpose.
  */
 public class App {
@@ -70,7 +66,6 @@ public class App {
      * @param filepath the filepath at which to look for the file. Both relative and absolute values are supported.
      */
     private static void setPropertiesFromFile(String filepath) {
-
         try {
             logger.debug("Received " + filepath + " as raw input - resolving it to be absolute");
 
@@ -195,11 +190,10 @@ public class App {
         return engine;
     }
 
-    /*
+    /**
     The Code below covers an issue found with the runtime an reading the packages.
     See "AppTests::testDefaultRegistry_ShouldNotBeEmpty" for a broader explanation
      */
-
     private static TransformerRegistry createDefaultRegistry() {
         TransformerRegistry registry = new TransformerRegistry("default");
 
