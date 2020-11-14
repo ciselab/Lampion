@@ -26,16 +26,3 @@ jobs:
         java-version: 15
     - name: Build Java Obfuscator
       run: mvn package verify --file JavaObfuscator/pom.xml
-  buildWithDocker:
-      runs-on: ubuntu-latest
-      steps:  
-        - uses: whoan/docker-build-with-cache-action@v5
-          name: Build Java Obfuscator in Docker
-          with:
-            username: Twonki
-            password: "${{ secrets.GITHUB_TOKEN }}"
-            image_name: lampion/java-obfuscator
-            image_tag: latest
-            registry: docker.pkg.github.com
-            context: ./JavaObfuscator
-            push_image_and_stages: false 
