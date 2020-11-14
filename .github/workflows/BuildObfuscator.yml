@@ -38,5 +38,4 @@ jobs:
             image_tag: latest
             registry: docker.pkg.github.com
             context: ./JavaObfuscator
-            dockerfile: Dockerfile
             push_image_and_stages: false 
