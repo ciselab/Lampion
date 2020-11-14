@@ -8,6 +8,7 @@ import java.util.Properties;
 
 import com.github.ciselab.lampion.manifest.ManifestWriter;
 import com.github.ciselab.lampion.manifest.SqliteManifestWriter;
+import com.github.ciselab.lampion.transformations.Transformer;
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
 import com.github.ciselab.lampion.transformations.transformers.*;
 import org.apache.logging.log4j.LogManager;
@@ -27,7 +28,7 @@ public class App {
     private static Logger logger = LogManager.getLogger(App.class);
 
     // The global configuration used throughout the program. It is read from file
-    // They only contain pairs of <String,String> (or atleast it is used that way)
+    // They only contain pairs of <String,String> (or at least it is used that way)
     public static Properties configuration = new Properties();
 
     // The global registry in which every Transformation registers itself at system startup.
@@ -98,16 +99,13 @@ public class App {
      * It will build a registry or take the default ones, look for IO-Directories and check the value correctness.
      * It returns a fully functional Engine to be run.
      *
-     * Later, this function will also contain builders for more or less transformations as well as distributions.
-     *
      * @param properties The key-value pairs read at system startup.
      * @return A fully configured, ready to go Engine
      * @throws UnsupportedOperationException whenever properties where missing or invalid
      */
     private static Engine buildEngineFromProperties(Properties properties){
-        // Build Registry
-        // Currently skipped for default
-        TransformerRegistry registry = globalRegistry;
+        // Build Registry, delegated to own method due to size
+        TransformerRegistry registry = createRegistryFromProperties(properties);
 
         // Read Input and Output Dir
         String inputDir,outputDir;
@@ -206,6 +204,84 @@ public class App {
         registry.registerTransformer(new RandomParameterNameTransformer(globalRandomSeed));
         registry.registerTransformer(new EmptyMethodTransformer(globalRandomSeed));
 
+        return registry;
+    }
+
+    /**
+     * Checks for all known keywords and creates fitting transformers.
+     * All unknown items are skipped/not cared for and without any settings found an empty registry is returned.
+     * @param properties the properties loaded/found on system startup
+     * @return a registry containing every found transformer
+     */
+    private static TransformerRegistry createRegistryFromProperties(Properties properties){
+        TransformerRegistry registry = new TransformerRegistry("fromProperties");
+
+        if(properties.get("IfTrueTransformer") != null
+                && ((String)properties.get("IfTrueTransformer")).equalsIgnoreCase("true")){
+            registry.registerTransformer(new IfTrueTransformer(globalRandomSeed));
+        }
+        if(properties.get("IfFalseElseTransformer") != null
+                && ((String)properties.get("IfFalseElseTransformer")).equalsIgnoreCase("true")){
+            registry.registerTransformer(new IfFalseElseTransformer(globalRandomSeed));
+        }
+        if(properties.get("LambdaIdentityTransformer") != null
+                && ((String)properties.get("LambdaIdentityTransformer")).equalsIgnoreCase("true")){
+            registry.registerTransformer(new LambdaIdentityTransformer(globalRandomSeed));
+        }
+        if(properties.get("RandomInlineCommentTransformer") != null
+                && ((String)properties.get("RandomInlineCommentTransformer")).equalsIgnoreCase("true")){
+            String givenRandomness = (String) properties.get("RandomInlineCommentStringRandomness");
+            switch (givenRandomness) {
+                case "full" : {
+                    RandomInlineCommentTransformer t = new RandomInlineCommentTransformer(globalRandomSeed);
+                    t.setFullRandomStrings(true);
+                    registry.registerTransformer(t);
+                } break;
+                case "pseudo" : {registry.registerTransformer(new RandomInlineCommentTransformer(globalRandomSeed));} break;
+                case "both": {
+                    RandomInlineCommentTransformer full = new RandomInlineCommentTransformer(globalRandomSeed);
+                    full.setFullRandomStrings(true);
+                    registry.registerTransformer(full);
+                    registry.registerTransformer(new RandomInlineCommentTransformer(globalRandomSeed));
+                } break;
+            }
+        }
+        if(properties.get("RandomParameterNameTransformer") != null
+                && ((String)properties.get("RandomParameterNameTransformer")).equalsIgnoreCase("true")){
+            String givenRandomness = (String) properties.get("RandomParameterNameStringRandomness");
+            switch (givenRandomness) {
+                case "full" : {
+                    RandomParameterNameTransformer full = new RandomParameterNameTransformer(globalRandomSeed);
+                    full.setFullRandomStrings(true);
+                    registry.registerTransformer(full);
+                } break;
+                case "pseudo" : {registry.registerTransformer(new RandomParameterNameTransformer(globalRandomSeed));} break;
+                case "both": {
+                    RandomParameterNameTransformer full = new RandomParameterNameTransformer(globalRandomSeed);
+                    full.setFullRandomStrings(true);
+                    registry.registerTransformer(full);
+                    registry.registerTransformer(new RandomParameterNameTransformer(globalRandomSeed));
+                } break;
+            }
+        }
+        if(properties.get("EmptyMethodTransformer") != null
+                && ((String)properties.get("EmptyMethodTransformer")).equalsIgnoreCase("true")){
+            String givenRandomness = (String) properties.get("EmptyMethodStringRandomness");
+            switch (givenRandomness) {
+                case "full" : {
+                    EmptyMethodTransformer full = new EmptyMethodTransformer(globalRandomSeed);
+                    full.setFullRandomStrings(true);
+                    registry.registerTransformer(full);
+                } break;
+                case "pseudo" : {registry.registerTransformer(new EmptyMethodTransformer(globalRandomSeed));} break;
+                case "both": {
+                    EmptyMethodTransformer full = new EmptyMethodTransformer(globalRandomSeed);
+                    full.setFullRandomStrings(true);
+                    registry.registerTransformer(full);
+                    registry.registerTransformer(new EmptyMethodTransformer(globalRandomSeed));
+                } break;
+            }
+        }
         return registry;
     }
 
