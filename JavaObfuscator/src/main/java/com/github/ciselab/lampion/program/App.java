@@ -4,6 +4,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.Properties;
 
 import com.github.ciselab.lampion.manifest.ManifestWriter;
@@ -39,7 +43,7 @@ public class App {
     // Used to instantiate the random seeds of the delegated Transformers in the default TransformerRegistry
     public static final long globalRandomSeed = 2020;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         logger.info("Starting Lampion Obfuscator");
 
         if (args.length == 0) {
@@ -49,7 +53,13 @@ public class App {
         } else if (args.length == 1) {
             logger.info("Received one argument - looking for properties in " + args[0]);
             setPropertiesFromFile(args[0]);
-        } else {
+        } else if (args.length == 2 && args[1].equalsIgnoreCase("undo")) {
+            logger.info("Received undo action - cleaning output directories and stopping after");
+            setPropertiesFromFile(args[0]);
+            undoAction();
+            return;
+        }
+        else {
             logger.warn("Received an unknown number of arguments! Not starting.");
             return;
         }
@@ -59,6 +69,41 @@ public class App {
         engine.run();
 
         logger.info("Everything done - closing Lampion Obfuscator");
+    }
+
+    /**
+     * Cleans the output directories to ease re-running the program.
+     * Completely wipes all output folders. Does not touch input folders, configuration or schema.
+     */
+    private static void undoAction() throws IOException {
+        // Read directories from properties
+        String outputDir;
+        if(configuration.get("outputDirectory") != null) {
+            outputDir = (String) configuration.get("outputDirectory");
+        } else {
+            throw new UnsupportedOperationException("There was no output-directory specified in the properties - not running undo");
+        }
+
+        String manifestDir="./manifest";
+        if(configuration.get("databaseDirectory") != null){
+            manifestDir = (String) configuration.get("databaseDirectory");
+        } else {
+            throw new UnsupportedOperationException("There was no Directory specified to write manifest in the configuration - not running undo");
+        }
+
+        // Run over the Output folders and delete all files
+        if(Files.exists(Paths.get(outputDir))) {
+            Files.walk(Paths.get(outputDir))
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+        if(Files.exists(Paths.get(manifestDir))) {
+            Files.walk(Paths.get(manifestDir))
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
     }
 
     /**
@@ -90,7 +135,6 @@ public class App {
             logger.error("Property file not found at " + filepath,ex);
         } catch (IOException ex) {
             logger.error(ex);
-            // I/O error
         }
     }
 
@@ -151,6 +195,15 @@ public class App {
             databaseDirectory = (String) properties.get("databaseDirectory");
         } else {
             logger.debug("There was no Directory specified to write manifest in the configuration - defaulting to " + databaseDirectory);
+        }
+        // Write the database directory if there was none - otherwise the database is not written
+        if(!Files.exists(Path.of(databaseDirectory))){
+            logger.debug("Did not find database directory - trying to create it.");
+            try {
+                Files.createDirectory(Path.of(databaseDirectory));
+            } catch (IOException ioException) {
+                logger.error("Error creating database directory - proceeding but database will not be written.",ioException);
+            }
         }
         if(properties.get("pathToSchema") != null){
             pathToSchema = (String) properties.get("pathToSchema");
