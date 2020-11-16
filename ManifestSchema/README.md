@@ -10,7 +10,7 @@ For this repository, the database is always called "*manifest.db*".
 
 ## Schema
 
-TBD Image of Schema
+![Diagram](./ERDiagram.PNG)
 
 ## Manual Creation 
 
