@@ -36,7 +36,7 @@ Candidates would be binary-serialized xml or Binary-JSON in a compressed format.
 Another more exotic candidate would be Java-Serialization of the objects, however then the visualisation is also bound to Java.
 As I do not want to poke around in binary data with python, a different idea has been chosen:
 
-SQL & SQLite.
+**SQL & SQLite.**
 
 SQLLite is fast, everywhere and supports the required schema in a good way.
 SQLLite comes with a build in compression.
@@ -69,7 +69,7 @@ This approach helps to be a bit more flexible in terms of the database and also 
 
 ## Obfuscator
 
-### Registration of Transformations
+### Registration of Transformers
 
 For the Transformations I'd have liked to have a single class per Transformation with a shared interface.
 That is all fun and games until it comes to randomly picking a Transformation.
@@ -96,6 +96,15 @@ Every Transformer has a static method that registers itself in a Transformer Reg
 Then all the ugly parts of reflections are dodged, and the parts of the God Class can be tested easier. 
 
 This also enables to have a registry-class, where the App has one central registry from system startup or initializes a registry according to configuration. With the registry being an object, it breaks with the issues of the God-Class and enhances testing.
+
+**Update 2:** The above given update of having the static delegate has been discarded. 
+The issue was, that the static delegates of the Transformers are loaded at class-load time. However, the App does not touch (all) of the Transformer classes by default.
+Without further tricks, the App would run without having a single Transformer in the Registry.
+
+To avoid this, some nasty tricks would have need to be done: Either invoking reflections upon the transformer package and look at all classes, which will trigger static time code, or semi-manually touch all Transformers in the App. 
+This means that the reflection-part still would be necessary, which is in addition to the more complex delegate method rather a lot of mental overload. 
+This is why, for now, simply a default registry is added with a few constructor calls, and all reflection and static logic has been removed.
+At least it is simple, and for every transformer about 7 Lines must be added to the *App.java*. 
 
 *See:*
 
@@ -149,3 +158,20 @@ Reason for this is that SQLite does not support multiple statements in a single 
 As a workaround, the file gets separated by `;` and every statement is run after each other. 
 
 The only databases which seem to support multi-statements are MariaDB/MySQL and Microsoft SQL.
+
+### The logging disappeared for the jar
+
+The logic with Log4J, Slf4j and shading a jar is not that easy. 
+
+Usually I just use Log4j and everything is happy times, but the Spoon library came with their own SLF4j conform logging. 
+When (naively) building a jar using maven assembly plugin, it broke the jar because of double binding on slf4j. 
+That's why I moved to the shaded-jar-plugin, which made the build successful again but removed the logging. 
+The app just warned that there were no SLF4J bindings found and continued quiet.
+
+After a lot of trial and error, the following dependencies must be somewhere in maven: 
+- SLF4J Core
+- SLF4J Simple
+- Log4J
+- Log4J-SLF4J Binding
+
+I am not 100% sure whether some of these can be removed, however now it is working with logging for both spoon and the java obfuscator.

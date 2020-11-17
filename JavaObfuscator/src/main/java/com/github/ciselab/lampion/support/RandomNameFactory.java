@@ -112,7 +112,7 @@ public abstract class RandomNameFactory {
     /**
      * Returns a less-random, verbatim Animal String similar to docker container names.
      * It is camel cased.
-     * Expected output range is ~ 25 x 25 x 25 (x 10 if you have keywords on) possible strings.
+     * Expected output range is ~ 25 x 25 x 25 (x 15 if you have keywords on) possible strings.
      *
      * @param withKeyWord whether one of the keywords such as "get","set","compare"... should be added
      * @param r a random number provider
@@ -145,7 +145,7 @@ public abstract class RandomNameFactory {
     /**
      * Returns a less-random, verbatim Animal String similar to docker container names.
      * It is snake cased.
-     * Expected output range is ~ 25 x 25 x 25 (x 10 if you have keywords on) possible strings.
+     * Expected output range is ~ 25 x 25 x 25 (x 15 if you have keywords on) possible strings.
      *
      * @param withKeyWord whether one of the keywords such as "get","set","compare"... should be added
      * @param r a random number provider
@@ -167,7 +167,8 @@ public abstract class RandomNameFactory {
     /*
     ===================================================================================================================
                                        String Arrays
-                          Below this line are just dictionaries of names similar to docker
+          Below this line are just dictionaries of names similar to docker's container names
+          Used for Pseudo Random String Generation, Which looks nicer than full random
     ===================================================================================================================
      */
 
@@ -187,6 +188,14 @@ public abstract class RandomNameFactory {
             "compare",
             "delete",
             "write",
+            "save",
+            "load",
+            "store",
+            "print",
+            "start",
+            "stop",
+            "test",
+            "run"
     };
 
     private static final String[] adjectives = new String[]{
