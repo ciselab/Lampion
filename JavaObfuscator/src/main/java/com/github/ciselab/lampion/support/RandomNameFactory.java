@@ -195,7 +195,10 @@ public abstract class RandomNameFactory {
             "start",
             "stop",
             "test",
-            "run"
+            "run",
+            "stream",
+            "catch",
+            "throw"
     };
 
     private static final String[] adjectives = new String[]{
