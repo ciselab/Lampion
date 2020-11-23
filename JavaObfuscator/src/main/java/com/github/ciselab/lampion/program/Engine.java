@@ -61,6 +61,8 @@ public class Engine {
     int methodIndex = 0;
     List<CtMethod> methods = new ArrayList<>();
 
+    private boolean writeOutputFiles = true;
+
     public Engine(String codeDirectory, String outputDirectory, TransformerRegistry registry){
         // Sanity Checks
         if (codeDirectory == null || codeDirectory.isEmpty() || codeDirectory.isBlank()) {
@@ -160,9 +162,13 @@ public class Engine {
 
         // Step 3:
         // Write Transformed Code
-        logger.debug("Starting to pretty-print  altered files to " + outputDirectory );
-        launcher.setSourceOutputDirectory(outputDirectory);
-        launcher.prettyprint();
+        if (writeOutputFiles) {
+            logger.debug("Starting to pretty-print  altered files to " + outputDirectory);
+            launcher.setSourceOutputDirectory(outputDirectory);
+            launcher.prettyprint();
+        } else {
+            logger.info("Writing the java files has been disabled for this run.");
+        }
 
         // Step 4:
         // Create Transformation Manifest
@@ -183,6 +189,7 @@ public class Engine {
      * but are always in the same order (for multiple iterations).
      *
      * Heavily relies on object-level index counters and methods. If there are issues, look there first.
+     * The object-level indices are also handled in this method.
      *
      * @return the next element to alter, according to scope.
      */
@@ -190,18 +197,18 @@ public class Engine {
         CtElement toAlter = null;
         switch (scope) {
             // For these, just pick random classes and methods
-            case global,perMethod,perClass : toAlter = classes.get(random.nextInt()); break;
+            case global,perMethod,perClass : toAlter = classes.get(random.nextInt(classes.size())); break;
             case perMethodEach: {
                 // Pick next method
                 toAlter = methods.get(methodIndex);
                 // Move or reset methodIndex
-                methodIndex = methodIndex >= methods.size() ? 0 : methodIndex + 1;
+                methodIndex = methodIndex < methods.size()-1 ? methodIndex + 1 : 0;
             } break;
             case perClassEach: {
                 // Pick (specific) next class
                 toAlter = classes.get(classIndex);
                 // Move or reset classIndex
-                classIndex = classIndex >= classes.size() ? 0 : classIndex + 1;
+                classIndex = classIndex < classes.size()-1 ? classIndex + 1 : 0;
             } break;
             default: logger.error("Found unknown/unhandled Scope in Engine");
         }
@@ -255,6 +262,17 @@ public class Engine {
         }
         this.scope = scope;
         this.numberOfTransformationsPerScope = transformations;
+    }
+
+    /**
+     * Whether to write to the output folder or not.
+     * All other logic is still applied as usual.
+     *
+     * This is mostly intended to make tests easier without the need for file cleanup.
+     * @param val true if you want to write output, false otherwise.
+     */
+    public void setWriteOutputFiles(boolean val){
+        writeOutputFiles = val;
     }
 
     /**

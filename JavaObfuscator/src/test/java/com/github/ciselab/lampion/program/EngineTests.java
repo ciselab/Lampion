@@ -3,10 +3,13 @@ package com.github.ciselab.lampion.program;
 import com.github.ciselab.lampion.manifest.MockWriter;
 import com.github.ciselab.lampion.transformations.Transformer;
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
+import com.github.ciselab.lampion.transformations.transformers.IfFalseElseTransformer;
 import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
 import com.github.ciselab.lampion.transformations.transformers.RandomInlineCommentTransformer;
 import com.github.ciselab.lampion.transformations.transformers.RandomParameterNameTransformer;
 import org.junit.jupiter.api.*;
+import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtMethod;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +19,7 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -66,6 +70,25 @@ public class EngineTests {
 
         // CleanUp
         Files.delete(Path.of(outputTestFolder,expectedJavaFile));
+    }
+
+    @Tag("System")
+    @Tag("File")
+    @Test
+    void testRun_WritingSetFalse_shouldNotCreateFile() throws IOException {
+        //Short check whether there was proper cleanup
+        assertFalse(Files.exists(Path.of(outputTestFolder,expectedJavaFile)));
+
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfTrueTransformer());
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+        testObject.setNumberOfTransformationsPerScope(10, Engine.TransformationScope.global);
+
+        testObject.setWriteOutputFiles(false);
+
+        testObject.run();
+
+        assertFalse(Files.exists(Path.of(outputTestFolder,expectedJavaFile)));
     }
 
     @Tag("System")
@@ -268,6 +291,61 @@ public class EngineTests {
         testObject.setManifestWriter(mock);
 
         return;
+    }
+
+    @RepeatedTest(3)
+    void testPerClassEachScope_ShouldApplyEvenlyToMethods(){
+        String pathToTestFileFolder = "./src/test/resources/javafiles_perMethodEach";
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfFalseElseTransformer());
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+        testObject.setWriteOutputFiles(false);
+
+        testObject.setNumberOfTransformationsPerScope(5, Engine.TransformationScope.perClassEach);
+
+        testObject.run();
+
+        // Easy Check on Size
+        assertEquals(10,mock.receivedResults.size());
+
+        // Distribution Checks
+        mock.receivedResults.stream()
+                .collect(Collectors.groupingBy(t -> ((CtClass)t.getTransformedElement().getParent(p -> p instanceof CtClass)).getSimpleName()))
+                .values().stream().mapToLong(u -> u.size())
+                .forEach(f -> assertEquals(5,f));
+        assertEquals(2,mock.receivedResults.stream()
+                .collect(Collectors.groupingBy(t -> ((CtClass)t.getTransformedElement().getParent(p -> p instanceof CtClass)).getSimpleName())).entrySet().size());
+    }
+
+    @RepeatedTest(3)
+    void testPerMethodEachScope_ShouldApplyEvenlyToMethods(){
+        String pathToTestFileFolder = "./src/test/resources/javafiles_perMethodEach";
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfFalseElseTransformer());
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+        testObject.setWriteOutputFiles(false);
+
+        testObject.setNumberOfTransformationsPerScope(3, Engine.TransformationScope.perMethodEach);
+
+        testObject.run();
+
+        // Easy Check on Size
+        assertEquals(12,mock.receivedResults.size());
+        // Distribution Checks
+        mock.receivedResults.stream()
+                .collect(Collectors.groupingBy(t -> ((CtMethod)t.getTransformedElement()).getSimpleName()))
+                .values().stream().mapToLong(u -> u.size())
+                .forEach(f -> assertEquals(3,f));
+        assertEquals(4,mock.receivedResults.stream()
+                .collect(Collectors.groupingBy(t -> ((CtMethod)t.getTransformedElement()).getSimpleName())).entrySet().size());
     }
 
     @Test
