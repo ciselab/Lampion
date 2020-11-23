@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
 import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 
 import java.time.Duration;
@@ -39,9 +40,11 @@ public class Engine {
 
     // The scope by which to quantify the number of transformations, "setNumberOfTransformationsPerScope" for more info
     public enum TransformationScope {
-        global,
-        perMethod,
-        perClass
+        global,            // "X Transformations in total, anywhere, evenly distributed throughout the program"
+        perMethod,         // "X Transformations per Method found, but evenly distributed throughout the program"
+        perClass,          // "X Transformations per Class found, but evenly distributed throughout the program"
+        perClassEach,      // "X Transformations per Class"
+        perMethodEach      // "X Transformations per Method"
     }
     long numberOfTransformationsPerScope = 100;
     TransformationScope scope = TransformationScope.global;
@@ -50,6 +53,13 @@ public class Engine {
     // if every transformer has the same value, they are applied evenly often.
     // if e.g. a transformer has 2 and another one has 1, then the 2-transformer is applied twice as much.
     Map<Transformer,Integer> distribution;
+
+    // These are helpers for "perClassEach" and "perMethodEach"
+    // To iterate over the classes and methods until there are no more transformations
+    int classIndex = 0;
+    List<CtClass> classes = new ArrayList<>();
+    int methodIndex = 0;
+    List<CtMethod> methods = new ArrayList<>();
 
     public Engine(String codeDirectory, String outputDirectory, TransformerRegistry registry){
         // Sanity Checks
@@ -90,7 +100,11 @@ public class Engine {
         // With the imports set to true, on second application the import will disappear, making Lambdas uncompilable.
         launcher.getFactory().getEnvironment().setAutoImports(false);
 
-        List<CtClass> classes = codeRoot.getElements(c -> c instanceof CtClass);
+        // Note:
+        // It is important that methods are instantiated here and not while transformations are running,
+        // as maybe there are additional Methods created. This way, only ur-elements will be altered.
+        classes = codeRoot.getElements(c -> c instanceof CtClass);
+        methods = codeRoot.getElements(c -> c instanceof CtMethod);
 
         logger.info("Found " + classes.size() + " Classes and "
                 + codeRoot.getElements(f -> f instanceof CtMethod).size() + " Methods");
@@ -104,6 +118,8 @@ public class Engine {
             case global -> numberOfTransformationsPerScope;
             case perMethod -> numberOfTransformationsPerScope * codeRoot.filterChildren(c -> c instanceof CtMethod).list().size();
             case perClass -> numberOfTransformationsPerScope * codeRoot.filterChildren(c -> c instanceof CtClass).list().size();
+            case perMethodEach -> numberOfTransformationsPerScope * codeRoot.filterChildren(c -> c instanceof CtMethod).list().size();
+            case perClassEach -> numberOfTransformationsPerScope * codeRoot.filterChildren(c -> c instanceof CtClass).list().size();
             default ->  0;
         };
         logger.info("Applying " + totalTransformationsToDo + " Transformations evenly distributed amongst all classes");
@@ -119,19 +135,21 @@ public class Engine {
         }
         // Step 2.3:
         // For every to-be-applied transformation
-        // Pick a random class
-        // Pick a random transfomer
+        // Pick the next (random) element
+        // Pick a random transformer
         // apply the transformer and add the result to the aggregation
         for (long a = 0; a < totalTransformationsToDo; a++) {
-            CtClass classToAlter = classes.get(random.nextInt(classes.size()));
+            CtElement toAlter = getNextCtElement();
+
             int index = random.nextInt(quantifiedTransformers.size());
             Transformer transformer = quantifiedTransformers.get(index);
-            TransformationResult result = transformer.applyAtRandom(classToAlter);
+
+            TransformationResult result = transformer.applyAtRandom(toAlter);
             results.add(result);
         }
 
         // Step 2.4:
-        // Repair parent relation ships which may have broken
+        // Repair parent relationships which may have broken
         // classes.stream().forEach(c -> c.updateAllParentsBelow());
 
         Instant endOfTransformations = Instant.now();
@@ -157,6 +175,37 @@ public class Engine {
         Instant endOfWriting = Instant.now();
         logger.info("Writing files and Manifest took " + Duration.between(endOfTransformations,endOfWriting).getSeconds() + " seconds");
         logger.info("Engine ran successfully");
+    }
+
+    /**
+     * Looks in the initially found classes/methods for the next specified element according to specified scope.
+     * Classes and Methods are returned in a order dependent from structure of the program,
+     * but are always in the same order (for multiple iterations).
+     *
+     * Heavily relies on object-level index counters and methods. If there are issues, look there first.
+     *
+     * @return the next element to alter, according to scope.
+     */
+    private CtElement getNextCtElement() {
+        CtElement toAlter = null;
+        switch (scope) {
+            // For these, just pick random classes and methods
+            case global,perMethod,perClass : toAlter = classes.get(random.nextInt()); break;
+            case perMethodEach: {
+                // Pick next method
+                toAlter = methods.get(methodIndex);
+                // Move or reset methodIndex
+                methodIndex = methodIndex >= methods.size() ? 0 : methodIndex + 1;
+            } break;
+            case perClassEach: {
+                // Pick (specific) next class
+                toAlter = classes.get(classIndex);
+                // Move or reset classIndex
+                classIndex = classIndex >= classes.size() ? 0 : classIndex + 1;
+            } break;
+            default: logger.error("Found unknown/unhandled Scope in Engine");
+        }
+        return toAlter;
     }
 
     /**
