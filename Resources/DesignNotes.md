@@ -8,6 +8,45 @@ A short dictionary to understand names and namings in this project:
 
 - **AST**: [Abstract Syntax Tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree) - a representation of the code and program produces by a compiler. The ASTs in this project are provided by the [Spoon Library](https://github.com/INRIA/spoon/). 
 - **Metamorphic Transformations**: A metamorphic transformation originates from machine vision, where initially the images get flipped, rotated or noised in order to test/improve the model under test. The initial image is still the same for humans, and has the same degree of information (e.g. it is still a dog on the picture, even if it's turned upside down). This behavior is transferred to code and models working on code, for quick-examples see [The overview image](./ExampleTransformations.PNG) or [more elaborate definitions](./Transformations.md). The term *"metamorphic transformation"* and *"transformation"* are used interchangeably in this project, as there are no other transformations.
+- **Obfuscation**: Refers to altering program (mostly byte) code to make a program effectively equal but different in representation on disk/file. This is commonly used to mask malware and pass virus-scanners. The obfuscations applied are usually metamorphic transformations on bytecode-level. The term obfuscator is used in this projekt for artifacts that perform metamorphic transformations, as metamorphic transformation is a lot longer and less cool than obfuscation. 
+
+## Repository Structure
+
+In terms of the optimal repository structure, it is important to see the components of this project as a whole, where there are 
+
+1. self-written obfuscators
+2. an output specification (Manifest-Schema)
+3. Foreign Experiments, to conduct a meta experiment
+4. Visualization, to evaluate the meta experiment
+
+Where each part has different inputs and outputs:
+
+Obfuscators are program code, should be versioned, should use shared data (the manifest) and be published.
+
+The Manifest-Schema is only shared data between obfuscators and visualization.
+While it goes into a sql-lite database, there is no such thing as a docker image provided.
+
+The foreign experiments, need (foreign) data and return data (such as metrics). 
+Furthermore, the foreign experiments need some buildup to put the obfuscator to work, and to norm the metrics in a usable format.
+
+The vizualisation needs the produced data from the manifest, as well as the metrics from the experiments.
+
+In terms of expressing this in a structure, there are two opposing goals: 
+
+1. neatly seperate the parts, so they can be versioned, published and cared for in partition.
+2. keep the parts together, to reduce integration and the partition of information
+
+Also, some parts are self-sufficient (like the obfuscators), but others do not make sense on their own (like the manifest).
+
+For now, the following structure will be pursued: 
+
+![Structure](./Repository_Structure.PNG)
+
+That is, most artifacts are in the Lampion repository (this one), but the experiments are separated into an extra repository. 
+The extra repository needs the obfuscators from this repositories-releases, and builds a fully reproducible, self-contained package.
+This experiment-package is used in Lampions-repository's Experiment folder, with references and experiment-specific configuration.
+The combination of configuration + reproduction-package-version should yield a definite and clean result, as well as (the for now) best architecture.
+It should also help to accomodate different configrations and the switch to different/later versions of the obfuscators.
 
 ## Alternation Manifest
 
