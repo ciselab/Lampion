@@ -84,7 +84,7 @@ public class EngineTests {
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
         testObject.setNumberOfTransformationsPerScope(10, Engine.TransformationScope.global);
 
-        testObject.setWriteOutputFiles(false);
+        testObject.setWriteJavaOutput(false);
 
         testObject.run();
 
@@ -303,7 +303,7 @@ public class EngineTests {
 
         MockWriter mock = new MockWriter();
         testObject.setManifestWriter(mock);
-        testObject.setWriteOutputFiles(false);
+        testObject.setWriteJavaOutput(false);
 
         testObject.setNumberOfTransformationsPerScope(5, Engine.TransformationScope.perClassEach);
 
@@ -331,7 +331,7 @@ public class EngineTests {
 
         MockWriter mock = new MockWriter();
         testObject.setManifestWriter(mock);
-        testObject.setWriteOutputFiles(false);
+        testObject.setWriteJavaOutput(false);
 
         testObject.setNumberOfTransformationsPerScope(3, Engine.TransformationScope.perMethodEach);
 

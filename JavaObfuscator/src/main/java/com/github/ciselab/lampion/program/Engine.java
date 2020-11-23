@@ -40,28 +40,28 @@ public class Engine {
 
     // The scope by which to quantify the number of transformations, "setNumberOfTransformationsPerScope" for more info
     public enum TransformationScope {
-        global,            // "X Transformations in total, anywhere, evenly distributed throughout the program"
-        perMethod,         // "X Transformations per Method found, but evenly distributed throughout the program"
-        perClass,          // "X Transformations per Class found, but evenly distributed throughout the program"
+        global,            // "X Transformations in total, anywhere, evenly distributed throughout all files"
+        perMethod,         // "X Transformations per Method found, but evenly distributed throughout all files"
+        perClass,          // "X Transformations per Class found, but evenly distributed throughout all files"
         perClassEach,      // "X Transformations per Class"
         perMethodEach      // "X Transformations per Method"
     }
     long numberOfTransformationsPerScope = 100;
     TransformationScope scope = TransformationScope.global;
 
-    // The distribution on how often to apply the Transformers-
+    // The distribution on how often to apply the Transformers
     // if every transformer has the same value, they are applied evenly often.
     // if e.g. a transformer has 2 and another one has 1, then the 2-transformer is applied twice as much.
     Map<Transformer,Integer> distribution;
 
     // These are helpers for "perClassEach" and "perMethodEach"
     // To iterate over the classes and methods until there are no more transformations
-    int classIndex = 0;
-    List<CtClass> classes = new ArrayList<>();
-    int methodIndex = 0;
-    List<CtMethod> methods = new ArrayList<>();
+    private int classIndex = 0;
+    private List<CtClass> classes = new ArrayList<>();
+    private int methodIndex = 0;
+    private List<CtMethod> methods = new ArrayList<>();
 
-    private boolean writeOutputFiles = true;
+    private boolean writeJavaOutput = true; // This switch enables/disables pretty printing of altered java files
 
     public Engine(String codeDirectory, String outputDirectory, TransformerRegistry registry){
         // Sanity Checks
@@ -162,7 +162,7 @@ public class Engine {
 
         // Step 3:
         // Write Transformed Code
-        if (writeOutputFiles) {
+        if (writeJavaOutput) {
             logger.debug("Starting to pretty-print  altered files to " + outputDirectory);
             launcher.setSourceOutputDirectory(outputDirectory);
             launcher.prettyprint();
@@ -271,8 +271,8 @@ public class Engine {
      * This is mostly intended to make tests easier without the need for file cleanup.
      * @param val true if you want to write output, false otherwise.
      */
-    public void setWriteOutputFiles(boolean val){
-        writeOutputFiles = val;
+    public void setWriteJavaOutput(boolean val){
+        writeJavaOutput = val;
     }
 
     /**

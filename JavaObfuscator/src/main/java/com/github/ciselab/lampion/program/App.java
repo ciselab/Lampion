@@ -12,7 +12,6 @@ import java.util.Properties;
 
 import com.github.ciselab.lampion.manifest.ManifestWriter;
 import com.github.ciselab.lampion.manifest.SqliteManifestWriter;
-import com.github.ciselab.lampion.transformations.Transformer;
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
 import com.github.ciselab.lampion.transformations.transformers.*;
 import org.apache.logging.log4j.LogManager;
@@ -210,6 +209,13 @@ public class App {
         } else {
             // The check for Schema validity and existance is done in the constructor of SQLite Writer
             logger.warn("There was no SchemaPath specified in the configuration - defaulting to "+pathToSchema);
+        }
+
+        if(properties.get("writeJavaOutput") != null) {
+            boolean writeJavaOutput = Boolean.parseBoolean((String) properties.get("writeJavaOutput"));
+            engine.setWriteJavaOutput(writeJavaOutput);
+        } else {
+            logger.debug("Did not find property for whether to write Java Output - defaulting to true");
         }
 
         String fullDatabasePath = databaseDirectory.endsWith("/") ? databaseDirectory+databaseName : databaseDirectory+"/"+databaseName;
