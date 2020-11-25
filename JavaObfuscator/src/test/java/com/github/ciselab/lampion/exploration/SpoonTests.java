@@ -19,10 +19,12 @@ import spoon.reflect.factory.TypeFactory;
 import spoon.support.reflect.code.CtBlockImpl;
 import spoon.support.reflect.declaration.CtParameterImpl;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -260,6 +262,43 @@ public class SpoonTests {
         assertTrue(testObject.toString().contains("return true;"));
     }
 
+    @Tag("Exploration")
+    @Test
+    void spoonExploration_InvalidJavaMissingReferences_doesNotBreak(){
+        CtClass testObject = Launcher.parseClass("class A { void addOne(int a) {return a + getOne();} }");
+
+        assertEquals("A", testObject.getSimpleName());
+        var ms = testObject.getMethods();
+
+        return;
+    }
+
+    @Tag("Exploration")
+    @Tag("File")
+    @Test
+    void spoonExploration_InvalidJava_MissingReferences_fromFile_doesNotBreak() throws IOException{
+        String pathToTestFile = "./src/test/resources/bad_javafiles/missing_reference.java";
+
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(pathToTestFile);
+        launcher.buildModel();
+
+        var testObject = launcher.getModel();
+
+        launcher.setSourceOutputDirectory("./src/test/resources/bad_javafiles_output");
+        launcher.prettyprint();
+
+        assertTrue(Files.exists(Paths.get("./src/test/resources/bad_javafiles_output/lampion/tests/examples/Misser.java")));
+
+        // Cleanup
+        if(Files.exists(Paths.get("./src/test/resources/bad_javafiles_output"))) {
+            Files.walk(Paths.get("./src/test/resources/bad_javafiles_output"))
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+        return;
+    }
 
     @Tag("Exploration")
     @Test
