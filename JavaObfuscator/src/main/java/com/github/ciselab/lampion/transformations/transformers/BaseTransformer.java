@@ -56,5 +56,20 @@ public abstract class BaseTransformer implements Transformer {
         this.random = new Random(seed);
     }
 
+    /**
+     * This method decides whether the Transformer will try to compile the code, restoring the AST after
+     * working with snippets, and verifying that the resulting code after transformation is still valid java.
+     * The default for this behaviour is true, and should not be changed.
+     *
+     * There are two potential drawbacks, when the compiling is disabled:
+     * - Sometimes you get invalid java code (especially when throwing around to broad comments and changing names)
+     * - The snippets have reduced capability of being used
+     *
+     * Depending on your Domain / UseCase, it might be necessary to disable compiling. Do so very carefully, and only
+     * if your program failed on the compiling code.
+     * Also, be aware to not use some transformers compiling and others non-compiling. The compiling transformers
+     * will try to compile the code left by the non-compilings, failing in an unexpected place.
+     * @param value whether or not to compile the code, true for compilation, false otherwise
+     */
     public void setTryingToCompile(boolean value) {this.triesToCompile = value;}
 }

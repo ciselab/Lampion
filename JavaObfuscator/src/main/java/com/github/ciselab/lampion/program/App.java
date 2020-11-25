@@ -241,6 +241,20 @@ public class App {
             t.setSeed(seed);
         }
 
+        // Set compiling/non-compiling transformers
+        if(properties.get("compilingTransformers")!=null){
+            boolean compilingTransformers = Boolean.parseBoolean((String) properties.get("compilingTransformers"));
+            if(!compilingTransformers){
+                logger.warn("The Transformers are set to non-compiling - be careful with this feature and only use when explicitly necessary.");
+                registry.getRegisteredTransformers().stream()
+                        .filter(t -> t instanceof BaseTransformer)
+                        .map(u -> (BaseTransformer)u)
+                        .forEach(p -> p.setTryingToCompile(false));
+            }
+        } else {
+            logger.debug("There was no entry found for compilingTransformers - defaulting to true");
+        }
+
         // Alter / Change Distributions
         // Currently skipped
 
