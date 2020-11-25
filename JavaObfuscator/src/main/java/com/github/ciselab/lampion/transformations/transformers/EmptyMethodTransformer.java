@@ -125,7 +125,9 @@ public class EmptyMethodTransformer extends BaseTransformer {
 
         // Sanity Check for compilation as well as restoring items
         containingClass.getFactory().getEnvironment().setAutoImports(false);
-        containingClass.compileAndReplaceSnippets();
+        if(triesToCompile) {
+            containingClass.compileAndReplaceSnippets();
+        }
     }
 
     /**
