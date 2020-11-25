@@ -234,6 +234,7 @@ public class App {
         } else {
             logger.warn("There was no Seed specified - defaulting to " + seed);
         }
+        logger.info("Running with Seed " + seed);
 
         engine.setRandomSeed(seed);
         for(var t: registry.getRegisteredTransformers()){
