@@ -108,10 +108,7 @@ public class IfFalseElseTransformer extends BaseTransformer {
                     )
             );
         }
-        /*else {
-            ifWrapper.setThenStatement(factory.createBlock());
-        }
-        */
+
         toAlter.setBody(ifWrapper);
 
         // The snippets need to be compiled, but compiling is a "toplevel" function that only compilation units have.
@@ -121,7 +118,9 @@ public class IfFalseElseTransformer extends BaseTransformer {
         CtClass lookingForParent = toAlter.getParent(p -> p instanceof CtClass);
         // With the imports set to true, on second application the import will disappear, making it uncompilable.
         lookingForParent.getFactory().getEnvironment().setAutoImports(false);
-        lookingForParent.compileAndReplaceSnippets();
+        if(triesToCompile) {
+            lookingForParent.compileAndReplaceSnippets();
+        }
     }
 
     /**

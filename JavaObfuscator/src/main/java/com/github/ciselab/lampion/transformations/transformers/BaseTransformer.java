@@ -16,6 +16,8 @@ public abstract class BaseTransformer implements Transformer {
     protected Random random;                          // the random number provider used for picking random methods
     protected boolean debug = false;                  // whether to add more information to the TransformationResults
 
+    protected boolean triesToCompile = true;          // Whether after applying the change, the snippets try to be compiled
+
     Set<Predicate<CtElement>> constraints = new HashSet<Predicate<CtElement>>();
 
     public BaseTransformer() {
@@ -54,4 +56,5 @@ public abstract class BaseTransformer implements Transformer {
         this.random = new Random(seed);
     }
 
+    public void setTryingToCompile(boolean value) {this.triesToCompile = value;}
 }

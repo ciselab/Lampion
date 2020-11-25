@@ -145,6 +145,75 @@ public class EngineTests {
 
     @Tag("System")
     @Tag("File")
+    @Test
+    void testRun_WithNonCompilingTransformer_worksNormally() throws IOException {
+        //Short check whether there was proper cleanup
+        assertFalse(Files.exists(Path.of(outputTestFolder,expectedJavaFile)));
+
+        int transformations = 1;
+
+        var transformer = new IfTrueTransformer();
+        transformer.setTryingToCompile(false);
+
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(transformer);
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+
+        testObject.setNumberOfTransformationsPerScope(transformations, Engine.TransformationScope.global);
+
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+
+        testObject.run();
+
+        assertTrue(mock.wasTouched);
+        assertEquals(transformations,mock.receivedResults.size());
+        // CleanUp
+
+        Files.delete(Path.of(outputTestFolder,expectedJavaFile));
+    }
+
+    @Tag("System")
+    @Tag("File")
+    @Test
+    void testRun_WithNonCompilingTransformer_OnFileWithMissingMethodReferences_works() throws IOException {
+        String pathToTestFileFolder = "./src/test/resources/bad_javafiles";
+        String outputTestFolder = "./src/test/resources/bad_javafiles_output/";
+
+        int transformations = 2;
+
+        var transformer = new IfTrueTransformer();
+        transformer.setTryingToCompile(false);
+
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(transformer);
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+
+        testObject.setNumberOfTransformationsPerScope(transformations, Engine.TransformationScope.global);
+
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+
+        testObject.run();
+
+        assertTrue(mock.wasTouched);
+        assertEquals(transformations,mock.receivedResults.size());
+
+        assertTrue(Files.exists(Paths.get("./src/test/resources/bad_javafiles_output/lampion/tests/examples/Misser.java")));
+
+        // Cleanup
+        if(Files.exists(Paths.get("./src/test/resources/bad_javafiles_output"))) {
+            Files.walk(Paths.get("./src/test/resources/bad_javafiles_output"))
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+    }
+
+    @Tag("System")
+    @Tag("File")
     @Tag("Regression")
     @Test
     void testRun_WithMockManifest_MockManifestResultsHaveParents() throws IOException {

@@ -118,7 +118,9 @@ public class IfTrueTransformer extends BaseTransformer {
         CtClass lookingForParent = toAlter.getParent(p -> p instanceof CtClass);
         // With the imports set to true, on second application the import will disappear, making it uncompilable.
         lookingForParent.getFactory().getEnvironment().setAutoImports(false);
-        lookingForParent.compileAndReplaceSnippets();
+        if (triesToCompile) {
+            lookingForParent.compileAndReplaceSnippets();
+        }
     }
 
     /**
