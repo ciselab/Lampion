@@ -111,16 +111,10 @@ public class IfFalseElseTransformer extends BaseTransformer {
 
         toAlter.setBody(ifWrapper);
 
-        // The snippets need to be compiled, but compiling is a "toplevel" function that only compilation units have.
-        // Take the closest compilable unit (the class) and compile it
-        // otherwise, the snippet is kept as a snippet, hence has no literals and no operands and casts etc.
-        // Without compiling the snipped, the transformation can only be applied once and maybe blocks other transformations as well.
-        CtClass lookingForParent = toAlter.getParent(p -> p instanceof CtClass);
-        // With the imports set to true, on second application the import will disappear, making it uncompilable.
-        lookingForParent.getFactory().getEnvironment().setAutoImports(false);
-        if(triesToCompile) {
-            lookingForParent.compileAndReplaceSnippets();
-        }
+        // Take the closest compilable unit (the class) and restore the ast according to transformers presettings
+        CtClass containingClass = toAlter.getParent(p -> p instanceof CtClass);
+
+        restoreAstAndImports(containingClass);
     }
 
     /**

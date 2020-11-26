@@ -2,6 +2,7 @@ package com.github.ciselab.lampion.transformations.transformers;
 
 import com.github.ciselab.lampion.program.App;
 import com.github.ciselab.lampion.transformations.Transformer;
+import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 
 import java.util.HashSet;
@@ -17,6 +18,7 @@ public abstract class BaseTransformer implements Transformer {
     protected boolean debug = false;                  // whether to add more information to the TransformationResults
 
     protected boolean triesToCompile = true;          // Whether after applying the change, the snippets try to be compiled
+    protected boolean setsAutoImports = true;         // Whether foreign references will be resolved to their fully qualified name
 
     Set<Predicate<CtElement>> constraints = new HashSet<Predicate<CtElement>>();
 
@@ -72,4 +74,39 @@ public abstract class BaseTransformer implements Transformer {
      * @param value whether or not to compile the code, true for compilation, false otherwise
      */
     public void setTryingToCompile(boolean value) {this.triesToCompile = value;}
+
+    /**
+     * This method decides whether the transformer will try to resolve the references to their fully qualified name.
+     * This might can fail compilations, if the references are unknown or there are multiple possible alternatives.
+     *
+     * Be careful to set this value globally for all transformers, as if only one transformer has it on it will set it for
+     * all elements it touches.
+     * @param value whether or not to resolve foreign references to their fully qualified name, such as com.apache.org.math.sin()
+     */
+    public void setSetsAutoImports(boolean value) {this.setsAutoImports = value;}
+
+    /**
+     * This methods performs some housekeeping actions on the given ast element.
+     * It is intended to be used after transformations.
+     *
+     * The actions are:
+     * - resolving references to their qualified name, such as from ArrayList to java.utils.ArrayList
+     * - compiling snippets inside the object, to restore the ast
+     *
+     * As a rule of thumb, the bigger the changes are, and the higher they are in the ast,
+     * the more important are compilation and import resolves.
+     * With higher in the ast meaning class > method > block > statement.
+     *
+     * See "setTryingToCompile" and "setSetsAutoImports" for more information.
+     * @param containingClass the element that can be compiled after change, usually the class containing the changed method/element
+     */
+    protected void restoreAstAndImports(CtClass containingClass){
+        if(setsAutoImports) {
+            // Sanity Check for compilation as well as restoring items
+            containingClass.getFactory().getEnvironment().setAutoImports(false);
+        }
+        if(triesToCompile) {
+            containingClass.compileAndReplaceSnippets();
+        }
+    }
 }

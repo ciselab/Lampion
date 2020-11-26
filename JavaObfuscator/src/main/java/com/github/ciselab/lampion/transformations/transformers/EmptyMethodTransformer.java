@@ -123,11 +123,8 @@ public class EmptyMethodTransformer extends BaseTransformer {
         methodToAlter.getBody().addStatement(invocationIndex,
                 containingClass.getFactory().createCodeSnippetStatement(methodName+"()"));
 
-        // Sanity Check for compilation as well as restoring items
-        containingClass.getFactory().getEnvironment().setAutoImports(false);
-        if(triesToCompile) {
-            containingClass.compileAndReplaceSnippets();
-        }
+        // Take the closest compilable unit (the class) and restore the ast according to transformers presettings
+        restoreAstAndImports(containingClass);
     }
 
     /**
