@@ -1,0 +1,7 @@
+.git
+.idea
+target
+*iml
+dependency-reduced-pom.xml
+spooned
+target

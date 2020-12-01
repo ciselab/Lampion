@@ -19,7 +19,7 @@ RUN apk update && apk add bash
 RUN mkdir -p $dir
 Run mkdir -p /config
 
-COPY --from=builder /app/target/Lampion-JavaObfuscator-1.0-SNAPSHOT.jar $dir
+COPY --from=builder /app/target/Lampion-JavaObfuscator-1.0.jar $dir
 COPY --from=builder /app/src/main/resources/Docker/entrypoint.sh $dir
 COPY --from=builder /app/src/main/resources/createManifestTables.sql $dir/schema.sql
 COPY --from=builder /app/src/main/resources/Docker/config.properties /config/

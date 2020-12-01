@@ -1,0 +1,14 @@
+version: '3.3'
+
+# This is a mirror of the normal docker-compose but with a build-in-built.
+# Beware: For the Java Sources you still need to do the maven goals locally first!
+
+services:
+  obfuscator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lampion/java_obfuscator:latest
+    volumes:
+      - ./compose_output:/app/obfuscator_output
+      - ./src/test/resources/javafiles:/app/obfuscator_input:ro      
