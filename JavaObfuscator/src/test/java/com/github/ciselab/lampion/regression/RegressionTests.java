@@ -82,6 +82,10 @@ public class RegressionTests {
                 ,lambdaTrans
         };
 
+        for(var t: transformers) {
+            ((BaseTransformer) t).setSetsAutoImports(false);
+            ((BaseTransformer) t).setTryingToCompile(false);
+        }
         Random r = new Random();
         for(int i=0;i<15;i++) {
             int random_index = r.nextInt(transformers.length);

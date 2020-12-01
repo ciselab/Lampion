@@ -3,6 +3,7 @@ package com.github.ciselab.lampion.exploration;
 import com.github.ciselab.lampion.transformations.EmptyTransformationResult;
 import com.github.ciselab.lampion.transformations.TransformationResult;
 import com.github.ciselab.lampion.transformations.transformers.RandomParameterNameTransformer;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -647,6 +648,31 @@ public class SpoonTests {
 
         // CleanUp
         Files.delete(Paths.get("./src/test/resources/prettyprinted/my/org/myNewName.java"));
+    }
+
+    @Tag("Exploration")
+    @Test
+    void exploreSpoon_CheckForImports(){
+        Launcher launcher = new Launcher();
+        launcher.addInputResource("./src/test/resources/javafiles_with_import/ImportExample.java");
+        //launcher.getEnvironment().setAutoImports(true);
+        launcher.buildModel();
+
+        var model = launcher.getModel();
+        var mm = model.getRootPackage();
+        //.getPackage("test.lampion.examples").getType("ImportExample");
+
+        var uhh = model.getAllTypes();
+
+        var myCU = launcher.getFactory().CompilationUnit().getOrCreate("src/test/java/resources/javafiles_with_import");
+
+        var imports = myCU.getImports();
+
+        var p = launcher.getFactory().createReference("java.util.ArrayList");
+
+        var xxi = model.getElements(nnn -> nnn instanceof CtImport);
+        
+        return;
     }
 
     /*

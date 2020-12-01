@@ -254,7 +254,19 @@ public class App {
         } else {
             logger.debug("There was no entry found for compilingTransformers - defaulting to true");
         }
-
+        // Set compiling/non-compiling transformers
+        if(properties.get("setAutoImports")!=null){
+            boolean autoimports = Boolean.parseBoolean((String) properties.get("setAutoImports"));
+            if(!autoimports){
+                logger.warn("The Transformers are set to non-compiling - be careful with this feature and only use when explicitly necessary.");
+                registry.getRegisteredTransformers().stream()
+                        .filter(t -> t instanceof BaseTransformer)
+                        .map(u -> (BaseTransformer)u)
+                        .forEach(p -> p.setSetsAutoImports(false));
+            }
+        } else {
+            logger.debug("There was no entry found for setAutoImports - defaulting to true");
+        }
         // Alter / Change Distributions
         // Currently skipped
 

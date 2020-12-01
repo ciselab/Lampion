@@ -94,7 +94,6 @@ public class LambdaIdentityTransformer extends BaseTransformer {
         // This is a bit noisy, but required to make it compile and restore types
         CtExpression wrapped = factory.createCodeSnippetExpression(
                 "(("+toAlter.getType().getSimpleName()+")((java.util.function.Supplier<?>)("+lambda.toString()+")).get())"
-                //"(("+toAlter.getType().getSimpleName()+")((Supplier<?>)("+lambda.toString()+")).get())"
         );
         wrapped.setType(toAlter.getType());
         wrapped.setPosition(toAlter.getPosition());

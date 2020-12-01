@@ -101,9 +101,11 @@ public abstract class BaseTransformer implements Transformer {
      * @param containingClass the element that can be compiled after change, usually the class containing the changed method/element
      */
     protected void restoreAstAndImports(CtClass containingClass){
-        if(setsAutoImports) {
+        if(!setsAutoImports) {
             // Sanity Check for compilation as well as restoring items
-            containingClass.getFactory().getEnvironment().setAutoImports(false);
+            containingClass.getFactory().getEnvironment().setAutoImports(setsAutoImports);
+            // This enables missing entries in references to be "fine"
+            containingClass.getFactory().getEnvironment().setNoClasspath(setsAutoImports);
         }
         if(triesToCompile) {
             containingClass.compileAndReplaceSnippets();
