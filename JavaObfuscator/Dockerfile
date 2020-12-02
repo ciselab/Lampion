@@ -11,6 +11,8 @@ RUN mvn package verify
 
 FROM azul/zulu-openjdk-alpine:15
 
+ARG OBFUSCATOR_VERSION
+
 ENV dir /usr/app
 
 # bash so i have a normal commandline
@@ -19,12 +21,17 @@ RUN apk update && apk add bash
 RUN mkdir -p $dir
 Run mkdir -p /config
 
-COPY --from=builder /app/target/Lampion-JavaObfuscator-1.0.jar $dir
+COPY --from=builder /app/target/Lampion-JavaObfuscator-$OBFUSCATOR_VERSION.jar $dir
 COPY --from=builder /app/src/main/resources/Docker/entrypoint.sh $dir
 COPY --from=builder /app/src/main/resources/createManifestTables.sql $dir/schema.sql
 COPY --from=builder /app/src/main/resources/Docker/config.properties /config/
 
 WORKDIR $dir
+
+# The issue with build args is that they disappear after build time, 
+# They are not availible as env-variables after the container was build 
+# hence, rename the jar to a generic name at build time, to not have runtime issues
+RUN mv Lampion-JavaObfuscator-$OBFUSCATOR_VERSION.jar Lampion-JavaObfuscator.jar
 
 RUN chmod +x ./entrypoint.sh
 
