@@ -93,7 +93,7 @@ public class LambdaIdentityTransformer extends BaseTransformer {
         lambda.setExpression(toAlter.clone());
         // This is a bit noisy, but required to make it compile and restore types
         CtExpression wrapped = factory.createCodeSnippetExpression(
-                "(("+toAlter.getType().getSimpleName()+")((java.util.function.Supplier<?>)("+lambda.toString()+")).get())"
+            "(("+toAlter.getType().getSimpleName()+")((java.util.function.Supplier<?>)("+lambda.toString()+")).get())"
         );
         wrapped.setType(toAlter.getType());
         wrapped.setPosition(toAlter.getPosition());
@@ -101,10 +101,18 @@ public class LambdaIdentityTransformer extends BaseTransformer {
 
         toAlter.replace(wrapped);
 
-        // Take the closest compilable unit (the class) and restore the ast according to transformers presettings
-       CtClass containingclass = toAlter.getParent(p -> p instanceof CtClass);
-
-        restoreAstAndImports(containingclass);
+        // TODO: Use the BaseTransformer Approach with a global import for supplier
+        // TODO: At the moment there is an open issue with spoon how to do that
+        // The snippets need to be compiled, but compiling is a "toplevel" function that only compilation units have.
+        // Take the closest compilable unit (the class) and compile it
+        // otherwise, the snippet is kept as a snippet, hence has no literals and no operands and casts etc.
+        // Without compiling the snipped, the transformation can only be applied once and maybe blocks other transformations as well.
+        CtClass lookingForParent = toAlter.getParent(p -> p instanceof CtClass);
+        // With the imports set to true, on second application the import will dissapear, making it uncompilable.
+        lookingForParent.getFactory().getEnvironment().setAutoImports(false);
+        if (triesToCompile) {
+            lookingForParent.compileAndReplaceSnippets();
+        }
     }
 
     /**

@@ -80,10 +80,12 @@ public class LambdaIdentityTransformerTests {
         assertNotNull(lastResult);
         assertNotEquals(new EmptyTransformationResult(),lastResult);
     }
+
     @Tag("Regression")
     @Test
     void testApplyToClassWithLiterals_applyTwice_shouldBeAppliedTwice(){
         LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
+        transformer.setSetsAutoImports(true);
 
         CtElement ast = addOneExample();
 
@@ -105,6 +107,21 @@ public class LambdaIdentityTransformerTests {
         var result = transformer.applyAtRandom(ast);
 
         assertNotEquals(new EmptyTransformationResult(), result);
+    }
+
+    @Tag("Regression")
+    @Test
+    void testApplyToClassWithLiterals_applyTwice_noAutoImports_NoCompile_shouldBeAppliedOnce(){
+        LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
+        transformer.setSetsAutoImports(false);
+        transformer.setTryingToCompile(false);
+
+        CtElement ast = addOneExample();
+
+        transformer.applyAtRandom(ast);
+        var result = transformer.applyAtRandom(ast);
+
+        assertEquals(new EmptyTransformationResult(), result);
     }
 
     @Test

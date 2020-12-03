@@ -9,8 +9,8 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        OBFUSCATOR_VERSION: 1.0
-    image: lampion/java_obfuscator:latest
+        OBFUSCATOR_VERSION: 1.1-SNAPSHOT
+    image: lampion/java-obfuscator:latest
     volumes:
       - ./compose_output:/app/obfuscator_output
-      - ./src/test/resources/javafiles:/app/obfuscator_input:ro      
+      - ./src/test/resources/javafiles_perMethodEach:/app/obfuscator_input
