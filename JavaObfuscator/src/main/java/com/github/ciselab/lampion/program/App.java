@@ -267,6 +267,18 @@ public class App {
         } else {
             logger.debug("There was no entry found for setAutoImports - defaulting to true");
         }
+
+        // Set compiling/non-compiling transformers
+        if(properties.get("removeAllComments")!=null){
+            boolean removeAllComments = Boolean.parseBoolean((String) properties.get("setAutoImports"));
+            if(removeAllComments){
+                logger.info("All comments will be removed before pretty printing the files");
+                engine.setRemoveAllComments(true);
+            }
+        } else {
+            logger.debug("There was no entry found for removeAllComments - defaulting to false");
+        }
+
         // Alter / Change Distributions
         // Currently skipped
 

@@ -2,6 +2,7 @@ package com.github.ciselab.lampion.program;
 
 import com.github.ciselab.lampion.manifest.ManifestWriter;
 import com.github.ciselab.lampion.transformations.*;
+import com.github.ciselab.lampion.transformations.transformers.RemoveAllCommentsTransformer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import spoon.Launcher;
@@ -61,7 +62,10 @@ public class Engine {
     private int methodIndex = 0;
     private List<CtMethod> methods = new ArrayList<>();
 
+    private boolean removeAllComments = false; // Whether or not to remove all comments before printing
+
     private boolean writeJavaOutput = true; // This switch enables/disables pretty printing of altered java files
+
 
     public Engine(String codeDirectory, String outputDirectory, TransformerRegistry registry){
         // Sanity Checks
@@ -164,6 +168,13 @@ public class Engine {
                 + Duration.between(startOfEngine,endOfTransformations) + " seconds");
         logger.info("Of the " + results.size() + " Transformations applied, "
                 + results.stream().filter(u -> u.equals(new EmptyTransformationResult())).count() + " where malformed");
+
+        // Step 2.5:
+        // If enabled, remove all comments (set them invisible)
+        if (removeAllComments) {
+            RemoveAllCommentsTransformer commentRemover = new RemoveAllCommentsTransformer();
+            classes.forEach(c -> commentRemover.applyAtRandom(c));
+        }
 
         // Step 3:
         // Write Transformed Code
@@ -310,6 +321,15 @@ public class Engine {
         } else {
             this.writer = Optional.of(writer);
         }
+    }
+
+    /**
+     * This method sets whether all comments are removed or not.
+     * The comments are still entities in the AST, but are not in the toString() or prettyprinting.
+     * @param val whether or not to remove all comments in all files - true for removal, false for keeping
+     */
+    public void setRemoveAllComments(boolean val) {
+        this.removeAllComments = val;
     }
 
     /**
