@@ -3,4 +3,4 @@
 
 echo "Starting the Lampion Obfuscator Container"
 
-./java -jar Lampion-JavaObfuscator-1.0-SNAPSHOT.jar /config/config.properties
+java -jar Lampion-JavaObfuscator.jar /config/config.properties

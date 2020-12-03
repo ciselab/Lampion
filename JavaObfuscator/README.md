@@ -29,14 +29,12 @@ The exploration-test profile will **only** run Tests tagged as `@Tag("Exploratio
 To build with Docker: 
 
 ```sh
-docker build . -t lampion/java-obfuscator:latest
+docker build --build-arg OBFUSCATOR_VERSION=x.x . -t lampion/java-obfuscator:latest
 ```
 
-To run with Docker:
+where *snapshot*-versions are supported. 
 
-```md
-To be done, but you need a lot of mountings, so it`s best to provide a docker compose
-```
+To run with Docker adjust the docker-compose and run 'docker-compose up'.
 
 ## How to get started
 
