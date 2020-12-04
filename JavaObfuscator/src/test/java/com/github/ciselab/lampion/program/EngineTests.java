@@ -140,7 +140,6 @@ public class EngineTests {
         // CleanUp
 
         Files.delete(Path.of(outputTestFolder,expectedJavaFile));
-
     }
 
     @Tag("System")
@@ -415,6 +414,73 @@ public class EngineTests {
                 .forEach(f -> assertEquals(3,f));
         assertEquals(4,mock.receivedResults.stream()
                 .collect(Collectors.groupingBy(t -> ((CtMethod)t.getTransformedElement()).getSimpleName())).entrySet().size());
+    }
+
+
+    @Test
+    void testEngineRun_withDeleteComments_ShouldDeleteJavaDocs(){
+        String pathToTestFileFolder = "./src/test/resources/javafiles_with_comments";
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfFalseElseTransformer());
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+
+        // Do just little transformations to be faster
+        testObject.setNumberOfTransformationsPerScope(3, Engine.TransformationScope.perClassEach);
+
+        testObject.setRemoveAllComments(true);
+
+        testObject.run();
+
+        mock.receivedResults.forEach(
+                p -> assertFalse(p.getTransformedElement().toString().contains("JavaDoc"))
+        );
+    }
+
+    @Test
+    void testEngineRun_withDeleteComments_ShouldDeleteInlineComments(){
+        String pathToTestFileFolder = "./src/test/resources/javafiles_with_comments";
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfFalseElseTransformer());
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+
+        // Do just little transformations to be faster
+        testObject.setNumberOfTransformationsPerScope(3, Engine.TransformationScope.perClassEach);
+
+        testObject.setRemoveAllComments(true);
+
+        testObject.run();
+
+        mock.receivedResults.forEach(
+                p -> assertFalse(p.getTransformedElement().toString().contains("InlineComment"))
+        );
+    }
+
+    @Test
+    void testEngineRun_withDeleteComments_ShouldDeleteBlockComments(){
+        String pathToTestFileFolder = "./src/test/resources/javafiles_with_comments";
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfFalseElseTransformer());
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+
+        // Do just little transformations to be faster
+        testObject.setNumberOfTransformationsPerScope(3, Engine.TransformationScope.perClassEach);
+
+        testObject.setRemoveAllComments(true);
+
+        testObject.run();
+
+        mock.receivedResults.forEach(
+                p -> assertFalse(p.getTransformedElement().toString().contains("BlockComment"))
+        );
     }
 
     @Test
