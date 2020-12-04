@@ -385,7 +385,7 @@ public class SQLiteManifestWriterTests {
         Uses a mockwriter to catch the results first, extracts the results and passes them outward
          */
 
-        String pathToTestFileFolder = "./src/test/resources/javafiles";
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_simple";
         String outputTestFolder = "./src/test/resources/sqlite_engine_spooned";
 
         TransformerRegistry registry = new TransformerRegistry("Test");

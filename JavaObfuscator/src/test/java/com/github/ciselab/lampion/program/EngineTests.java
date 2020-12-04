@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class EngineTests {
 
-    private static String pathToTestFileFolder = "./src/test/resources/javafiles";
+    private static String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_simple";
     private static String outputTestFolder = "./src/test/resources/engine_spooned/";
     // Note: The file matching is case sensitive on some systems, be careful!
     private static String expectedJavaFile = "./lampion/test/examples/Example.java";
@@ -177,7 +177,7 @@ public class EngineTests {
     @Tag("File")
     @Test
     void testRun_WithNonCompilingTransformer_OnFileWithMissingMethodReferences_works() throws IOException {
-        String pathToTestFileFolder = "./src/test/resources/bad_javafiles";
+        String pathToTestFileFolder = "./src/test/resources/javafiles/bad_javafiles";
         String outputTestFolder = "./src/test/resources/bad_javafiles_output/";
 
         int transformations = 2;
@@ -363,7 +363,7 @@ public class EngineTests {
 
     @RepeatedTest(3)
     void testPerClassEachScope_ShouldApplyEvenlyToMethods(){
-        String pathToTestFileFolder = "./src/test/resources/javafiles_perMethodEach";
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_perMethodEach";
         TransformerRegistry registry = new TransformerRegistry("Test");
         registry.registerTransformer(new IfFalseElseTransformer());
 
@@ -391,7 +391,7 @@ public class EngineTests {
 
     @RepeatedTest(3)
     void testPerMethodEachScope_ShouldApplyEvenlyToMethods(){
-        String pathToTestFileFolder = "./src/test/resources/javafiles_perMethodEach";
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_perMethodEach";
         TransformerRegistry registry = new TransformerRegistry("Test");
         registry.registerTransformer(new IfFalseElseTransformer());
 
@@ -419,7 +419,7 @@ public class EngineTests {
 
     @Test
     void testEngineRun_withDeleteComments_ShouldDeleteJavaDocs(){
-        String pathToTestFileFolder = "./src/test/resources/javafiles_with_comments";
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_with_comments";
         TransformerRegistry registry = new TransformerRegistry("Test");
         registry.registerTransformer(new IfFalseElseTransformer());
 
@@ -441,7 +441,7 @@ public class EngineTests {
 
     @Test
     void testEngineRun_withDeleteComments_ShouldDeleteInlineComments(){
-        String pathToTestFileFolder = "./src/test/resources/javafiles_with_comments";
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_with_comments";
         TransformerRegistry registry = new TransformerRegistry("Test");
         registry.registerTransformer(new IfFalseElseTransformer());
 
@@ -463,7 +463,7 @@ public class EngineTests {
 
     @Test
     void testEngineRun_withDeleteComments_ShouldDeleteBlockComments(){
-        String pathToTestFileFolder = "./src/test/resources/javafiles_with_comments";
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_with_comments";
         TransformerRegistry registry = new TransformerRegistry("Test");
         registry.registerTransformer(new IfFalseElseTransformer());
 
