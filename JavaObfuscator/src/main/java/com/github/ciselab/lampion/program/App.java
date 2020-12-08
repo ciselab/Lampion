@@ -52,6 +52,7 @@ public class App {
         } else if (args.length == 1) {
             logger.info("Received one argument - looking for properties in " + args[0]);
             setPropertiesFromFile(args[0]);
+            logger.info("The properties file had " + configuration.size() + " properties");
         } else if (args.length == 2 && args[1].equalsIgnoreCase("undo")) {
             logger.info("Received undo action - cleaning output directories and stopping after");
             setPropertiesFromFile(args[0]);
@@ -114,7 +115,7 @@ public class App {
         try {
             logger.debug("Received " + filepath + " as raw input - resolving it to be absolute");
 
-            logger.info("Looking for Properties file @" + filepath);
+            logger.info("Looking for Properties file at " + filepath);
 
             File configFile = new File(filepath);
             FileReader reader = new FileReader(configFile);
