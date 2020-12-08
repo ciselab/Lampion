@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  CodeBert_Preprocessing:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./compose_input:/raw_data:ro
+      - ./compose_output:/data
+      - ./sample_config:/config:ro
