@@ -13,6 +13,7 @@ def headerToValues(header: str) -> [(str,str)]:
     url=header.split("ur_url")[1].strip()
     repo=header.split("ur_repo")[1].strip()
     sha=header.split("ur_sha")[1].strip()
+    func_name=header.split("ur_func_name")[1].strip()
     docstring=header.split("ur_docstring")[1]
     docstring = docstring[3:-2]
     docstring = f"\"{docstring}\""
@@ -24,6 +25,7 @@ def headerToValues(header: str) -> [(str,str)]:
     return [("url",f"\"{url}\""),
         ("repo",f"\"{repo}\""),
         ("sha",f"\"{sha}\""),
+        ("func_name",f"\"{func_name}\""),
         ("docstring",docstring),
         ("docstring_tokens",doctokens),
         ("path",f"\"{path}\""),
@@ -58,7 +60,7 @@ def walkJavaFiles(dir: str, output_filename: str = "altered_java.jsonl"):
                 '''
 
                 methodbody = extractClassBody(content)
-                methodbody = methodbody.encode('unicode_escape').decode("utf-8")
+                methodbody = methodbody.encode('unicode_escape').decode("utf-8").replace('"',r'\"')
                 methodbody = f"\"{methodbody}\""
                 methodtokens = re.findall(r"\w+(?:'\w+)*|[^\w\s]", methodbody.replace("\\n",""))
                 methodtokens = [m for m in methodtokens if m != '"']
