@@ -8,11 +8,15 @@ import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtPackage;
+import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
+
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LambdaIdentityTransformerTests {
 
+    @Tag("File")
     @Test
     void testApplyToClassWithoutLiterals_returnsEmptyResult(){
         LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
@@ -24,6 +28,7 @@ public class LambdaIdentityTransformerTests {
         assertEquals(new EmptyTransformationResult(), result);
     }
 
+    @Tag("File")
     @Test
     void testApplyToClassWithLiterals_shouldBeApplied(){
         LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
@@ -38,11 +43,12 @@ public class LambdaIdentityTransformerTests {
         assertTrue(ast.toString().contains(".get()"));
     }
 
+    @Tag("File")
     @Test
     void testApplyToClassWithLiteralsAsFields_shouldBeApplied(){
         LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
 
-        CtClass ast = Launcher.parseClass("package lampion.test; class A { public String text = \"hey\";}");
+        CtClass ast = (CtClass) heyExample();
 
         transformer.applyAtRandom(ast);
 
@@ -53,11 +59,12 @@ public class LambdaIdentityTransformerTests {
     }
 
 
+    @Tag("File")
     @Test
     void testApplyToClassWithLiterals_StringLiteral_shouldBeApplied(){
         LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
 
-        CtClass ast = Launcher.parseClass("package lampion.test; class A { String m(String b) {return b+\"hey\";}");
+        CtClass ast = (CtClass) bPlusHeyExample();
 
         transformer.applyAtRandom(ast);
 
@@ -67,11 +74,12 @@ public class LambdaIdentityTransformerTests {
         assertTrue(ast.toString().contains(".get()"));
     }
 
+    @Tag("File")
     @Test
     void testApplyToClassWithMultipleLiterals_Apply20Times_shouldNotBreak(){
         LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
 
-        CtClass ast = Launcher.parseClass("package lampion.test; class A { String m(String b) {return b+\"hey\";}");
+        CtClass ast = (CtClass) bPlusHeyExample();
 
         TransformationResult lastResult = null;
         for(int i = 0; i<20;i++)
@@ -82,6 +90,7 @@ public class LambdaIdentityTransformerTests {
     }
 
     @Tag("Regression")
+    @Tag("File")
     @Test
     void testApplyToClassWithLiterals_applyTwice_shouldBeAppliedTwice(){
         LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
@@ -96,6 +105,7 @@ public class LambdaIdentityTransformerTests {
     }
 
     @Tag("Regression")
+    @Tag("File")
     @Test
     void testApplyToClassWithLiterals_applyTwice_noAutoImports_shouldBeAppliedTwice(){
         LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
@@ -110,6 +120,7 @@ public class LambdaIdentityTransformerTests {
     }
 
     @Tag("Regression")
+    @Tag("File")
     @Test
     void testApplyToClassWithLiterals_applyTwice_noAutoImports_NoCompile_shouldBeAppliedOnce(){
         LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
@@ -152,6 +163,7 @@ public class LambdaIdentityTransformerTests {
         assertNotNull(classParent);
     }
 
+    @Tag("File")
     @Tag("Regression")
     @Test
     void applyInMethod_ShouldHaveMethodParent_ShouldHaveClassParent(){
@@ -181,6 +193,7 @@ public class LambdaIdentityTransformerTests {
         assertEquals(new EmptyTransformationResult(), result);
     }
 
+    @Tag("File")
     @Test
     void applyToMethod_CheckTransformationResult_nameIsLambdaIdentity(){
         CtElement ast = addOneExample();
@@ -192,6 +205,7 @@ public class LambdaIdentityTransformerTests {
         assertEquals("LambdaIdentity",result.getTransformationName());
     }
 
+    @Tag("File")
     @Test
     void applyToMethod_CheckTransformationResult_categoriesNotEmpty(){
         CtElement ast = addOneExample();
@@ -203,6 +217,7 @@ public class LambdaIdentityTransformerTests {
         assertFalse(result.getCategories().isEmpty());
     }
 
+    @Tag("File")
     @Test
     void applyWithoutDebugSettingOn_TransformationResultShouldHaveNoOptionalInfo(){
         CtElement ast = addOneExample();
@@ -217,6 +232,7 @@ public class LambdaIdentityTransformerTests {
         assertFalse(result.getBeforeAfterComparison().isPresent());
     }
 
+    @Tag("File")
     @Test
     void applyWithDebugSettingOn_TransformationResultShouldHaveMoreInfo(){
         CtElement ast = addOneExample();
@@ -231,15 +247,166 @@ public class LambdaIdentityTransformerTests {
         assertTrue(result.getBeforeAfterComparison().isPresent());
     }
 
+    @Tag("File")
+    @Test
+    void applyToAddOneExample_shouldHaveImportInPrettyPrinted(){
+        CtClass ast = (CtClass) addOneExample();
+
+        LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
+
+        TransformationResult result = transformer.applyAtRandom(ast);
+
+        var unit = ast.getFactory().CompilationUnit().getOrCreate(ast);
+
+        //The normal "toString" has no imports, so the pretty printer is needed
+        DefaultJavaPrettyPrinter defaultJavaPrettyPrinter = new DefaultJavaPrettyPrinter(unit.getFactory().getEnvironment());
+
+        var prettyPrintedFile = defaultJavaPrettyPrinter.prettyprint(unit);
+        assertTrue(prettyPrintedFile.contains("import java.util.function.Supplier;"));
+    }
+
+
+    @Tag("File")
+    @Test
+    void applyToAddOneExample_checkImports_ShouldHaveOne(){
+        CtClass ast = (CtClass) addOneExample();
+
+        LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
+
+        TransformationResult result = transformer.applyAtRandom(ast);
+
+        var unit = ast.getFactory().CompilationUnit().getOrCreate(ast);
+
+        assertEquals(1,unit.getImports().size());
+    }
+
+    @Tag("File")
+    @Test
+    void applyToAddOneExample_applyTwice_checkImports_ShouldHaveOne(){
+        CtClass ast = (CtClass) addOneExample();
+
+        LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
+
+        transformer.applyAtRandom(ast);
+        transformer.applyAtRandom(ast);
+
+        var unit = ast.getFactory().CompilationUnit().getOrCreate(ast);
+
+        assertEquals(1,unit.getImports().size());
+    }
+
+
+    @Tag("File")
+    @Test
+    void applyToHeyExample_shouldHaveImportInPrettyPrinted(){
+        CtClass ast = (CtClass) heyExample();
+
+        LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
+
+        TransformationResult result = transformer.applyAtRandom(ast);
+
+        var unit = ast.getFactory().CompilationUnit().getOrCreate(ast);
+
+        //The normal "toString" has no imports, so the pretty printer is needed
+        DefaultJavaPrettyPrinter defaultJavaPrettyPrinter = new DefaultJavaPrettyPrinter(unit.getFactory().getEnvironment());
+
+        var prettyPrintedFile = defaultJavaPrettyPrinter.prettyprint(unit);
+        assertTrue(prettyPrintedFile.contains("import java.util.function.Supplier;"));
+    }
+
+
+    @Tag("File")
+    @Test
+    void applyToExistingImportsExample_shouldHaveSupplierImportInPrettyPrinted(){
+        CtClass ast = (CtClass) existingImportExample();
+
+        LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
+
+        TransformationResult result = transformer.applyAtRandom(ast);
+
+        var unit = ast.getFactory().CompilationUnit().getOrCreate(ast);
+
+        //The normal "toString" has no imports, so the pretty printer is needed
+        DefaultJavaPrettyPrinter defaultJavaPrettyPrinter = new DefaultJavaPrettyPrinter(unit.getFactory().getEnvironment());
+
+        var prettyPrintedFile = defaultJavaPrettyPrinter.prettyprint(unit);
+        assertTrue(prettyPrintedFile.contains("import java.util.function.Supplier;"));
+    }
+
+    @Tag("File")
+    @Test
+    void applyToExistingImportsExample_shouldHaveOldImportInPrettyPrinted(){
+        CtClass ast = (CtClass) existingImportExample();
+
+        LambdaIdentityTransformer transformer = new LambdaIdentityTransformer();
+
+        TransformationResult result = transformer.applyAtRandom(ast);
+
+        var unit = ast.getFactory().CompilationUnit().getOrCreate(ast);
+
+        //The normal "toString" has no imports, so the pretty printer is needed
+        DefaultJavaPrettyPrinter defaultJavaPrettyPrinter = new DefaultJavaPrettyPrinter(unit.getFactory().getEnvironment());
+
+        var prettyPrintedFile = defaultJavaPrettyPrinter.prettyprint(unit);
+        assertTrue(prettyPrintedFile.contains("import java.util.Hashset;"));
+    }
 
     static CtElement classWithoutLiteral(){
-        CtClass testObject = Launcher.parseClass("package lampion.test; class A { int m(int b) {return b;}");
+        String pathToTestFile = "./src/test/resources/javafiles/javafiles_for_lambda_identity_tests/NoLiteralExample.java";
+
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(pathToTestFile);
+        launcher.buildModel();
+
+        CtClass testObject = launcher.getModel().filterChildren(t -> t instanceof CtClass).first();
+
+        return testObject;
+    }
+
+    static CtElement heyExample(){
+        String pathToTestFile = "./src/test/resources/javafiles/javafiles_for_lambda_identity_tests/HeyExample.java";
+
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(pathToTestFile);
+        launcher.buildModel();
+
+        CtClass testObject = launcher.getModel().filterChildren(t -> t instanceof CtClass).first();
+
+        return testObject;
+    }
+
+    static CtElement bPlusHeyExample(){
+        String pathToTestFile = "./src/test/resources/javafiles/javafiles_for_lambda_identity_tests/BPlusHeyExample.java";
+
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(pathToTestFile);
+        launcher.buildModel();
+
+        CtClass testObject = launcher.getModel().filterChildren(t -> t instanceof CtClass).first();
 
         return testObject;
     }
 
     static CtElement addOneExample(){
-        CtClass testObject = Launcher.parseClass("package lampion.test; class A { int addOne(int a) { return a + 1;} }");
+        String pathToTestFile = "./src/test/resources/javafiles/javafiles_for_lambda_identity_tests/AddOneExample.java";
+
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(pathToTestFile);
+        launcher.buildModel();
+
+        CtClass testObject = launcher.getModel().filterChildren(t -> t instanceof CtClass).first();
+
+        return testObject;
+    }
+
+    static CtElement existingImportExample(){
+        String pathToTestFile = "./src/test/resources/javafiles/javafiles_for_lambda_identity_tests/ExistingImportExample.java";
+
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(pathToTestFile);
+        launcher.buildModel();
+
+        CtClass testObject = launcher.getModel().filterChildren(t -> t instanceof CtClass).first();
 
         return testObject;
     }

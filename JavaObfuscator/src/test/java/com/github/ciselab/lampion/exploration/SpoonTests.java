@@ -17,6 +17,7 @@ import spoon.reflect.code.*;
 import spoon.reflect.declaration.*;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.factory.TypeFactory;
+import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
 import spoon.support.reflect.code.CtBlockImpl;
 import spoon.support.reflect.declaration.CtParameterImpl;
 
@@ -25,10 +26,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This Class contains exploration-tests to evaluate the behaviour of the Spoon Library.
@@ -82,7 +80,7 @@ import java.util.Set;
  */
 public class SpoonTests {
 
-    private static String pathToTestFile = "./src/test/resources/javafiles/example.java";
+    private static String pathToTestFile = "./src/test/resources/javafiles/javafiles_simple/example.java";
     private static String pathToTestFileFolder = "./src/test/resources/javafiles";
 
 
@@ -450,6 +448,43 @@ public class SpoonTests {
         assertTrue(result.contains("if"));
     }
 
+    @Tag("Exploration")
+    @Test
+    void spoonExploration_tryAddImports_fromFile_importShouldBeAdded(){
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(pathToTestFile);
+        launcher.buildModel();
+
+        CtClass model = launcher.getModel().filterChildren(t -> t instanceof CtClass).first();
+        var factory = model.getFactory();
+        DefaultJavaPrettyPrinter defaultJavaPrettyPrinter = new DefaultJavaPrettyPrinter(factory.getEnvironment());
+
+        var unit = model.getFactory().CompilationUnit().getOrCreate(model);
+        unit.setImports(Arrays.asList(factory.createImport(factory.createReference("java.utils.Arraylist"))));
+
+        var o = defaultJavaPrettyPrinter.prettyprint(unit);
+        assertTrue(o.contains("import java.utils.Arraylist;"));
+    }
+
+    @Tag("Exploration")
+    @Test
+    void spoonExploration_tryAddImports_fromFile_WithExistingImports_importShouldBeAdded(){
+        String pathToTestFile = "./src/test/resources/javafiles/javafiles_with_import/";
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(pathToTestFile);
+        launcher.buildModel();
+
+        CtClass model = launcher.getModel().filterChildren(t -> t instanceof CtClass).first();
+        var factory = model.getFactory();
+        DefaultJavaPrettyPrinter defaultJavaPrettyPrinter = new DefaultJavaPrettyPrinter(factory.getEnvironment());
+
+        var unit = model.getFactory().CompilationUnit().getOrCreate(model);
+        var existingImports = unit.getImports();
+        existingImports.add(factory.createImport(factory.createReference("java.utils.Arraylist")));
+
+        var o = defaultJavaPrettyPrinter.prettyprint(unit);
+        assertTrue(o.contains("import java.utils.Arraylist;"));
+    }
 
     @Tag("Exploration")
     @Test
