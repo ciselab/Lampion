@@ -1,6 +1,7 @@
 import os
 import regex as re
 import sys
+import json
 
 def headerToValues(header: str) -> [(str,str)]:
     """
@@ -17,6 +18,7 @@ def headerToValues(header: str) -> [(str,str)]:
     docstring = f"\"{docstring}\""
     docstring = docstring.replace("\\\\n","\\n")
     doctokens=header.split("ur_doctokens")[1]
+    doctokens = eval(doctokens[2:-2])
     path = header.split("ur_path")[1].strip()
     partition = header.split("ur_partition")[1].strip()
     return [("url",f"\"{url}\""),
@@ -59,6 +61,11 @@ def walkJavaFiles(dir: str, output_filename: str = "altered_java.jsonl"):
                 methodbody = methodbody.encode('unicode_escape').decode("utf-8")
                 methodbody = f"\"{methodbody}\""
                 methodtokens = re.findall(r"\w+(?:'\w+)*|[^\w\s]", methodbody.replace("\\n",""))
+                methodtokens = [m for m in methodtokens if m != '"']
+
+                m_tokens = {
+                    "code_tokens" : methodtokens
+                }
 
                 # Look for the header by markup words, and extract the values
                 header = (content.split("python_helper_header_start")[1]).split("python_helper_header_end")[0]
@@ -67,9 +74,14 @@ def walkJavaFiles(dir: str, output_filename: str = "altered_java.jsonl"):
                 # After reading all the values, start an accumulator object that represents a single line of jsonl
                 acc = "{"
                 for pair in header_vals:
-                    acc = acc + f"\"{pair[0]}\"={pair[1]} , "
-                acc = acc + f"\"code_tokens\"={methodtokens} , "
-                acc = acc + f"\"code\"={methodbody} }}"
+                    if (pair[0]=="docstring_tokens"):
+                        d_tokens = {"docstring_tokens":pair[1]}
+                        acc = acc + json.dumps(d_tokens)[1:-1] + " , "
+                    else:
+                        acc = acc + f"\"{pair[0]}\": {pair[1]} , "
+                acc = acc + json.dumps(m_tokens)[1:-1] + " , "
+                acc = acc + f"\"code\": {methodbody} }}"
+                acc = acc + "\n" # Line break after entry
                 jsonL_file.write(acc)
 
                 counter = counter + 1
