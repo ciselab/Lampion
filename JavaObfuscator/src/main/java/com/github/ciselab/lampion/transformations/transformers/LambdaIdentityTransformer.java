@@ -28,10 +28,13 @@ import java.util.function.Predicate;
  * In general, this Transformer will require java to be of at least version 8 and will break older projects,
  * which is something to look out for in selecting experiments.
  *
- * IMPORTANT
+ * ========================================= IMPORTANT ==============================================================
+ *
  * Unlike other Transformers, this Transformer ONLY works on Classes generated from files.
- * This is due to the need for playing with imports, which only work for compilation-units, which need (without very
+ * This is due to the need for playing with imports, which only work for compilation-units, which need (except under  very
  * special treatment) to be created from files.
+ *
+ * ===================================================================================================================
  */
 public class LambdaIdentityTransformer extends BaseTransformer {
 

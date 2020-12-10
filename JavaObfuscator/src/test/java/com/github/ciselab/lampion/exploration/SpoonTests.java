@@ -17,6 +17,7 @@ import spoon.reflect.code.*;
 import spoon.reflect.declaration.*;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.factory.TypeFactory;
+import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
 import spoon.support.reflect.code.CtBlockImpl;
 import spoon.support.reflect.declaration.CtParameterImpl;
@@ -542,6 +543,63 @@ public class SpoonTests {
 
         assertTrue(result.contains("changedA"));
         assertFalse(result.contains("return a + b;"));
+    }
+
+    @Tag("Exploration")
+    @Test
+    void spoonExploration_add0ToLiteral() {
+        CtClass testObject = Launcher.parseClass("package test; class A { int addOne(int a) {return a + 1;} }");
+
+        CtLiteral one = (CtLiteral) testObject.filterChildren(c -> c instanceof CtLiteral).list().get(0);
+
+        CtLiteral oneone = one.clone();
+
+        Factory factory = one.getFactory();
+
+        var bin = factory.createBinaryOperator();
+        bin.setKind(BinaryOperatorKind.PLUS);
+        bin.setLeftHandOperand(oneone);
+        bin.setRightHandOperand(factory.createLiteral(0));
+        bin.setType(oneone.getType());
+        //bin.setParent(one.getParent());
+
+
+        one.replace(bin);
+
+        //one.replace(factory.createLiteral(2));
+
+        testObject.updateAllParentsBelow();
+        testObject.compileAndReplaceSnippets();
+
+        var hu = testObject.toString();
+
+        assertTrue(hu.contains("(1 + 0)"));
+    }
+
+    @Tag("Exploration")
+    @Test
+    void spoonExploration_add0ToVariable() {
+        CtClass testObject = Launcher.parseClass("package test; class A { int addOne(int a) {return a + 1;} }");
+
+        var uu = (CtVariableRead<Integer>) testObject.filterChildren(c -> c instanceof CtVariableRead).list().get(0);
+
+        var threthre = uu.clone();
+
+        Factory factory = uu.getFactory();
+
+        CtBinaryOperator bin = factory.createBinaryOperator();
+        bin.setKind(BinaryOperatorKind.PLUS);
+        bin.setLeftHandOperand(threthre);
+        bin.setRightHandOperand(factory.createLiteral(0));
+
+        testObject.updateAllParentsBelow();
+        testObject.compileAndReplaceSnippets();
+
+        uu.replace(bin);
+
+        var hu = testObject.toString();
+
+        assertTrue(hu.contains("(a + 0)"));
     }
 
     /*
