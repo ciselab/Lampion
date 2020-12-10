@@ -146,6 +146,7 @@ public class AddNeutralElementTransformer extends BaseTransformer {
         so I just checked for both supported types and throw an exception otherwise.
          */
         Factory factory = toAlter.getFactory();
+        CtLiteral neutralElement = getNeutralElement(toAlter);
 
         if(toAlter instanceof CtLiteral) {
             CtLiteral copy = (CtLiteral) toAlter.clone();
@@ -154,26 +155,24 @@ public class AddNeutralElementTransformer extends BaseTransformer {
             binaryOp.setKind(BinaryOperatorKind.PLUS);
             binaryOp.setType(copy.getType());
             binaryOp.setLeftHandOperand(copy);
-            binaryOp.setRightHandOperand(getNeutralElement(binaryOp));
+            binaryOp.setRightHandOperand(neutralElement);
 
             toAlter.replace(binaryOp);
-
-            toAlter.getParent().updateAllParentsBelow();
         } else if (toAlter instanceof CtVariableRead) {
             CtVariableRead copy = (CtVariableRead) toAlter.clone();
+
 
             var binaryOp = factory.createBinaryOperator();
             binaryOp.setKind(BinaryOperatorKind.PLUS);
             binaryOp.setType(copy.getType());
             binaryOp.setLeftHandOperand(copy);
-            binaryOp.setRightHandOperand(getNeutralElement(binaryOp));
+            binaryOp.setRightHandOperand(neutralElement);
 
             toAlter.replace(binaryOp);
-
-            toAlter.getParent().updateAllParentsBelow();
         } else {
             throw new UnsupportedOperationException("Received an unsupported type of CtTypedElement to add Neutral Elements to");
         }
+        toAlter.getParent().updateAllParentsBelow();
     }
 
     /**
@@ -197,9 +196,9 @@ public class AddNeutralElementTransformer extends BaseTransformer {
         switch(lit.getType().getSimpleName()){
             case "int": return factory.createLiteral(0);
             case "long": return factory.createLiteral(0L);
-            case "float": factory.createLiteral(0.0f);
-            case "double": factory.createLiteral(0.0d);
-            case "String": factory.createLiteral("");
+            case "float": return factory.createLiteral(0.0f);
+            case "double": return factory.createLiteral(0.0d);
+            case "String": return factory.createLiteral("");
             default: throw new UnsupportedOperationException("Received unsupported type for neutral elements");
         }
     }
