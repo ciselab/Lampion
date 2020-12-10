@@ -41,6 +41,11 @@ def write_to_file(line:str, output_prefix: str = "./output/" ) -> ():
     f.write(wrap_in_class_and_package(line))
     f.close()
 
+# This var simply holds all seen combinations of function and class names
+# It is necessary as some methods are overloaded and would result in the same file
+# Which results in issues with the java obfuscation which fails on duplicate java classes
+seen_class_names = []
+
 def wrap_in_class_and_package(line):
     """
     Wraps the content of the given line into a java package+class+markup_info
@@ -53,6 +58,15 @@ def wrap_in_class_and_package(line):
     """
     (path, file, package, classname) = split_path_to_parts(line['path'])
     func = line['func_name'].split('.')[1]
+
+    # There was an issue on the java-obfuscation side that had troubles with duplicate java classes
+    # This was due to the naming here, especially for overloaded functions
+    # Hence, if there was a method already seen, just add a counter at the end of the classname to be unique
+    final_classname=f"{classname}_{func}"
+    counter = 2 
+    while(final_classname in seen_class_names):
+        final_classname=f"{classname}_{func}_{counter}"
+    seen_class_names.append(final_classname)
 
     # Python has escape, but double { are the {-escape
     filecontent = f"""
@@ -69,13 +83,14 @@ def wrap_in_class_and_package(line):
     ur_partition {line['partition']} ur_partition
     python_helper_header_end
     */
-    public class {classname}_{func} {{
+    public class {final_classname} {{
 
         {line['code']}
         
     }}
     """
     return filecontent
+
 
 def split_path_to_parts(path: str):
     """
