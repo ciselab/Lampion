@@ -66,6 +66,7 @@ def wrap_in_class_and_package(line):
     counter = 2 
     while(final_classname in seen_class_names):
         final_classname=f"{classname}_{func}_{counter}"
+        counter = counter + 1
     seen_class_names.append(final_classname)
 
     # Python has escape, but double { are the {-escape
