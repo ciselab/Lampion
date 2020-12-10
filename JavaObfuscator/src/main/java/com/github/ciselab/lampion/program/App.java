@@ -303,6 +303,8 @@ public class App {
         registry.registerTransformer(new RandomParameterNameTransformer(globalRandomSeed));
         registry.registerTransformer(new EmptyMethodTransformer(globalRandomSeed));
 
+        registry.registerTransformer(new AddNeutralElementTransformer(globalRandomSeed));
+
         return registry;
     }
 
@@ -326,6 +328,10 @@ public class App {
         if(properties.get("LambdaIdentityTransformer") != null
                 && ((String)properties.get("LambdaIdentityTransformer")).equalsIgnoreCase("true")){
             registry.registerTransformer(new LambdaIdentityTransformer(globalRandomSeed));
+        }
+        if(properties.get("AddNeutralElementTransformer") != null
+                && ((String)properties.get("AddNeutralElementTransformer")).equalsIgnoreCase("true")){
+            registry.registerTransformer(new AddNeutralElementTransformer(globalRandomSeed));
         }
         if(properties.get("RandomInlineCommentTransformer") != null
                 && ((String)properties.get("RandomInlineCommentTransformer")).equalsIgnoreCase("true")){

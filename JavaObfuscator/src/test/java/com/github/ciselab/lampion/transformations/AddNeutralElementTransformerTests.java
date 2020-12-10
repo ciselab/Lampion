@@ -1,16 +1,11 @@
 package com.github.ciselab.lampion.transformations;
 
 import com.github.ciselab.lampion.transformations.transformers.AddNeutralElementTransformer;
-import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Tag;
+
 import org.junit.jupiter.api.Test;
 import spoon.Launcher;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtMethod;
-
-import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.*;
 

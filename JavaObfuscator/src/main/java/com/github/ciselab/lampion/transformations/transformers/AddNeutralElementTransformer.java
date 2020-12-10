@@ -34,6 +34,9 @@ import java.util.stream.Collectors;
  * To
  *      return (a+0)+1
  *
+ * These exampels vary a little in actual application, as sometimes the program is smart enough to leave out brackets.
+ * Also, the pretty printer sometimes lints spaces differently.
+ *
  * Due to Java Binary Type promotion, adding a char to a char will result in an integer, which makes char addition
  * only doable with casting (which is a bit ugly).
  * Hence, the currently supported types are:
@@ -42,6 +45,11 @@ import java.util.stream.Collectors;
  *  - Float
  *  - Long
  *
+ * Only the primitive types are supported (so int and not Integer) except for Strings.
+ *
+ * Unlike other transformers, this can be applied multiple times without compilation.
+ *
+ * TODO: This should also be able to add neutral elements to methods, given that the Method has the correct type
  */
 public class AddNeutralElementTransformer extends BaseTransformer {
 
