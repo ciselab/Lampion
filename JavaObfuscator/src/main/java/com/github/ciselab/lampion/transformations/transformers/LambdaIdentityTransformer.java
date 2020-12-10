@@ -1,8 +1,6 @@
 package com.github.ciselab.lampion.transformations.transformers;
 
-import com.github.ciselab.lampion.program.App;
 import com.github.ciselab.lampion.transformations.*;
-import spoon.Launcher;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.*;
 import spoon.reflect.factory.Factory;
@@ -30,7 +28,10 @@ import java.util.function.Predicate;
  * In general, this Transformer will require java to be of at least version 8 and will break older projects,
  * which is something to look out for in selecting experiments.
  *
- * TODO: Add a toplevel import of the Java functional interfaces IF the variable "setAutoImports" is false
+ * IMPORTANT
+ * Unlike other Transformers, this Transformer ONLY works on Classes generated from files.
+ * This is due to the need for playing with imports, which only work for compilation-units, which need (without very
+ * special treatment) to be created from files.
  */
 public class LambdaIdentityTransformer extends BaseTransformer {
 
@@ -101,18 +102,17 @@ public class LambdaIdentityTransformer extends BaseTransformer {
 
         toAlter.replace(wrapped);
 
-        // TODO: Use the BaseTransformer Approach with a global import for supplier
-        // TODO: At the moment there is an open issue with spoon how to do that
-        // The snippets need to be compiled, but compiling is a "toplevel" function that only compilation units have.
-        // Take the closest compilable unit (the class) and compile it
-        // otherwise, the snippet is kept as a snippet, hence has no literals and no operands and casts etc.
-        // Without compiling the snipped, the transformation can only be applied once and maybe blocks other transformations as well.
-        CtClass lookingForParent = toAlter.getParent(p -> p instanceof CtClass);
-        // With the imports set to true, on second application the import will dissapear, making it uncompilable.
-        lookingForParent.getFactory().getEnvironment().setAutoImports(false);
-        if (triesToCompile) {
-            lookingForParent.compileAndReplaceSnippets();
+        CtClass containingclass = toAlter.getParent(p -> p instanceof CtClass);
+
+        // Add the import if it does not exist already
+        var unit = containingclass.getFactory().CompilationUnit().getOrCreate(containingclass);
+        var existingImports = unit.getImports();
+        var supplierReference = factory.createImport(factory.createReference("java.util.function.Supplier"));
+        if(!existingImports.contains(supplierReference)){
+            existingImports.add(supplierReference);
         }
+
+        restoreAstAndImports(containingclass);
     }
 
     /**
