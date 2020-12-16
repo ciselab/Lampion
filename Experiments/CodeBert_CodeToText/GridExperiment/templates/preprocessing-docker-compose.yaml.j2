@@ -9,7 +9,7 @@ services:
       - {{ config.path_to }}/dataset:/data
       - {{ config.path_to }}:/config:ro
     environment:
-      RAW_DATA_FILE: test_java.jsonl
-      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+      RAW_DATA_FILE: {{ config.test_file|default("test_java.jsonl",true) }}
+      POST_ALTERNATION_JSONL: {{ config.test_file|default("preprocessed_test_java.jsonl",true) }}
 
   {% endfor %}

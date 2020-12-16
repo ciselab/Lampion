@@ -13,11 +13,15 @@
     },
     {
     "RandomParameterNameTransformer": true,
-    "RandomParameterNameStringRandomness": "pseudo"
+    "RandomParameterNameStringRandomness": "pseudo",
+    "AddUnusedVariableTransformer": true,
+    "AddUnusedVariableTransformer_StringRandomness": "pseudo"
     },
     {
     "RandomParameterNameTransformer": true,
-    "RandomParameterNameStringRandomness": "full"
+    "RandomParameterNameStringRandomness": "full",
+    "AddUnusedVariableTransformer": true,
+    "AddUnusedVariableTransformer_StringRandomness": "full"
     }
   ],
   "seeds": [123]
