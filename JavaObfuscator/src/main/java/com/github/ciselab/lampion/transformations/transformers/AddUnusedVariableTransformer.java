@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -84,10 +85,20 @@ public class AddUnusedVariableTransformer extends BaseTransformer {
 
     public AddUnusedVariableTransformer(){
         super();
+
+        Predicate<CtElement> hasMethods = (CtElement elem ) -> {
+            return !elem.filterChildren(u -> u instanceof CtMethod).list().isEmpty();
+        };
+        constraints.add(hasMethods);
     }
 
     public AddUnusedVariableTransformer(long seed){
         super(seed);
+
+        Predicate<CtElement> hasMethods = (CtElement elem ) -> {
+            return !elem.filterChildren(u -> u instanceof CtMethod).list().isEmpty();
+        };
+        constraints.add(hasMethods);
     }
 
     /**
