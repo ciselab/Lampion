@@ -3,15 +3,15 @@ version: '3.8'
 services:
   {% for config in configurations -%}
   CodeBert_CodeToText_Experiment_{{ config.run_number }}:
-    image: ciselab/CodeBERT-Code2Text:latest
+    image: ciselab/codebert-code2text:latest
     volumes:
-      - {{ config.path }}/dataset/:/dataset:ro
-      - {{ config.path }}/experiment_output:/experiment/output
+      - ./{{ config.path }}/dataset/:/dataset:ro
+      - ./{{ config.path }}/experiment_output:/experiment/output
       - ./models:/models
     environment:
       test_file: /dataset/preprocessed_test_java.jsonl
-      do_train: false
-      do_val: false
+      do_train: "false"
+      do_val: "false"
       pretrained_model: /models/model.bin
 
   {% endfor %}

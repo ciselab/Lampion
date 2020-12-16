@@ -30,7 +30,8 @@ def run(grid_config_file):
                     "transformations" : tn,
                     "seed":seed,
                     "run_number": counter,
-                    "path": f"configs/config_{counter}"
+                    "path": f"configs/config_{counter}",
+                    "path_to": f"configs/config_{counter}"
                 }
                 # Merge two dicts
                 config = {**config,**tcomb}
