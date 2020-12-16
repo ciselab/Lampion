@@ -20,6 +20,7 @@ import spoon.reflect.factory.TypeFactory;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
 import spoon.support.reflect.code.CtBlockImpl;
+import spoon.support.reflect.code.CtLocalVariableImpl;
 import spoon.support.reflect.declaration.CtParameterImpl;
 
 import java.io.File;
@@ -600,6 +601,30 @@ public class SpoonTests {
         var hu = testObject.toString();
 
         assertTrue(hu.contains("(a + 0)"));
+    }
+
+    @Tag("Exploration")
+    @Test
+    void spoonExploration_addUnusedVariableDeclaration(){
+        CtClass testObject = Launcher.parseClass("package test; class A { int addOne(int a) {return a + 1;} }");
+
+        var uu = (CtVariableRead<Integer>) testObject.filterChildren(c -> c instanceof CtVariableRead).list().get(0);
+
+        Factory factory = uu.getFactory();
+
+        var locvar = factory.createLocalVariable(factory.Type().INTEGER,"test2",factory.createLiteral(5));
+
+        CtMethod m = (CtMethod) testObject.getMethods().stream().findFirst().get();
+        m.getBody().getStatements().add(0,locvar);
+
+
+        testObject.updateAllParentsBelow();
+        testObject.compileAndReplaceSnippets();
+
+
+        var hu = testObject.toString();
+
+        assertTrue(hu.contains("test2"));
     }
 
     /*

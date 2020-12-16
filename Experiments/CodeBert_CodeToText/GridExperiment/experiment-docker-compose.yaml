@@ -1,0 +1,184 @@
+version: '3.8'
+
+services:
+  CodeBert_CodeToText_Experiment_0:
+    image: ciselab/CodeBERT-Code2Text:latest
+    volumes:
+      - configs/config_0/dataset/:/dataset:ro
+      - configs/config_0/experiment_output:/experiment/output
+      - ./models:/models
+    environment:
+      test_file: /dataset/preprocessed_test_java.jsonl
+      do_train: false
+      do_val: false
+      pretrained_model: /models/models.bin
+
+  CodeBert_CodeToText_Experiment_1:
+    image: ciselab/CodeBERT-Code2Text:latest
+    volumes:
+      - configs/config_1/dataset/:/dataset:ro
+      - configs/config_1/experiment_output:/experiment/output
+      - ./models:/models
+    environment:
+      test_file: /dataset/preprocessed_test_java.jsonl
+      do_train: false
+      do_val: false
+      pretrained_model: /models/models.bin
+
+  CodeBert_CodeToText_Experiment_2:
+    image: ciselab/CodeBERT-Code2Text:latest
+    volumes:
+      - configs/config_2/dataset/:/dataset:ro
+      - configs/config_2/experiment_output:/experiment/output
+      - ./models:/models
+    environment:
+      test_file: /dataset/preprocessed_test_java.jsonl
+      do_train: false
+      do_val: false
+      pretrained_model: /models/models.bin
+
+  CodeBert_CodeToText_Experiment_3:
+    image: ciselab/CodeBERT-Code2Text:latest
+    volumes:
+      - configs/config_3/dataset/:/dataset:ro
+      - configs/config_3/experiment_output:/experiment/output
+      - ./models:/models
+    environment:
+      test_file: /dataset/preprocessed_test_java.jsonl
+      do_train: false
+      do_val: false
+      pretrained_model: /models/models.bin
+
+  CodeBert_CodeToText_Experiment_4:
+    image: ciselab/CodeBERT-Code2Text:latest
+    volumes:
+      - configs/config_4/dataset/:/dataset:ro
+      - configs/config_4/experiment_output:/experiment/output
+      - ./models:/models
+    environment:
+      test_file: /dataset/preprocessed_test_java.jsonl
+      do_train: false
+      do_val: false
+      pretrained_model: /models/models.bin
+
+  CodeBert_CodeToText_Experiment_5:
+    image: ciselab/CodeBERT-Code2Text:latest
+    volumes:
+      - configs/config_5/dataset/:/dataset:ro
+      - configs/config_5/experiment_output:/experiment/output
+      - ./models:/models
+    environment:
+      test_file: /dataset/preprocessed_test_java.jsonl
+      do_train: false
+      do_val: false
+      pretrained_model: /models/models.bin
+
+  CodeBert_CodeToText_Experiment_6:
+    image: ciselab/CodeBERT-Code2Text:latest
+    volumes:
+      - configs/config_6/dataset/:/dataset:ro
+      - configs/config_6/experiment_output:/experiment/output
+      - ./models:/models
+    environment:
+      test_file: /dataset/preprocessed_test_java.jsonl
+      do_train: false
+      do_val: false
+      pretrained_model: /models/models.bin
+
+  CodeBert_CodeToText_Experiment_7:
+    image: ciselab/CodeBERT-Code2Text:latest
+    volumes:
+      - configs/config_7/dataset/:/dataset:ro
+      - configs/config_7/experiment_output:/experiment/output
+      - ./models:/models
+    environment:
+      test_file: /dataset/preprocessed_test_java.jsonl
+      do_train: false
+      do_val: false
+      pretrained_model: /models/models.bin
+
+  CodeBert_CodeToText_Experiment_8:
+    image: ciselab/CodeBERT-Code2Text:latest
+    volumes:
+      - configs/config_8/dataset/:/dataset:ro
+      - configs/config_8/experiment_output:/experiment/output
+      - ./models:/models
+    environment:
+      test_file: /dataset/preprocessed_test_java.jsonl
+      do_train: false
+      do_val: false
+      pretrained_model: /models/models.bin
+
+  CodeBert_CodeToText_Experiment_9:
+    image: ciselab/CodeBERT-Code2Text:latest
+    volumes:
+      - configs/config_9/dataset/:/dataset:ro
+      - configs/config_9/experiment_output:/experiment/output
+      - ./models:/models
+    environment:
+      test_file: /dataset/preprocessed_test_java.jsonl
+      do_train: false
+      do_val: false
+      pretrained_model: /models/models.bin
+
+  CodeBert_CodeToText_Experiment_10:
+    image: ciselab/CodeBERT-Code2Text:latest
+    volumes:
+      - configs/config_10/dataset/:/dataset:ro
+      - configs/config_10/experiment_output:/experiment/output
+      - ./models:/models
+    environment:
+      test_file: /dataset/preprocessed_test_java.jsonl
+      do_train: false
+      do_val: false
+      pretrained_model: /models/models.bin
+
+  CodeBert_CodeToText_Experiment_11:
+    image: ciselab/CodeBERT-Code2Text:latest
+    volumes:
+      - configs/config_11/dataset/:/dataset:ro
+      - configs/config_11/experiment_output:/experiment/output
+      - ./models:/models
+    environment:
+      test_file: /dataset/preprocessed_test_java.jsonl
+      do_train: false
+      do_val: false
+      pretrained_model: /models/models.bin
+
+  CodeBert_CodeToText_Experiment_12:
+    image: ciselab/CodeBERT-Code2Text:latest
+    volumes:
+      - configs/config_12/dataset/:/dataset:ro
+      - configs/config_12/experiment_output:/experiment/output
+      - ./models:/models
+    environment:
+      test_file: /dataset/preprocessed_test_java.jsonl
+      do_train: false
+      do_val: false
+      pretrained_model: /models/models.bin
+
+  CodeBert_CodeToText_Experiment_13:
+    image: ciselab/CodeBERT-Code2Text:latest
+    volumes:
+      - configs/config_13/dataset/:/dataset:ro
+      - configs/config_13/experiment_output:/experiment/output
+      - ./models:/models
+    environment:
+      test_file: /dataset/preprocessed_test_java.jsonl
+      do_train: false
+      do_val: false
+      pretrained_model: /models/models.bin
+
+  CodeBert_CodeToText_Experiment_14:
+    image: ciselab/CodeBERT-Code2Text:latest
+    volumes:
+      - configs/config_14/dataset/:/dataset:ro
+      - configs/config_14/experiment_output:/experiment/output
+      - ./models:/models
+    environment:
+      test_file: /dataset/preprocessed_test_java.jsonl
+      do_train: false
+      do_val: false
+      pretrained_model: /models/models.bin
+
+  

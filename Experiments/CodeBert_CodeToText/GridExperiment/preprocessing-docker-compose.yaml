@@ -1,0 +1,154 @@
+version: '3.8'
+
+services:
+  CodeBert_Preprocessing_0:
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./ur_dataset:/raw_data:ro
+      - /dataset:/data
+      - :/config:ro
+    environment:
+      RAW_DATA_FILE: test_java.jsonl
+      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+
+  CodeBert_Preprocessing_1:
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./ur_dataset:/raw_data:ro
+      - /dataset:/data
+      - :/config:ro
+    environment:
+      RAW_DATA_FILE: test_java.jsonl
+      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+
+  CodeBert_Preprocessing_2:
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./ur_dataset:/raw_data:ro
+      - /dataset:/data
+      - :/config:ro
+    environment:
+      RAW_DATA_FILE: test_java.jsonl
+      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+
+  CodeBert_Preprocessing_3:
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./ur_dataset:/raw_data:ro
+      - /dataset:/data
+      - :/config:ro
+    environment:
+      RAW_DATA_FILE: test_java.jsonl
+      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+
+  CodeBert_Preprocessing_4:
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./ur_dataset:/raw_data:ro
+      - /dataset:/data
+      - :/config:ro
+    environment:
+      RAW_DATA_FILE: test_java.jsonl
+      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+
+  CodeBert_Preprocessing_5:
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./ur_dataset:/raw_data:ro
+      - /dataset:/data
+      - :/config:ro
+    environment:
+      RAW_DATA_FILE: test_java.jsonl
+      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+
+  CodeBert_Preprocessing_6:
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./ur_dataset:/raw_data:ro
+      - /dataset:/data
+      - :/config:ro
+    environment:
+      RAW_DATA_FILE: test_java.jsonl
+      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+
+  CodeBert_Preprocessing_7:
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./ur_dataset:/raw_data:ro
+      - /dataset:/data
+      - :/config:ro
+    environment:
+      RAW_DATA_FILE: test_java.jsonl
+      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+
+  CodeBert_Preprocessing_8:
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./ur_dataset:/raw_data:ro
+      - /dataset:/data
+      - :/config:ro
+    environment:
+      RAW_DATA_FILE: test_java.jsonl
+      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+
+  CodeBert_Preprocessing_9:
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./ur_dataset:/raw_data:ro
+      - /dataset:/data
+      - :/config:ro
+    environment:
+      RAW_DATA_FILE: test_java.jsonl
+      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+
+  CodeBert_Preprocessing_10:
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./ur_dataset:/raw_data:ro
+      - /dataset:/data
+      - :/config:ro
+    environment:
+      RAW_DATA_FILE: test_java.jsonl
+      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+
+  CodeBert_Preprocessing_11:
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./ur_dataset:/raw_data:ro
+      - /dataset:/data
+      - :/config:ro
+    environment:
+      RAW_DATA_FILE: test_java.jsonl
+      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+
+  CodeBert_Preprocessing_12:
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./ur_dataset:/raw_data:ro
+      - /dataset:/data
+      - :/config:ro
+    environment:
+      RAW_DATA_FILE: test_java.jsonl
+      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+
+  CodeBert_Preprocessing_13:
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./ur_dataset:/raw_data:ro
+      - /dataset:/data
+      - :/config:ro
+    environment:
+      RAW_DATA_FILE: test_java.jsonl
+      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+
+  CodeBert_Preprocessing_14:
+    image: lampion/codebert-preprocessing:latest
+    volumes:
+      - ./ur_dataset:/raw_data:ro
+      - /dataset:/data
+      - :/config:ro
+    environment:
+      RAW_DATA_FILE: test_java.jsonl
+      POST_ALTERNATION_JSONL: preprocessed_test_java.jsonl
+
+  
