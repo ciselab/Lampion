@@ -304,6 +304,7 @@ public class App {
         registry.registerTransformer(new EmptyMethodTransformer(globalRandomSeed));
 
         registry.registerTransformer(new AddNeutralElementTransformer(globalRandomSeed));
+        registry.registerTransformer(new AddUnusedVariableTransformer(globalRandomSeed));
 
         return registry;
     }
@@ -384,6 +385,24 @@ public class App {
                     full.setFullRandomStrings(true);
                     registry.registerTransformer(full);
                     registry.registerTransformer(new EmptyMethodTransformer(globalRandomSeed));
+                } break;
+            }
+        }
+        if(properties.get("AddUnusedVariableTransformer") != null
+                && ((String)properties.get("AddUnusedVariableTransformer")).equalsIgnoreCase("true")){
+            String givenRandomness = (String) properties.get("UnusedVariableStringRandomness");
+            switch (givenRandomness) {
+                case "full" : {
+                    AddUnusedVariableTransformer t = new AddUnusedVariableTransformer(globalRandomSeed);
+                    t.setFullRandomStrings(true);
+                    registry.registerTransformer(t);
+                } break;
+                case "pseudo" : {registry.registerTransformer(new AddUnusedVariableTransformer(globalRandomSeed));} break;
+                case "both": {
+                    AddUnusedVariableTransformer full = new AddUnusedVariableTransformer(globalRandomSeed);
+                    full.setFullRandomStrings(true);
+                    registry.registerTransformer(full);
+                    registry.registerTransformer(new AddUnusedVariableTransformer(globalRandomSeed));
                 } break;
             }
         }
