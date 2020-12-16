@@ -1,0 +1,24 @@
+{
+  "transformations": [1,5,10],
+  "transformer_combinations" : [
+    {
+      "IfTrueTransformer": true,
+      "IfFalseElseTransformer": true
+    },
+    {
+      "LambdaIdentityTransformer": true
+    },
+    {
+      "AddNeutralElementTransformer": true
+    },
+    {
+    "RandomParameterNameTransformer": true,
+    "RandomParameterNameStringRandomness": "pseudo"
+    },
+    {
+    "RandomParameterNameTransformer": true,
+    "RandomParameterNameStringRandomness": "full"
+    }
+  ],
+  "seeds": [123]
+}

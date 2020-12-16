@@ -1,0 +1,33 @@
+version=1.1
+
+# currently supported: global, perMethod, perClass (Spelling is important!)
+transformationscope=perClassEach
+transformations={{ transformations|default(1, true) }}
+
+inputDirectory=/raw_data
+outputDirectory=/data
+
+databaseName=TransformationManifest.db
+databaseDirectory=/data/manifest
+pathToSchema=/usr/app/schema.sql
+
+# The seed used for the randomness throughout the app
+seed={{ seed|default(123, true) }}
+
+compilingTransformers=false
+
+# All Transformers set to true will be run evenly, all transformers with false will not run
+# The RandomStringMethods can create pseudo or full random strings
+# Accepted for these Methods are "full","pseudo","both", where "both" will create two Transformers, one full one pseudo
+
+IfTrueTransformer={{ IfTrueTransformer|default(false, true) }}
+IfFalseElseTransformer={{ IfFalseElseTransformer|default(false, true) }}
+LambdaIdentityTransformer={{ LambdaIdentityTransformer|default(false, true) }}
+RandomParameterNameTransformer={{ RandomParameterNameTransformer|default(false, true) }}
+RandomParameterNameStringRandomness={{ RandomParameterNameTransformer_StringRandomness|default("pseudo", true) }}
+
+# These are not functioning with the CodeBERT Code2Text experiment
+EmptyMethodTransformer=false
+EmptyMethodStringRandomness=pseudo
+RandomInlineCommentTransformer=false
+RandomInlineCommentStringRandomness=pseudo
