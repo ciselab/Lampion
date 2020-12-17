@@ -1,5 +1,6 @@
 experiment-docker-compose.yaml
 preprocessing-docker-compose.yaml
+experiment-with-training-docker-compose.yaml
 configs
 model
 models

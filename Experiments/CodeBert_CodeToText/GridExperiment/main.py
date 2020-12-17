@@ -12,7 +12,8 @@ def run(grid_config_file):
     preprocessing_template = env.get_template('preprocessing-docker-compose.yaml.j2')
     config_template = env.get_template('config.properties.j2')
     experiment_template = env.get_template('experiment-docker-compose.yaml.j2')
-
+    experiment_with_train_template = env.get_template('experiment-with-training-docker-compose.yaml.j2')
+    
     with open(grid_config_file) as f:
         grid_configurations = json.load(f)
 
@@ -57,6 +58,10 @@ def run(grid_config_file):
     experiment_file.write(experiment_content)
     experiment_file.close()
 
+    experiment_with_train_file = open("experiment-with-training-docker-compose.yaml","w")
+    experiment_with_train_content = experiment_with_train_template.render(configurations=configurations)
+    experiment_with_train_file.write(experiment_with_train_content)
+    experiment_with_train_file.close()
 
 if __name__ == '__main__':
     if(len(sys.argv)==2):
