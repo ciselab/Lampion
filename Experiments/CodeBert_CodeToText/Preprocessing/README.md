@@ -2,12 +2,12 @@
 
 This part of the repository builds a container that alternates the training/test data of the CodeBERT-Experiment using the Java-Obfuscator. 
 
-It first makes .java files for all lines of the jsonl-dataset, 
+It first makes `.java-files` for all lines of the jsonl-dataset, 
 then it runs the obfuscator, 
-then it stitches the altered .java files back together into a new jsonl.
+then it stitches the altered `.java-files` back together into a new jsonl.
 
 Place the dataset in the *compose_input*-folder, 
-adjust the name in the docker-compose.yml, 
+adjust the name (and maybe obfuscator version) in the `docker-compose.yml`, 
 adjust the config to your liking, 
 
 and run it with 
@@ -16,13 +16,15 @@ and run it with
 docker-compose up --build
 ```
 
-For the Grid experiment, including the replication package and multiple configs, there will be a separate repository. 
+You can also adjust the Obfuscator-Version setting the `--build-arg OBFUSCATOR_VERSION=1.1-SNAPSHOT` or other versions. Just make sure your mounted configuration matches. 
+
+For the Grid experiment, including the replication package and multiple configs, there is a [separate repository](../GridExperiment). 
 
 The above given compose is just a step to verify this building brick of the meta experiment.    
 
 ## Requirements
 
-The JavaObfuscator Image needs to be build/availible.
+The JavaObfuscator Image needs to be built / available.
 See the other part of the repository for instructions how to build it.
 
 Docker 19+
