@@ -33,7 +33,7 @@ ENV OUTPUT_DIRECTORY /data
 ENV POST_ALTERNATION_JSONL $OUTPUT_DIRECTORY/altered_java.jsonl
 
 # Where does the Obfuscator write the manifest to (must match the configuration of the obfuscator)
-ENV MANIFEST_PATH /usr/app/manifest/TransformationManifest.db
+ENV MANIFEST_PATH /usr/app/obfuscator_output/manifest/TransformationManifest.db
 
 RUN mkdir /data
 

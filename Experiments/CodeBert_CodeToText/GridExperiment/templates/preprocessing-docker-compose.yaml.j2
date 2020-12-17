@@ -6,10 +6,11 @@ services:
     image: lampion/codebert-preprocessing:latest
     volumes:
       - ./ur_dataset:/raw_data:ro
-      - ./{{ config.path_to }}/dataset:/data
+      - ./{{ config.path_to }}:/data
       - ./{{ config.path_to }}:/config:ro
     environment:
       RAW_DATA_FILE: /raw_data/{{ config.test_file|default("test_java.jsonl",true) }}
       POST_ALTERNATION_JSONL: /data/{{ config.test_file|default("preprocessed_test_java.jsonl",true) }}
+      MANIFEST_PATH: /usr/app/obfuscator_output/manifest/TransformationManifest.db
 
   {% endfor %}
