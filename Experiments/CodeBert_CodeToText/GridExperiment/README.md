@@ -55,6 +55,8 @@ docker-compose -f experiment-docker-compose.yaml down
 
 The results of the runs are gathered under the configs.
 
+If you want to run the experiment with training, place the training and validation files under the configs `ur_dataset`. This is sadly necessary as otherwise they fight over file-locks. 
+
 ## Limitations 
 
 Sometimes, sadly, the preprocessing fails for certain entries. 
