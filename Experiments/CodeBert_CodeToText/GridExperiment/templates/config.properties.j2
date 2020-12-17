@@ -22,11 +22,12 @@ compilingTransformers=false
 
 IfTrueTransformer={{ IfTrueTransformer|default(false, true) }}
 IfFalseElseTransformer={{ IfFalseElseTransformer|default(false, true) }}
+AddNeutralElementTransformer={{ AddNeutralElementTransformer|default(false, true)}}
 LambdaIdentityTransformer={{ LambdaIdentityTransformer|default(false, true) }}
 RandomParameterNameTransformer={{ RandomParameterNameTransformer|default(false, true) }}
 RandomParameterNameStringRandomness={{ RandomParameterNameTransformer_StringRandomness|default("pseudo", true) }}
-RandomParameterNameTransformer={{ AddUnusedVariableTransformer|default(false, true) }}
-RandomParameterNameStringRandomness={{ AddUnusedVariableTransformer_StringRandomness|default("pseudo", true) }}
+AddUnusedVariableTransformer={{ AddUnusedVariableTransformer|default(false, true) }}
+UnusedVariableStringRandomness={{ AddUnusedVariableTransformer_StringRandomness|default("pseudo", true) }}
 
 # These are not functioning with the CodeBERT Code2Text experiment
 EmptyMethodTransformer=false
