@@ -15,5 +15,6 @@ services:
       do_train: "true"
       do_val: "true"
       do_test: "true"
-
+      batch_size: {{batch_size|default(8,true)}}
+    oom_kill_disable: true
   {% endfor %}

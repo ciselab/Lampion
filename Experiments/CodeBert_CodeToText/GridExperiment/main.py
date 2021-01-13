@@ -5,7 +5,6 @@ import json                                         # For reading in the configu
 
 
 def run(grid_config_file):
-    print(f'Hi, {grid_config_file}')
     file_loader = FileSystemLoader('templates')
     env = Environment(loader=file_loader)
 
@@ -54,12 +53,12 @@ def run(grid_config_file):
     preprocessing_file.close()
 
     experiment_file = open("experiment-docker-compose.yaml","w")
-    experiment_content = experiment_template.render(configurations=configurations)
+    experiment_content = experiment_template.render(configurations=configurations, batch_size=grid_configurations['batch_size'])
     experiment_file.write(experiment_content)
     experiment_file.close()
 
     experiment_with_train_file = open("experiment-with-training-docker-compose.yaml","w")
-    experiment_with_train_content = experiment_with_train_template.render(configurations=configurations)
+    experiment_with_train_content = experiment_with_train_template.render(configurations=configurations, batch_size=grid_configurations['batch_size'])
     experiment_with_train_file.write(experiment_with_train_content)
     experiment_with_train_file.close()
 

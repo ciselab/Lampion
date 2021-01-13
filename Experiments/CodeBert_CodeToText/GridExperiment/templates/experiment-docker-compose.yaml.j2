@@ -14,5 +14,7 @@ services:
       do_val: "false"
       pretrained_model: /models/model.bin
       MANIFEST_PATH: /usr/app/obfuscator_output/manifest/TransformationManifest.db
-
+      batch_size: {{batch_size|default(8,true)}}
+    oom_kill_disable: true
+  
   {% endfor %}

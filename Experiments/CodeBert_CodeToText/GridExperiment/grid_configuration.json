@@ -24,5 +24,8 @@
     "AddUnusedVariableTransformer_StringRandomness": "full"
     }
   ],
-  "seeds": [123]
+
+  "seeds": [123],
+
+  "batch_size": 16
 }
