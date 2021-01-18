@@ -5,7 +5,7 @@ services:
   CodeBert_CodeToText_Experiment_{{ config.run_number }}:
     image: ciselab/codebert-code2text:latest
     volumes:
-      - ./{{ config.path }}/dataset/:/dataset:ro
+      - ./{{ config.path }}/:/dataset:ro
       - ./{{ config.path }}/experiment_output:/experiment/output
       - ./{{ config.path }}/model:/models
     environment:
