@@ -25,6 +25,8 @@
     }
   ],
 
+  "models": ["pretrained_java_pytorch_model.bin"],
+
   "seeds": [123],
 
   "batch_size": 16,

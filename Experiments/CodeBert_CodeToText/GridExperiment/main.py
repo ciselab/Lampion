@@ -22,21 +22,24 @@ def run(grid_config_file):
     transformer_combinations = grid_configurations['transformer_combinations']
     transformations = grid_configurations['transformations']
     seeds = grid_configurations['seeds']
+    models = grid_configurations['models']
 
     for tcomb in transformer_combinations:
         for tn in transformations:
             for seed in seeds:
-                config = {
-                    "transformations" : tn,
-                    "seed":seed,
-                    "run_number": counter,
-                    "path": f"configs/config_{counter}",
-                    "path_to": f"configs/config_{counter}"
-                }
-                # Merge two dicts
-                config = {**config,**tcomb}
-                configurations.append(config)
-                counter = counter + 1
+                for model in models:
+                    config = {
+                        "transformations" : tn,
+                        "seed":seed,
+                        "run_number": counter,
+                        "path": f"configs/config_{counter}",
+                        "path_to": f"configs/config_{counter}",
+                        "model_name": f"{model}"
+                    }
+                    # Merge two dicts
+                    config = {**config,**tcomb}
+                    configurations.append(config)
+                    counter = counter + 1
 
     print(f"Built {len(configurations)} configurations from {grid_config_file}")
 

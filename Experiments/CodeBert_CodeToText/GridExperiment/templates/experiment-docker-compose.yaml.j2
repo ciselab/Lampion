@@ -7,12 +7,14 @@ services:
     volumes:
       - ./{{ config.path }}/dataset/:/dataset:ro
       - ./{{ config.path }}/experiment_output:/experiment/output
-      - ./models:/models
+      - ./{{ config.path }}/model:/models
     environment:
       test_file: /dataset/preprocessed_test_java.jsonl
       do_train: "false"
       do_val: "false"
-      pretrained_model: /models/model.bin
+      do_test: "true"
+      load_existing_model: "true"
+      load_model_path: /models/{{ config.model_name | default("pytorch_model.bin",true)}}
     oom_kill_disable: true
     mem_limit: {{mem_limit|default("16g",true)}}
     memswap_limit: {{mem_limit|default("16g",true)}}

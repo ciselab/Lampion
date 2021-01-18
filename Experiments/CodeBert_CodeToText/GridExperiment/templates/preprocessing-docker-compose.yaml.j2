@@ -6,7 +6,7 @@ services:
     image: lampion/codebert-preprocessing:latest
     volumes:
       - ./ur_dataset:/raw_data:ro
-      - ./{{ config.path_to }}:/data
+      - ./{{ config.path_to }}/dataset:/data
       - ./{{ config.path_to }}:/config:ro
     environment:
       RAW_DATA_FILE: /raw_data/{{ config.test_file|default("cleaned_test.jsonl",true) }}
