@@ -9,7 +9,7 @@ services:
       - ./{{ config.path_to }}:/data
       - ./{{ config.path_to }}:/config:ro
     environment:
-      RAW_DATA_FILE: /raw_data/{{ config.test_file|default("test_java.jsonl",true) }}
+      RAW_DATA_FILE: /raw_data/{{ config.test_file|default("cleaned_test.jsonl",true) }}
       POST_ALTERNATION_JSONL: /data/{{ config.test_file|default("preprocessed_test_java.jsonl",true) }}
       MANIFEST_PATH: /data/manifest/TransformationManifest.db
       

@@ -4,3 +4,7 @@ experiment-with-training-docker-compose.yaml
 configs
 model
 models
+secret_notes.md
+
+*_config.json
+!grid_configuration.json

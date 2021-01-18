@@ -27,5 +27,6 @@
 
   "seeds": [123],
 
-  "batch_size": 16
+  "batch_size": 16,
+  "mem_limit": "16g"
 }

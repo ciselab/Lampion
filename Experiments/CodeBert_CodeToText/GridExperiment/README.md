@@ -7,6 +7,7 @@ The `main.py` uses the `grid_configuration.json` to build:
 1. A set of configurations 
 2. A docker compose to run the preprocessing for the configurations
 3. A docker compose to run the experiment using the preprocessed jsonl files
+4. copy all files and models to the configs, making unique non-blocking items.
 
 The docker composes are orchestrated to grab into each other, so be careful manually changing them.
 
@@ -31,6 +32,12 @@ Activate the conda environment and run
 
 ```
 python3 main.py
+```
+
+(Or run)
+
+```
+conda run -n LampionGridDebugger python3 main.py serg2_run1_config.json
 ```
 
 It will create the above mentioned files.
