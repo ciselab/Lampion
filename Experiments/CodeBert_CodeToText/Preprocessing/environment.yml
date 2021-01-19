@@ -22,4 +22,3 @@ dependencies:
   - wheel=0.36.2=pyhd3deb0d_0
   - xz=5.2.5=haf1e3a3_1
   - zlib=1.2.11=h7795811_1010
-prefix: /Users/lapplis/opt/anaconda3/envs/lampion-codebert-preprocessing

@@ -14,10 +14,17 @@ def headerToValues(header: str) -> [(str,str)]:
     repo=header.split("ur_repo")[1].strip()
     sha=header.split("ur_sha")[1].strip()
     func_name=header.split("ur_func_name")[1].strip()
+
     docstring=header.split("ur_docstring")[1]
     docstring = docstring[3:-2]
-    docstring = f"\"{docstring}\""
+    docstring = docstring.encode('unicode_escape').decode("utf-8")
+    docstring = docstring.replace('"','\\"')
     docstring = docstring.replace("\\\\n","\\n")
+    docstring = docstring.replace("\\n"," ")
+    docstring = docstring.replace("\\'"," ")
+    docstring = docstring.replace("\\`"," ")
+    docstring = f"\"{docstring}\""
+
     doctokens=header.split("ur_doctokens")[1]
     doctokens = eval(doctokens[2:-2])
     path = header.split("ur_path")[1].strip()
@@ -40,7 +47,7 @@ def walkJavaFiles(dir: str, output_filename: str = "altered_java.jsonl"):
     """
 
     # The file to write to
-    jsonL_file = open(output_filename,"w",encoding="utf-8")
+    jsonL_file = open(output_filename,mode="w",encoding="utf-8")
     counter = 0 # For debug info
 
     for dirpath, dnames, fnames in os.walk(dir):
@@ -54,7 +61,7 @@ def walkJavaFiles(dir: str, output_filename: str = "altered_java.jsonl"):
                 '''
                 This is a bit messy. 
                 First, the methodbody needs to be extracted using a helper method
-                Then, it get encoded to escape the newlines into \ns 
+                Then, it get encoded to escape the newlines into "\n"-s 
                 Then, it needs to be decoded to be non binary
                 After that, wrap it in normal string-quotes (not single quotes)
                 '''
