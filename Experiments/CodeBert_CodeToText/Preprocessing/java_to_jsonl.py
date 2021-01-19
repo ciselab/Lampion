@@ -15,12 +15,15 @@ def headerToValues(header: str) -> [(str,str)]:
     sha=header.split("ur_sha")[1].strip()
     func_name=header.split("ur_func_name")[1].strip()
 
+    # This Docstring encoding is the result of some regression bugs
+    # In general there are some issues created with json -> string -> file -> string -> json
     docstring=header.split("ur_docstring")[1]
     docstring = docstring[3:-2]
     docstring = docstring.encode('unicode_escape').decode("utf-8")
     docstring = docstring.replace('"','\\"')
     docstring = docstring.replace("\\\\n","\\n")
     docstring = docstring.replace("\\n"," ")
+    docstring = docstring.replace("\\\\'"," ")
     docstring = docstring.replace("\\'"," ")
     docstring = docstring.replace("\\`"," ")
     docstring = f"\"{docstring}\""
@@ -89,6 +92,8 @@ def walkJavaFiles(dir: str, output_filename: str = "altered_java.jsonl"):
                     else:
                         acc = acc + f"\"{pair[0]}\": {pair[1]} , "
                 acc = acc + json.dumps(m_tokens)[1:-1] + " , "
+
+                # Regression: There was an issue with code containing \ux00 breaking the json
                 acc = acc + f"\"code\": {methodbody} }}"
                 acc = acc + "\n" # Line break after entry
                 jsonL_file.write(acc)
