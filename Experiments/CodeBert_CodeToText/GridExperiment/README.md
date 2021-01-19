@@ -37,7 +37,7 @@ python3 main.py
 (Or run)
 
 ```
-conda run -n LampionGridDebugger python3 main.py serg2_run1_config.json
+conda run -n LampionGridDebugger python3 main.py grid_configuration.json
 ```
 
 It will create the above mentioned files.

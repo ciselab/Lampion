@@ -18,4 +18,5 @@ services:
     oom_kill_disable: true
     mem_limit: {{mem_limit|default("16g",true)}}
     memswap_limit: {{mem_limit|default("16g",true)}}
+    
   {% endfor %}
