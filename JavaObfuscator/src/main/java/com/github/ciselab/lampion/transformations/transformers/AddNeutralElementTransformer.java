@@ -216,7 +216,9 @@ public class AddNeutralElementTransformer extends BaseTransformer {
         // for nullpoint exceptions.
         // This way, a null-type is treated as unsupported, which is (intended behaviour)
         // Optional: Log a warning if the type is null and return false
-        return type != null && isSupportedType(type.getSimpleName());
+        return type != null 
+            && type.getSimpleName() != null
+            && isSupportedType(type.getSimpleName());
     }
 
     private boolean isSupportedType(String typename) {
