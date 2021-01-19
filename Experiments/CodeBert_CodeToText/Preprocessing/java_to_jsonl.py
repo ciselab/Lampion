@@ -97,11 +97,17 @@ def extractClassBody(body:str):
     This method takes everthing after the first curly bracket until the last curly bracket. 
     It is intended to be used for Java Classes that have the first curly bracket after class XZ 
     and with a last closing bracket. 
-    It does not work as intended for files with multiple classes / enums / other anomalies. 
+    It does not work as intended for files with multiple classes / enums / other anomalies.
+
+    Update // Bugfix:
+    The first curly bracket was too greedy as the docstring sometimes contains curly brackets.
+    The new behaviour first separates the head from the body,
+    and then looks for curly brackets in everything after the header.
     """
 
     # I tried to do fancy regex stuff but ... failed. Regex are not easy and worse for multiline things.
-    allAfterFirstBracket = "{".join((body.split("{")[1:]))
+    allAfterHeader = body.split("python_helper_header_end")[1]
+    allAfterFirstBracket = "{".join((allAfterHeader.split("{")[1:]))
     allBeforeLastBracket = "}".join((allAfterFirstBracket.split("}"))[:-1])
     return allBeforeLastBracket
 
