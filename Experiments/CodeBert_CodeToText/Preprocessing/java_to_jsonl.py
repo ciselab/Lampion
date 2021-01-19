@@ -40,7 +40,7 @@ def walkJavaFiles(dir: str, output_filename: str = "altered_java.jsonl"):
     """
 
     # The file to write to
-    jsonL_file = open(output_filename,"w")
+    jsonL_file = open(output_filename,"w",encoding="utf-8")
     counter = 0 # For debug info
 
     for dirpath, dnames, fnames in os.walk(dir):

@@ -22,6 +22,12 @@ For the Grid experiment, including the replication package and multiple configs,
 
 The above given compose is just a step to verify this building brick of the meta experiment.    
 
+To provide it for the GridExperiment, do 
+
+```
+docker build --build-arg OBFUSCATOR_VERSION=latest . -t lampion/codebert-preprocessing -t ciselab/codebert-preprocessing
+```
+
 ## Requirements
 
 The JavaObfuscator Image needs to be built / available.
