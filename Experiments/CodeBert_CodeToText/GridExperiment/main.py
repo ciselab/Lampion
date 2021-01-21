@@ -1,10 +1,9 @@
 from jinja2 import Environment, FileSystemLoader    # For templating with jinja
 import os                                           # For File/Directory Creation
-import sys                                          # For handling command args
 import json                                         # For reading in the configurations
+import argparse                                     # For handling a nice commandline interface
 
-
-def run(grid_config_file):
+def run(grid_config_file, number_of_preprocessing_containers=0, number_of_experiment_containers=0):
     file_loader = FileSystemLoader('templates')
     env = Environment(loader=file_loader)
 
@@ -50,29 +49,87 @@ def run(grid_config_file):
         config_file.write(config_content)
         config_file.close()
 
-    preprocessing_file = open("preprocessing-docker-compose.yaml","w")
-    preprocessing_content = preprocessing_template.render(configurations=configurations)
-    preprocessing_file.write(preprocessing_content)
-    preprocessing_file.close()
+    # Case one: There is no specified number of containers per shard, just write all in one file
+    if(number_of_preprocessing_containers==0):
+        preprocessing_file = open("preprocessing-docker-compose.yaml","w")
+        preprocessing_content = preprocessing_template.render(configurations=configurations)
+        preprocessing_file.write(preprocessing_content)
+        preprocessing_file.close()
+    # Case two: the user wanted atmost "number_of_preprocessing_containers" per compose-file
+    # group the configs in smaller sub-configs and make a new template for them
+    else:
+        preproc_file = 1;
+        low = 0;
+        up = number_of_preprocessing_containers;
+        while low < len(configurations):
+            up = min(up,len(configurations))        # Set the upper bound to not count out of the configs
+            sub_configurations=configurations[low:up];
+            # Write the file
+            preprocessing_file = open(f"preprocessing-docker-compose-part-{preproc_file}.yaml","w")
+            preprocessing_content = preprocessing_template.render(configurations=sub_configurations)
+            preprocessing_file.write(preprocessing_content)
+            preprocessing_file.close()
+            # Increase all the necessary counters
+            low += number_of_preprocessing_containers
+            up += number_of_preprocessing_containers
+            preproc_file += 1
+        print(f"Finished writing {preproc_file} preprocessing files with atmost {number_of_preprocessing_containers} per file")
 
-    experiment_file = open("experiment-docker-compose.yaml","w")
-    experiment_content = experiment_template.render(
-        configurations=configurations, 
-        batch_size=grid_configurations['batch_size'],
-        mem_limit=grid_configurations['mem_limit'])
-    experiment_file.write(experiment_content)
-    experiment_file.close()
+    if(number_of_experiment_containers==0):
+        experiment_file = open("experiment-docker-compose.yaml","w")
+        experiment_content = experiment_template.render(
+            configurations=configurations,
+            batch_size=grid_configurations['batch_size'],
+            mem_limit=grid_configurations['mem_limit'])
+        experiment_file.write(experiment_content)
+        experiment_file.close()
+        experiment_with_train_file = open("experiment-with-training-docker-compose.yaml","w")
+        experiment_with_train_content = experiment_with_train_template.render(
+            configurations=configurations,
+            batch_size=grid_configurations['batch_size'],
+            mem_limit=grid_configurations['mem_limit'])
+        experiment_with_train_file.write(experiment_with_train_content)
+        experiment_with_train_file.close()
+    else:
+        exp_file = 1;
+        low = 0;
+        up = number_of_experiment_containers;
+        while low < len(configurations):
+            up = min(up, len(configurations))  # Set the upper bound to not count out of the configs
+            sub_configurations = configurations[low:up];
+            # Write the exp-file
+            experiment_file = open(f"experiment-docker-compose-part-{exp_file}.yaml", "w")
+            experiment_content = experiment_template.render(configurations=sub_configurations)
+            experiment_file.write(experiment_content)
+            experiment_file.close()
+            # Write the exp-file with training
+            experiment_with_train_file = open(f"experiment-with-training-docker-compose-part-{exp_file}.yaml", "w")
+            experiment_with_train_content = experiment_with_train_template.render(
+                configurations=sub_configurations,
+                batch_size=grid_configurations['batch_size'],
+                mem_limit=grid_configurations['mem_limit'])
+            experiment_with_train_file.write(experiment_with_train_content)
+            experiment_with_train_file.close()
 
-    experiment_with_train_file = open("experiment-with-training-docker-compose.yaml","w")
-    experiment_with_train_content = experiment_with_train_template.render(
-        configurations=configurations, 
-        batch_size=grid_configurations['batch_size'],
-        mem_limit=grid_configurations['mem_limit'])
-    experiment_with_train_file.write(experiment_with_train_content)
-    experiment_with_train_file.close()
+            # Increase all the necessary counters
+            low += number_of_experiment_containers
+            up += number_of_experiment_containers
+            exp_file += 1
 
 if __name__ == '__main__':
-    if(len(sys.argv)==2):
-        run(sys.argv[1])
-    else:
-        run('grid_configuration.json')
+    parser = argparse.ArgumentParser(description='Creates the sub-configs and docker compose files for a Lampion-Grid Experiment')
+    parser.add_argument('configfile', metavar='cf', type=str, nargs=1,
+                        help='The config file to create the grid experiment from')
+    parser.add_argument('-np', type=int, nargs='?',
+                        help='number of containers started per preprocessing-compose (1 means one compose per container), '
+                             '0 for "all in one file".',default=0)
+    parser.add_argument('-ne', type=int, nargs='?',
+                        help='number of containers started per experiment-compose (1 means one compose per container), '
+                             '0 for "all in one file".', default=0)
+
+
+    args = parser.parse_args()
+
+    print(args)
+
+    run(args.configfile[0],number_of_experiment_containers=args.ne,number_of_preprocessing_containers=args.np)

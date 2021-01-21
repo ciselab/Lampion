@@ -8,3 +8,7 @@ secret_notes.md
 
 *_config.json
 !grid_configuration.json
+
+experiment-docker-compose-part-*
+experiment-with-training-docker-compose-part-*
+preprocessing-docker-compose-part-*
