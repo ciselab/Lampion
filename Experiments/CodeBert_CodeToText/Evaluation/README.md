@@ -12,14 +12,21 @@ The structure should be as follows:
 ```
 ./data
     /GridExp_XY
-        reference.gold
-        reference.output
-        /config_0
-            config.properties
-            test_0.output
-        /config_1
-            config.properties
-            test_0.output
+        /configs
+            /reference
+                test_0.gold
+                test_0.output
+                bleu.txt (optional, can be created in notebook)
+            /config_0
+                config.properties
+                test_0.gold
+                test_0.output
+                bleu.txt (optional, can be created in notebook)
+            /config_1
+                config.properties
+                test_0.gold
+                test_0.output
+                bleu.txt (optional, can be created in notebook)
     ...
 ```
 
