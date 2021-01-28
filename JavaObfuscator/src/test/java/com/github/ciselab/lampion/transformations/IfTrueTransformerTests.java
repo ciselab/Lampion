@@ -74,6 +74,35 @@ public class IfTrueTransformerTests {
 
     @Tag("Regression")
     @Test
+    void applyToMethodWithCharReturn_ElseBlockShouldHaveCharacterMinValueInIt(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { char getA() { return 'a';} }");
+
+        IfTrueTransformer transformer = new IfTrueTransformer();
+
+        transformer.applyAtRandom(testObject);
+
+        assertTrue(testObject.toString().contains("if (true)"));
+        assertTrue(testObject.toString().contains("return Character.MIN_VALUE;"));
+        assertFalse(testObject.toString().contains("return null;"));
+    }
+
+    @Tag("Regression")
+    @Test
+    void applyToMethodWithCharReturn_ElseBlockShouldCompile(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { char getA() { return 'a';} }");
+
+        IfTrueTransformer transformer = new IfTrueTransformer();
+
+        transformer.setTryingToCompile(true);
+
+        // This could throw an error
+        transformer.applyAtRandom(testObject);
+        // Pass test if no error is thrown
+        return;
+    }
+
+    @Tag("Regression")
+    @Test
     void applyToMethodWithDoubleReturn_ElseBlockShouldHave0dInIt(){
         CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { double sum(double a, double b) { return a + b;} }");
 

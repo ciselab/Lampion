@@ -1,6 +1,7 @@
 package com.github.ciselab.lampion.transformations;
 
 import com.github.ciselab.lampion.transformations.transformers.IfFalseElseTransformer;
+import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -236,6 +237,35 @@ public class IfFalseElseTransformerTests {
         assertTrue(result.getBeforeAfterComparison().isPresent());
     }
 
+
+    @Tag("Regression")
+    @Test
+    void applyToMethodWithCharReturn_ElseBlockShouldHaveCharacterMinValueInIt(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { char getA() { return 'a';} }");
+
+        IfFalseElseTransformer transformer = new IfFalseElseTransformer();
+
+        transformer.applyAtRandom(testObject);
+
+        assertTrue(testObject.toString().contains("if (false)"));
+        assertTrue(testObject.toString().contains("return Character.MIN_VALUE;"));
+        assertFalse(testObject.toString().contains("return null;"));
+    }
+
+    @Tag("Regression")
+    @Test
+    void applyToMethodWithCharReturn_ElseBlockShouldCompile(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { char getA() { return 'a';} }");
+
+        IfFalseElseTransformer transformer = new IfFalseElseTransformer();
+
+        transformer.setTryingToCompile(true);
+
+        // This could throw an error
+        transformer.applyAtRandom(testObject);
+        // Pass test if no error is thrown
+        return;
+    }
 
     static CtElement classWithoutReturnMethod(){
         CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { void m() { System.out.println(\"yeah\");} }");

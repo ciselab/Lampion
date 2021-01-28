@@ -137,7 +137,7 @@ public class IfFalseElseTransformer extends BaseTransformer {
             case "short": return "0";
             case "int": return "0";
             case "long": return "0L";
-            case "char": return "'\u0000'";
+            case "char": return "Character.MIN_VALUE";
             case "float": return "0.0f";
             case "double": return "0.0d";
             default: return "null";
