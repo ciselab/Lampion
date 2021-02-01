@@ -7,6 +7,11 @@ transformations={{ transformations|default(1, true) }}
 inputDirectory=/usr/app/obfuscator_input
 outputDirectory=/usr/app/obfuscator_output
 
+# Whether or not to write the SQLite Manifest
+# Much faster if skipped, but errors are harder to inspect
+# If set to True, Manifest will be written. False otherwise. If False, the database and schema attributes are not required
+writeManifest={{ writeManifest|default(true, true) }}
+
 databaseName=TransformationManifest.db
 databaseDirectory=/data/manifest
 pathToSchema=/usr/app/schema.sql
