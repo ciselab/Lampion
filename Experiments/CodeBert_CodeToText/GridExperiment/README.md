@@ -7,9 +7,19 @@ The `main.py` uses the `grid_configuration.json` to build:
 1. A set of configurations 
 2. A docker compose to run the preprocessing for the configurations
 3. A docker compose to run the experiment using the preprocessed jsonl files
-4. copy all files and models to the configs, making unique non-blocking items.
 
 The docker composes are orchestrated to grab into each other, so be careful manually changing them.
+
+There are two scripts provided: 
+
+[replicator.sh](replicator.sh) which copies all files and models to the configs, making unique non-blocking items. 
+place the required model (with the correct name) under ./model and the training- and validation-file under ./ur_dataset.
+When not running the training, the ./ur_dataset can be left empty.
+The functionality of the replicator was initially in the main.py, but has been moved so that the replication can be done server side, reducing data in transit.
+
+[extractor.sh](./extractor.sh) will be run after the experiments, and it reduces the folder ./configs to fit what is required for the evaluation. It removes the altered dataset and the model. 
+**Be sure to have a backup before you run the extractor!** 
+
 
 ## Requirements
 
@@ -30,17 +40,22 @@ Place your (unmodified dataset) in *./ur_dataset* and either name it `test_java.
 
 Activate the conda environment and run 
 
-```
+```shell
 python3 main.py
 ```
 
 (Or run)
 
-```
-conda run -n LampionGridDebugger python3 main.py grid_configuration.json
+```shell
+conda run -n Lampion_CodeToText_GridExperiment python3 main.py grid_configuration.json
 ```
 
 It will create the above mentioned files.
+Run the replicator to place the copies in the right places: 
+
+```shell
+./replicator.sh
+```
 
 Run the docker-composes using
 

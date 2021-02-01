@@ -24,6 +24,9 @@
     "AddUnusedVariableTransformer_StringRandomness": "full"
     }
   ],
+  
+  "WriteManifest": false,
+  "ExplicitImports" : true,
 
   "models": ["pretrained_java_pytorch_model.bin"],
 
