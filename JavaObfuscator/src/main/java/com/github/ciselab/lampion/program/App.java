@@ -183,50 +183,55 @@ public class App {
         engine.setNumberOfTransformationsPerScope(transformations,transformationScope);
 
         // Read Items for SQLite
-        String databaseName="TransformationManifest.db";
-        String databaseDirectory="./manifest";
-        String pathToSchema="./createSQLiteManifest";
-        if(properties.get("databaseName") != null){
-            databaseName = (String) properties.get("databaseName");
+        // First check for skipping Manifest-Write
+        if (properties.get("writeManifest")!=null && !Boolean.parseBoolean((String) properties.get("writeManifest"))){
+            // The writeManifest was set to false
+            logger.info("Writing manifest of changes has been disables - you will not be able to find the exact changes");
         } else {
-            logger.debug("There was no DatabaseName specified in the configuration - defaulting to " + databaseName);
-        }
-        if(properties.get("databaseDirectory") != null){
-            databaseDirectory = (String) properties.get("databaseDirectory");
-        } else {
-            logger.debug("There was no Directory specified to write manifest in the configuration - defaulting to " + databaseDirectory);
-        }
-        // Write the database directory if there was none - otherwise the database is not written
-        if(!Files.exists(Path.of(databaseDirectory))){
-            logger.debug("Did not find database directory - trying to create it.");
-            try {
-                Files.createDirectory(Path.of(databaseDirectory));
-            } catch (IOException ioException) {
-                logger.error("Error creating database directory - proceeding but database will not be written.",ioException);
+            // Else Read attributes,check them and create writer
+            String databaseName = "TransformationManifest.db";
+            String databaseDirectory = "./manifest";
+            String pathToSchema = "./createSQLiteManifest";
+            if (properties.get("databaseName") != null) {
+                databaseName = (String) properties.get("databaseName");
+            } else {
+                logger.debug("There was no DatabaseName specified in the configuration - defaulting to " + databaseName);
             }
-        }
-        if(properties.get("pathToSchema") != null){
-            pathToSchema = (String) properties.get("pathToSchema");
-        } else {
-            // The check for Schema validity and existance is done in the constructor of SQLite Writer
-            logger.warn("There was no SchemaPath specified in the configuration - defaulting to "+pathToSchema);
-        }
+            if (properties.get("databaseDirectory") != null) {
+                databaseDirectory = (String) properties.get("databaseDirectory");
+            } else {
+                logger.debug("There was no Directory specified to write manifest in the configuration - defaulting to " + databaseDirectory);
+            }
+            // Write the database directory if there was none - otherwise the database is not written
+            if (!Files.exists(Path.of(databaseDirectory))) {
+                logger.debug("Did not find database directory - trying to create it.");
+                try {
+                    Files.createDirectory(Path.of(databaseDirectory));
+                } catch (IOException ioException) {
+                    logger.error("Error creating database directory - proceeding but database will not be written.", ioException);
+                }
+            }
+            if (properties.get("pathToSchema") != null) {
+                pathToSchema = (String) properties.get("pathToSchema");
+            } else {
+                // The check for Schema validity and existance is done in the constructor of SQLite Writer
+                logger.warn("There was no SchemaPath specified in the configuration - defaulting to " + pathToSchema);
+            }
+            String fullDatabasePath = databaseDirectory.endsWith("/") ? databaseDirectory+databaseName : databaseDirectory+"/"+databaseName;
+            logger.debug("Full SQLite-Database Path: " + fullDatabasePath);
 
+            // Build SQLite Writer Schema
+            ManifestWriter writer = new SqliteManifestWriter(pathToSchema,fullDatabasePath);
+
+            // Socket Writer into Base Engine
+            engine.setManifestWriter(writer);
+        }
         if(properties.get("writeJavaOutput") != null) {
             boolean writeJavaOutput = Boolean.parseBoolean((String) properties.get("writeJavaOutput"));
             engine.setWriteJavaOutput(writeJavaOutput);
         } else {
             logger.debug("Did not find property for whether to write Java Output - defaulting to true");
         }
-
-        String fullDatabasePath = databaseDirectory.endsWith("/") ? databaseDirectory+databaseName : databaseDirectory+"/"+databaseName;
-        logger.debug("Full SQLite-Database Path: " + fullDatabasePath);
-
-        // Build SQLite Writer Schema
-        ManifestWriter writer = new SqliteManifestWriter(pathToSchema,fullDatabasePath);
-
-        // Socket Writer into Base Engine
-        engine.setManifestWriter(writer);
 
         // Set Seed(s)
         long seed = globalRandomSeed;
