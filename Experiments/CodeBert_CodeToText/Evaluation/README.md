@@ -48,6 +48,6 @@ create the environment *freshly* and install the most important packages by hand
 ```
 conda create --name Lampion-Codebert-Evaluation
 conda activate Lampion-Codebert-Evaluation
-conda install jupyter=1.0 pandas=1.2.1 matplotlib=3.3.3 nltk=3.4.4
+conda install jupyter=1.0 pandas=1.2.1 matplotlib=3.3.3 nltk=3.4.4 seaborn=0.11.1
 conda run -n Lampion-Codebert-Evaluation jupyter notebook
 ```
