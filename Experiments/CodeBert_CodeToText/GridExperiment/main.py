@@ -23,6 +23,9 @@ def run(grid_config_file, number_of_preprocessing_containers=0, number_of_experi
     seeds = grid_configurations['seeds']
     models = grid_configurations['models']
 
+    writeManifest=grid_configurations["WriteManifest"],
+    explicitImports=grid_configurations["ExplicitImports"]
+
     for tcomb in transformer_combinations:
         for tn in transformations:
             for seed in seeds:
@@ -33,7 +36,9 @@ def run(grid_config_file, number_of_preprocessing_containers=0, number_of_experi
                         "run_number": counter,
                         "path": f"configs/config_{counter}",
                         "path_to": f"configs/config_{counter}",
-                        "model_name": f"{model}"
+                        "model_name": f"{model}",
+                        "WriteManifest": f"{writeManifest}".lower(),
+                        "ExplicitImports": f"{explicitImports}".lower()
                     }
                     # Merge two dicts
                     config = {**config,**tcomb}
@@ -75,7 +80,7 @@ def run(grid_config_file, number_of_preprocessing_containers=0, number_of_experi
             preproc_file += 1
         print(f"Finished writing {preproc_file} preprocessing files with atmost {number_of_preprocessing_containers} per file")
 
-    if(number_of_experiment_containers==0):
+    if number_of_experiment_containers==0:
         experiment_file = open("experiment-docker-compose.yaml","w")
         experiment_content = experiment_template.render(
             configurations=configurations,
