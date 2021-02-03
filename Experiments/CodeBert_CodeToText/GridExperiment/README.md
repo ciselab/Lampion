@@ -9,7 +9,7 @@ The `main.py` uses the `grid_configuration.json` to build:
 3. A docker compose to run the experiment using the preprocessed jsonl files
 4. copy all files and models to the configs, making unique non-blocking items.
 
-The docker composes are orchestrated to grab into each other, so be careful manually changing them.
+The docker composes (and scripts) are orchestrated to grab into each other, so be careful manually changing them.
 
 ## Requirements
 
@@ -67,5 +67,22 @@ If you want to run the experiment with training, place the training and validati
 ## Limitations 
 
 Sometimes, sadly, the preprocessing fails for certain entries. 
+A guide what to remove from the original test-data is in [a nearby file](./removal-info.txt) but the cleaned dataset will also be provided.
 
 I am currently investigating this and will provide a dataset that is not failing in the preprocessing.
+
+
+## Known Issues & Workarounds
+
+For the Experiments containing the *If-True*-Transformer there is a little issue with the data as some characters are un-escaped. 
+The bad candidate are (always) 4 entries containing an unescaped `\u00` or `\x00`. 
+If this error appears, on linux systems just navigate next to the configs folder and run: 
+
+```shell
+find configs -type f -exec \
+    sed -i 's/\u00/\\u00/g' {} \;
+find configs -type f -exec \
+    sed -i 's/\x00/\\x00/g' {} \;
+```
+
+This will replace all instances with the correct escaped ones.
