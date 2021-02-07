@@ -2,3 +2,6 @@
 .tex
 *aux
 *.aux
+*pdf
+*.pdf
+.pdf
