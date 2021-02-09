@@ -19,8 +19,9 @@ While the experiment from Microsoft/Nvidia has multiple languages, this experime
 
 ## Dataset - Preparation 
 
-The original dataset had to be minimally adjusted. 
-While I am still looking for a nice way to provide the changed dataset, the changes are minimal and for now everyone can do it fast manually. 
+The original dataset had to be minimally adjusted. You can find the altered dataset [here](https://surfdrive.surf.nl/files/index.php/f/8713322177)
+
+In case you want to re-do the dataset from scratch:
 
 Remove the entries of the repository `wmixvideo/nfe` and the path ` src/main/java/com 
 Fincatto/documentofiscal/mdfe3` as well as `fincatto/documentofiscal/cte300` in their path **in the valid.jsonl**.
