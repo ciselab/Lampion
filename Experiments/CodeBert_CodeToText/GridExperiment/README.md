@@ -29,6 +29,9 @@ The functionality of the replicator was initially in the main.py, but has been m
 - A pretrained model from the CodeBert experiment
 - The (cleaned) dataset as a .jsonl file
 
+The cleaned dataset and the model can be found [here](https://surfdrive.surf.nl/files/index.php/f/8713322177). 
+There is also a ready-made experiment set from the paper that only needs to run with docker-compose. 
+
 ## How to run 
 
 Adjust the `grid_configuration.json` to your likings, but be careful to not overdo it in a single run. 
@@ -77,7 +80,8 @@ docker-compose -f experiment-docker-compose.yaml down
 
 The results of the runs are gathered under the configs.
 
-If you want to run the experiment with training, place the training and validation files under the configs `ur_dataset`. This is sadly necessary as otherwise they fight over file-locks. 
+If you want to run the experiment with training, place the training and validation files under the configs `ur_dataset`. 
+This is sadly necessary as otherwise they fight over file-locks. 
 
 ## Limitations 
 
