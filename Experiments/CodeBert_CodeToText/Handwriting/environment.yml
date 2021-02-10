@@ -1,0 +1,24 @@
+name: lampion-codebert-handwriting
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - ca-certificates=2020.12.5=h033912b_0
+  - certifi=2020.12.5=py38h50d1736_1
+  - jsonlines=2.0.0=pyhd3deb0d_0
+  - libcxx=11.0.0=h4c3b8ed_1
+  - libffi=3.3=h046ec9c_2
+  - ncurses=6.2=h2e338ed_4
+  - openssl=1.1.1i=h35c211d_0
+  - pip=20.3.3=pyhd8ed1ab_0
+  - python=3.8.6=h624753d_4_cpython
+  - python_abi=3.8=1_cp38
+  - readline=8.0=h0678c8f_2
+  - regex=2020.11.13=py38h5406a74_1
+  - setuptools=49.6.0=py38h50d1736_3
+  - six=1.15.0=pyh9f0ad1d_0
+  - sqlite=3.34.0=h17101e1_0
+  - tk=8.6.10=h0419947_1
+  - wheel=0.36.2=pyhd3deb0d_0
+  - xz=5.2.5=haf1e3a3_1
+  - zlib=1.2.11=h7795811_1010

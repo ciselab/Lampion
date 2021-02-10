@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  CodeBert_CodeToText_Handwritten_Experiment:
+    image: ciselab/codebert-code2text:latest
+    volumes:
+      - ./compose_input/:/dataset:ro
+      - ./compose_output/:/experiment/output
+      - ./model:/models
+    environment:
+      test_file: /dataset/handwritten.jsonl
+      do_train: "false"
+      do_val: "false"
+      do_test: "true"
+      load_existing_model: "true"
+      load_model_path: /models/pretrained_java_pytorch_model.bin
+    oom_kill_disable: true
+   
