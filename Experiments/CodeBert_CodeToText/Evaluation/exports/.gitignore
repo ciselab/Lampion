@@ -1,0 +1,8 @@
+*.tex
+.tex
+*aux
+*.aux
+*pdf
+*.pdf
+.pdf
+*.csv

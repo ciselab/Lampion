@@ -1,0 +1,9 @@
+data
+.ipynb_checkpoints
+.idea
+__pycache__
+.png
+*png
+*.png
+*.tex
+.tex
