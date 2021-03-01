@@ -8,10 +8,11 @@ RUN mvn package verify
 
 #### STAGE 2
 #### Deploying the application
-
 FROM azul/zulu-openjdk-alpine:15
 
 ARG OBFUSCATOR_VERSION
+
+LABEL org.opencontainers.image.source https://github.com/ciselab/Lampion
 
 ENV dir /usr/app
 
@@ -31,7 +32,7 @@ WORKDIR $dir
 # The issue with build args is that they disappear after build time, 
 # They are not availible as env-variables after the container was build 
 # hence, rename the jar to a generic name at build time, to not have runtime issues
-RUN mv Lampion-JavaObfuscator-$OBFUSCATOR_VERSION.jar Lampion-JavaObfuscator.jar
+RUN mv Lampion-JavaTransformer-$OBFUSCATOR_VERSION.jar Lampion-Transformer.jar
 
 RUN chmod +x ./entrypoint.sh
 

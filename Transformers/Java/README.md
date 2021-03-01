@@ -1,4 +1,4 @@
-# Java Obfuscator
+# Java Transformer
 
 This part of the Lampion Project alters Java Files using metamorphic transformations and returns/writes the altered javafiles as well as a manifest. 
 
@@ -29,7 +29,7 @@ The exploration-test profile will **only** run Tests tagged as `@Tag("Exploratio
 To build with Docker: 
 
 ```sh
-docker build --build-arg OBFUSCATOR_VERSION=1.1 . -t lampion/java-obfuscator:1.1 -t ciselab/java-obfuscator:1.1 -t ghcr.io/ciselab/lampion/java-obfuscator:1.1
+docker build --build-arg TRANSFORMER_VERSION=1.1 . -t lampion/java-transformer:1.1 -t ciselab/java-transformer:1.1 -t ghcr.io/ciselab/lampion/java-transformer:1.1
 ```
 
 where *snapshot*-versions are supported. 
