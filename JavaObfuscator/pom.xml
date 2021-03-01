@@ -6,7 +6,7 @@
 
     <groupId>com.github.ciselab</groupId>
     <artifactId>Lampion-JavaObfuscator</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
     <description>Java Code Obfuscator used in the Lampion Project</description>
 
     <properties>

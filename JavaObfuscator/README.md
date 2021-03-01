@@ -29,7 +29,7 @@ The exploration-test profile will **only** run Tests tagged as `@Tag("Exploratio
 To build with Docker: 
 
 ```sh
-docker build --build-arg OBFUSCATOR_VERSION=x.x . -t lampion/java-obfuscator:latest
+docker build --build-arg OBFUSCATOR_VERSION=1.1 . -t lampion/java-obfuscator:1.1 -t ciselab/java-obfuscator:1.1 -t ghcr.io/ciselab/lampion/java-obfuscator:1.1
 ```
 
 where *snapshot*-versions are supported. 
