@@ -6,8 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        TRANSFORMER_VERSION: latest
-    image: lampion/codebert-preprocessing:latest
+        TRANSFORMER_VERSION: 1.2
+    image: ciselab/codebert-preprocessing:1.1
     volumes:
       - ./compose_input:/raw_data:ro
       - ./compose_output:/data

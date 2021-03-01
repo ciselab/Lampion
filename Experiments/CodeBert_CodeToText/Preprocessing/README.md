@@ -25,7 +25,7 @@ The above given compose is just a step to verify this building brick of the meta
 To provide it for the GridExperiment, do 
 
 ```
-docker build --build-arg TRANSFORMER_VERSION=latest . -t lampion/codebert-preprocessing:1.1 -t ciselab/codebert-preprocessing:1.1 -t ghcr.io/ciselab/lampion/codebert-preprocessing:1.1
+docker build --build-arg TRANSFORMER_VERSION=latest . -t lampion/codebert-preprocessing:1.1  -t lampion/codebert-preprocessing:latest -t ciselab/codebert-preprocessing:1.1  -t ciselab/codebert-preprocessing:latest -t ghcr.io/ciselab/lampion/codebert-preprocessing:1.1 -t ghcr.io/ciselab/lampion/codebert-preprocessing:latest
 ```
 
 ## Requirements
