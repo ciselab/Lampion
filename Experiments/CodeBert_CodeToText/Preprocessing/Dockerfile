@@ -1,7 +1,7 @@
 ARG OBFUSCATOR_VERSION=latest
 FROM lampion/java-obfuscator:${OBFUSCATOR_VERSION}
 
-RUN apk add python3=3.8.5-r0 py3-pip=20.1.1-r0 python3-dev=3.8.5-r0 build-base bash
+RUN apk add python3>=3.8.5-r0 py3-pip>=20.1.1-r0 python3-dev>=3.8.5-r0 build-base bash
 
 RUN pip install wheel==0.34.2 regex==2020.6.8 jsonlines
 
