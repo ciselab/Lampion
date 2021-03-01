@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        OBFUSCATOR_VERSION: latest
+        TRANSFORMER_VERSION: latest
     image: lampion/codebert-preprocessing:latest
     volumes:
       - ./compose_input:/raw_data:ro
