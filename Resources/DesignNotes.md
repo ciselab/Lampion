@@ -8,26 +8,30 @@ A short dictionary to understand names and namings in this project:
 
 - **AST**: [Abstract Syntax Tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree) - a representation of the code and program produces by a compiler. The ASTs in this project are provided by the [Spoon Library](https://github.com/INRIA/spoon/). 
 - **Metamorphic Transformations**: A metamorphic transformation originates from machine vision, where initially the images get flipped, rotated or noised in order to test/improve the model under test. The initial image is still the same for humans, and has the same degree of information (e.g. it is still a dog on the picture, even if it's turned upside down). This behavior is transferred to code and models working on code, for quick-examples see [The overview image](./ExampleTransformations.PNG) or [more elaborate definitions](./Transformations.md). The term *"metamorphic transformation"* and *"transformation"* are used interchangeably in this project, as there are no other transformations.
-- **Obfuscation**: Refers to altering program (mostly byte) code to make a program effectively equal but different in representation on disk/file. This is commonly used to mask malware and pass virus-scanners. The obfuscations applied are usually metamorphic transformations on bytecode-level. The term obfuscator is used in this projekt for artifacts that perform metamorphic transformations, as metamorphic transformation is a lot longer and less cool than obfuscation. 
+- **Obfuscation**: Refers to altering program (mostly byte) code to make a program effectively equal but different in representation on disk/file. This is commonly used to mask malware and pass virus-scanners. The obfuscations applied are usually metamorphic transformations on bytecode-level.
+
+## Big Refactorings 
+
+- From v1.1: Changed "Obfuscator" in all occasions to "Transformer", to fit closer to the processes described in the paper. The Term Obfuscator was still part of the experiments provided in the paper, however, I then decided to change it. 
 
 ## Repository Structure
 
 In terms of the optimal repository structure, it is important to see the components of this project as a whole, where there are 
 
-1. self-written obfuscators
+1. self-written Transformers
 2. an output specification (Manifest-Schema)
 3. Foreign Experiments, to conduct a meta experiment
 4. Visualization, to evaluate the meta experiment
 
 Where each part has different inputs and outputs:
 
-Obfuscators are program code, should be versioned, should use shared data (the manifest) and be published.
+Transformers are program code, should be versioned, should use shared data (the manifest) and be published.
 
-The Manifest-Schema is only shared data between obfuscators and visualization.
+The Manifest-Schema is only shared data between transformers and visualization.
 While it goes into a sql-lite database, there is no such thing as a docker image provided.
 
 The foreign experiments, need (foreign) data and return data (such as metrics). 
-Furthermore, the foreign experiments need some buildup to put the obfuscator to work, and to norm the metrics in a usable format.
+Furthermore, the foreign experiments need some buildup to put the transformers to work, and to norm the metrics in a usable format.
 
 The vizualisation needs the produced data from the manifest, as well as the metrics from the experiments.
 
@@ -36,17 +40,17 @@ In terms of expressing this in a structure, there are two opposing goals:
 1. neatly seperate the parts, so they can be versioned, published and cared for in partition.
 2. keep the parts together, to reduce integration and the partition of information
 
-Also, some parts are self-sufficient (like the obfuscators), but others do not make sense on their own (like the manifest).
+Also, some parts are self-sufficient (like the transformers), but others do not make sense on their own (like the manifest).
 
 For now, the following structure will be pursued: 
 
 ![Structure](./Repository_Structure.PNG)
 
 That is, most artifacts are in the Lampion repository (this one), but the experiments are separated into an extra repository. 
-The extra repository needs the obfuscators from this repositories-releases, and builds a fully reproducible, self-contained package.
+The extra repository needs the transformers from this repositories-releases, and builds a fully reproducible, self-contained package.
 This experiment-package is used in Lampions-repository's Experiment folder, with references and experiment-specific configuration.
 The combination of configuration + reproduction-package-version should yield a definite and clean result, as well as (the for now) best architecture.
-It should also help to accomodate different configrations and the switch to different/later versions of the obfuscators.
+It should also help to accomodate different configrations and the switch to different/later versions of the transformers.
 
 ## Alternation Manifest
 
@@ -82,7 +86,7 @@ SQLLite comes with a build in compression.
 
 There are two further benefits:
 
-- When only using standard SQL and ODBC, the obfuscator can store the manifest in a remote library
+- When only using standard SQL and ODBC, the transformers can store the manifest in a remote library
 - Some queries can be performed on the database, saving time in python
 
 The negative point in using SQL is that it is compared to a file a lot of additional work for both sides, visualisation and writing.
@@ -99,14 +103,14 @@ And, furthermore, older databases will be unusable with the current version.
 
 After the data is in the SQL Database, it will be used "read only" anyway, so the additional safety provided by enums is not necessary. 
 
-Therefore, the obfuscator instantiates the categories table of the database with all categories found in its enumeration and linking the entries to the categories table instead of using an database-enumeration.
-This approach helps to be a bit more flexible in terms of the database and also helps to re-use the schema for more and different obfuscators. (Let's say you write another obfuscator in Python with different Categories, then you'd have to sync the enum over java, python and sql)
+Therefore, the transformer instantiates the categories table of the database with all categories found in its enumeration and linking the entries to the categories table instead of using an database-enumeration.
+This approach helps to be a bit more flexible in terms of the database and also helps to re-use the schema for more and different transformers. (Let's say you write another transformer in Python with different Categories, then you'd have to sync the enum over java, python and sql)
 
 *See:*
 
-- [TransformationCategory.java](../JavaObfuscator/src/main/java/com/github/ciselab/lampion/transformations/TransformationCategory.java)
+- [TransformationCategory.java](../Transformers/Java/src/main/java/com/github/ciselab/lampion/transformations/TransformationCategory.java)
 
-## Obfuscator
+## Transformer
 
 ### Registration of Transformers
 
@@ -147,8 +151,8 @@ At least it is simple, and for every transformer about 7 Lines must be added to 
 
 *See:*
 
-- [Transformation.java](../JavaObfuscator/src/main/java/com/github/ciselab/lampion/transformations/Transformer.java)
-- [TransformationRegistry.java](../JavaObfuscator/src/main/java/com/github/ciselab/lampion/transformations/TransformationRegistry.java)
+- [Transformation.java](../Transformers/Java/src/main/java/com/github/ciselab/lampion/transformations/Transformer.java)
+- [TransformationRegistry.java](../Transformers/Java/src/main/java/com/github/ciselab/lampion/transformations/TransformationRegistry.java)
 
 ### Attributes of Transformations
 
@@ -213,4 +217,36 @@ After a lot of trial and error, the following dependencies must be somewhere in 
 - Log4J
 - Log4J-SLF4J Binding
 
-I am not 100% sure whether some of these can be removed, however now it is working with logging for both spoon and the java obfuscator.
+I am not 100% sure whether some of these can be removed, however now it is working with logging for both spoon and the java transformer.
+
+## Miscellancelous 
+
+### Anonymus Shading of Java Transformers
+
+For the paper it was necessary to anonymize the Obfuscator, 
+which had an issue as the logging contained the class path, which had "ciselab" in it. 
+To fix this, add the following in the Mavens Shading pluggin: 
+
+```XML
+<configuration>
+    <!-- This should (?) rename the  artifacts to be anonymous-->
+    <!-- taken from https://maven.apache.org/plugins/maven-shade-plugin/examples/class-relocation.html -->
+    <relocations>
+        <relocation>
+            <pattern>com.github.ciselab.lampion</pattern>
+            <shadedPattern>anonymous.lampion</shadedPattern>
+        </relocation>
+    </relocations>
+    <!-- This transformer is necessary, as otherwise the current Spoon version breaks on runtime missing a Logger -->
+    <!-- See: https://github.com/INRIA/spoon/pull/3678 -->
+    <transformers>
+        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+            <mainClass>anonymous.lampion.program.App</mainClass>
+            <manifestEntries>
+                <Multi-Release>true</Multi-Release>
+            </manifestEntries>
+        </transformer>
+        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+    </transformers>
+</configuration>
+```

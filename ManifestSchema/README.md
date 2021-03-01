@@ -2,7 +2,7 @@
 
 This folder contains .sql files to create the required Schema in SQLite. 
 
-They are intended to give a guidance for any other database and to be reusable potentially by new Obfuscators.
+They are intended to give a guidance for any other database and to be reusable potentially by new Transformers.
 
 Additionally to schema creation, a set of SQL-Statements for manual inspection is provided.
 
