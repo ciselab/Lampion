@@ -43,7 +43,7 @@ public class App {
     public static final long globalRandomSeed = 2020;
 
     public static void main(String[] args) throws IOException {
-        logger.info("Starting Lampion Obfuscator");
+        logger.info("Starting Lampion Java Transformer");
 
         if (args.length == 0) {
             logger.info("Found no argument for config path - looking at default location");
@@ -68,7 +68,7 @@ public class App {
 
         engine.run();
 
-        logger.info("Everything done - closing Lampion Obfuscator");
+        logger.info("Everything done - closing Lampion Java Transformer");
     }
 
     /**
