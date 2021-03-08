@@ -13,7 +13,7 @@ Packages and Class-names are ignored (a class is required).
 Then, run the python parts using: 
 
 ```
-conda run -n lampion-codebert-handwriting python3 javadir_to_jsonl.py grid_configuration.json
+conda run -n lampion-codebert-handwriting python3 javadir_to_jsonl.py javafiles
 ```
 
 after that simply do 
