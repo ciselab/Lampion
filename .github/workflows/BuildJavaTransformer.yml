@@ -1,4 +1,4 @@
-name: Java CI on PR - Java Obfuscator
+name: Java CI on PR - Java Transformer
 
 on: 
   schedule:
@@ -6,12 +6,12 @@ on:
     - cron: "0 12 * * *"
   pull_request:
     paths:
-      - 'JavaObfuscator/*'
+      - 'Transformers/Java/*'
     branches:
       - main 
   push:
     paths:
-      - 'JavaObfuscator/*'
+      - 'Transformers/Java/*'
     branches:
       - main
 
@@ -24,5 +24,5 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 15
-    - name: Build Java Obfuscator
-      run: mvn package verify --file JavaObfuscator/pom.xml
+    - name: Build Java Transformer
+      run: mvn package verify --file Transformers/Java/pom.xml
