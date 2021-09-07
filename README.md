@@ -1,6 +1,6 @@
 # Lampion
 
-This project aims to help you with explainability of your Codebased ML-Models.
+This project aims to help you with explainability and robustness of your Codebased ML-Models.
 It is based on the idea of [Metamorphic Transformations](https://en.wikipedia.org/wiki/Metamorphic_code) which alter the code-syntax but keep the meaning of the code.
 When applied to bytecode, this is often called *Obfuscation*, and examples are changing variablesnames or introducing dead code.
 
@@ -11,10 +11,11 @@ With this record, and the results of the Model under Test, the visualizer is abl
 
 ## Getting Started
 
-Further information as well as instructions on the components can be in their sub-folders. Any experiment-reproduction code is placed in a seperate repository, to which the items in *Experiments* only point.
+Further information as well as instructions on the components can be in their sub-folders. 
+Any experiment-reproduction code is placed in a seperate repository, to which the items in *Experiments* will guide you.
 An overview and reasoning on the structure can be found in the [Design-Notes](./Resources/DesignNotes.md).
 
-The folder *Manifest-Schema* holds sql-files to generate a valid schema required for visualisation.
+The folder *Manifest-Schema* holds sql-files to generate a valid schema required for visualisation. (Currently not used, sorry I sometimes overengineer)
 
 General information on design decisions can be found in the [Design-Notes](./Resources/DesignNotes.md).
 

@@ -60,6 +60,8 @@ If you want to alter something in terms of program flow or IO behaviour, the bes
 
 ## Troubleshooting 
 
-*When running the SQL-Lite parts from IDE, it tells me there is no valid SQLite Driver*: This is due to a missing classpath-entry for the SQLite driver. The concrete solution is linked in the SQLiteTests.java. 
+*When running the SQL-Lite parts from IDE, it tells me there is no valid SQLite Driver*: This is due to a missing classpath-entry for the SQLite driver. 
+The concrete solution is linked in the SQLiteTests.java. 
 
-*Some of the tests fail and tell me that files do not exist*: depending on your OS, the files are case-sensitive. I tried to avoid it, but you can check if all the expected folders are there, if you can find an issue with the naming of files, but you can also run `mvn test -Pnofiles` - however, this will run less tests. 
+*Some of the tests fail and tell me that files do not exist*: depending on your OS, the files are case-sensitive. 
+I tried to avoid it, but you can check if all the expected folders are there, if you can find an issue with the naming of files, but you can also run `mvn test -Pnofiles` - however, this will run less tests. 

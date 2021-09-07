@@ -54,6 +54,30 @@ It should also help to accomodate different configrations and the switch to diff
 
 ## Alternation Manifest
 
+### Logging / Structure with SQL and not .log 
+
+Initially I just wanted to drop everything into a plain text file: 
+"This Transformation applied" "This changed from here to here" "Finished ..." etc.
+But the expected output, especially in terms of changes to the files, is huge. 
+The intended use is to apply hundreds of changes of code on your dataset, after all. 
+
+In General, I decided to separate the transformation-log from the application-log. 
+The application prints some information such as "starting" "finishing" "Found x files in ...", 
+while the transformation-log keeps track of the detailed changes done to the code. 
+
+SQL has some benefits: Redundant elements can be stored as pointers, the database does a lot of optimization by itself etc.
+The bigger benefit is to search the changes, e.g. group by transformationtype and check for successes, 
+which already requires (big) scripts compared to single sql-statements.
+
+At this point, the transformation manifest is admittedly a bit overengineered. However, it also does not hurt (yet). 
+I hope that there will be another transformer implementation that utilizes the same schema and can then feed into a shared evaluation.
+For example, I want to find the time to write a transformer for Python. Then I can re-do some of the experiments with CodeBERT but for Python, 
+which can then be compared against the java ones.
+
+**Small remark:** In a different project where I participated, we had similiarly grained information and on VERBOSE loglevel just writing it to textfiles, the logfiles reached a few megabytes. 
+This is all fun and games, and works on toy examples, but when running the experiments on a bigger scale we created gigabytes of data, leading to aborted runs due to memsize and other jokes.
+Hence, I think it is maybe good to care for log-size from the beginning of such experiments and tools, which somewhat helps arguing that this concept is not over-engineered.
+
 ### Representation on Disk
 
 For the alternation manifest, it should have a list of entries where each entry should have:
@@ -110,7 +134,7 @@ This approach helps to be a bit more flexible in terms of the database and also 
 
 - [TransformationCategory.java](../Transformers/Java/src/main/java/com/github/ciselab/lampion/transformations/TransformationCategory.java)
 
-## Transformer
+## Java-Transformer
 
 ### Registration of Transformers
 
