@@ -303,8 +303,7 @@ public class App {
         registry.registerTransformer(new IfFalseElseTransformer(globalRandomSeed));
 
         registry.registerTransformer(new LambdaIdentityTransformer(globalRandomSeed));
-        // There are many issues with this one ...
-        //registry.registerTransformer(new RandomInlineCommentTransformer(globalRandomSeed));
+        registry.registerTransformer(new RandomInlineCommentTransformer(globalRandomSeed));
         registry.registerTransformer(new RandomParameterNameTransformer(globalRandomSeed));
         registry.registerTransformer(new EmptyMethodTransformer(globalRandomSeed));
 

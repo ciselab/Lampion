@@ -793,6 +793,45 @@ public class SpoonTests {
         return;
     }
 
+    @Tag("Regression")
+    @Tag("Exploration")
+    @Test
+    public void testRemoveComments_usingPrinter_shouldNotThrowErrors(){
+        // There is an issue that produces the following error
+        /*
+        16:37:04.071 [main] ERROR com.github.ciselab.lampion.program.Engine - Received a SpoonException while removing comments
+        spoon.SpoonException: cannot insert in this context (use insertEnd?)
+        at spoon.support.reflect.code.CtStatementImpl.insertBefore(CtStatementImpl.java:65) ~[spoon-core-9.1.0.jar:?]
+        at spoon.support.reflect.code.CtStatementImpl.insertBefore(CtStatementImpl.java:57) ~[spoon-core-9.1.0.jar:?]
+        at spoon.support.reflect.code.CtStatementImpl.insertBefore(CtStatementImpl.java:245) ~[spoon-core-9.1.0.jar:?]
+        at spoon.support.compiler.SnippetCompilationHelper.addDummyStatements(SnippetCompilationHelper.java:154) ~[spoon-core-9.1.0.jar:?]
+        at spoon.support.compiler.SnippetCompilationHelper.compileAndReplaceSnippetsIn(SnippetCompilationHelper.java:81) ~[spoon-core-9.1.0.jar:?]
+        at spoon.support.reflect.declaration.CtTypeImpl.compileAndReplaceSnippets(CtTypeImpl.java:443) ~[spoon-core-9.1.0.jar:?]
+        at com.github.ciselab.lampion.transformations.transformers.BaseTransformer.restoreAstAndImports(BaseTransformer.java:111) ~[classes/:?]
+        */
+        CtClass ast = Launcher.parseClass("" +
+                "package something; \n" +
+                "// Comment \n" +
+                "class A { \n" +
+                "// Comment \n" +
+                "int sum(int a, int b) \n " +
+                "{ \n" +
+                "/* \n " +
+                "*Comment \n" +
+                "*/ \n" +
+                "   return a + b; \n" +
+                "/* Comment */\n" +
+                "} \n" +
+                "// Comment \n" +
+                "}\n");
+
+        ast.getFactory().getEnvironment().setCommentEnabled(false);
+        ast.compileAndReplaceSnippets();
+
+        String prettyPrinted = ast.prettyprint();
+
+        assertFalse(prettyPrinted.contains("Comment"));
+    }
     /*
     ==============================================================================
                         Helper Methods

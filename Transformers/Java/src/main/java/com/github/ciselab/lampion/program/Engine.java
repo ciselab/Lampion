@@ -179,9 +179,12 @@ public class Engine {
         // Step 2.5:
         // If enabled, remove all comments (by setting them invisible)
         if (removeAllComments) {
+            RemoveAllCommentsTransformer commentRemover = new RemoveAllCommentsTransformer();
             try {
-                RemoveAllCommentsTransformer commentRemover = new RemoveAllCommentsTransformer();
-                classes.forEach(c -> commentRemover.applyAtRandom(c));
+                for (var c : classes){
+                    TransformationResult removeCommentResult = commentRemover.applyAtRandom(c);
+                    results.add(removeCommentResult);
+                }
             } catch (SpoonException spoonException) {
                 logger.error("Received a SpoonException while removing comments",spoonException);
             }

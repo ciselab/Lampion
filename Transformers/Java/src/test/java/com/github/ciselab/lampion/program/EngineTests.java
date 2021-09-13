@@ -4,10 +4,7 @@ import com.github.ciselab.lampion.manifest.MockWriter;
 import com.github.ciselab.lampion.transformations.TransformationResult;
 import com.github.ciselab.lampion.transformations.Transformer;
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
-import com.github.ciselab.lampion.transformations.transformers.IfFalseElseTransformer;
-import com.github.ciselab.lampion.transformations.transformers.IfTrueTransformer;
-import com.github.ciselab.lampion.transformations.transformers.RandomInlineCommentTransformer;
-import com.github.ciselab.lampion.transformations.transformers.RandomParameterNameTransformer;
+import com.github.ciselab.lampion.transformations.transformers.*;
 import org.junit.jupiter.api.*;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
@@ -362,6 +359,8 @@ public class EngineTests {
         return;
     }
 
+    @Tag("System")
+    @Tag("File")
     @RepeatedTest(3)
     void testPerClassEachScope_ShouldApplyEvenlyToMethods(){
         String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_perMethodEach";
@@ -390,6 +389,8 @@ public class EngineTests {
                 .collect(Collectors.groupingBy(t -> ((CtClass)t.getTransformedElement().getParent(p -> p instanceof CtClass)).getSimpleName())).entrySet().size());
     }
 
+    @Tag("System")
+    @Tag("File")
     @RepeatedTest(3)
     void testPerMethodEachScope_ShouldApplyEvenlyToMethods(){
         String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_perMethodEach";
@@ -418,6 +419,8 @@ public class EngineTests {
     }
 
 
+    @Tag("System")
+    @Tag("File")
     @Test
     void testEngineRun_withDeleteComments_ShouldDeleteJavaDocs(){
         String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_with_comments";
@@ -440,6 +443,8 @@ public class EngineTests {
         );
     }
 
+    @Tag("System")
+    @Tag("File")
     @Test
     void testEngineRun_withDeleteComments_ShouldDeleteInlineComments(){
         String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_with_comments";
@@ -462,6 +467,8 @@ public class EngineTests {
         );
     }
 
+    @Tag("System")
+    @Tag("File")
     @Test
     void testEngineRun_withDeleteComments_ShouldDeleteBlockComments(){
         String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_with_comments";
@@ -484,6 +491,8 @@ public class EngineTests {
         }
     }
 
+    @Tag("System")
+    @Tag("File")
     @Test
     void testEngineRun_withDeleteComments_SingleTrans_ShouldDeleteBlockComments(){
         String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_with_comments";
@@ -506,6 +515,8 @@ public class EngineTests {
         }
     }
 
+    @Tag("System")
+    @Tag("File")
     @Tag("Regression")
     @Test
     void testRemoveComments_doNotRemoveComments_commentsShouldBeKept(){
@@ -532,6 +543,8 @@ public class EngineTests {
         }
     }
 
+    @Tag("System")
+    @Tag("File")
     @Test
     void testEngineRun_withDeleteComments_ZeroTrans_ShouldDeleteBlockComments(){
         String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_with_comments";
@@ -550,8 +563,68 @@ public class EngineTests {
         testObject.run();
 
         for(TransformationResult p : mock.receivedResults){
-            assertFalse(p.getTransformedElement().toString().contains("BlockComment"));
+            assertFalse(p.getTransformedElement().toString().contains("Comment"));
         }
+    }
+
+    @Tag("System")
+    @Tag("File")
+    @Tag("Regression")
+    @Test
+    void testEngineRun_withDeleteComments_ShouldHaveRemovalInManifest(){
+        // At the beginning, the comment-removal-transformations were outside of the manifest logic
+        // After 1.2 they are run separate (after transformations) but also added to the manifest
+        // They were often / usually run, but they threw an error while somewhat still working
+
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_with_comments";
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfFalseElseTransformer());
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+
+        testObject.setNumberOfTransformationsPerScope(5, Engine.TransformationScope.global);
+
+        testObject.setRemoveAllComments(true);
+
+        testObject.run();
+
+        boolean haveSeenRemoveComments = false;
+        for(TransformationResult p : mock.receivedResults){
+            haveSeenRemoveComments = haveSeenRemoveComments || p.getTransformationName().equals("RemoveAllComments");
+        }
+        assertTrue(haveSeenRemoveComments);
+    }
+
+
+    @Tag("System")
+    @Tag("File")
+    @Test
+    void testEngineRun_withoutDeleteComments_ShouldHaveNoRemovalInManifest(){
+        // At the beginning, the comment-removal-transformations were outside of the manifest logic
+        // After 1.2 they are run separate (after transformations) but also added to the manifest
+        // This is the negative test, checking that without removal they are not in the manifest
+
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_with_comments";
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfFalseElseTransformer());
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+
+        testObject.setNumberOfTransformationsPerScope(5, Engine.TransformationScope.global);
+
+        testObject.setRemoveAllComments(false);
+
+        testObject.run();
+
+        boolean haveSeenRemoveComments = false;
+        for(TransformationResult p : mock.receivedResults){
+            haveSeenRemoveComments = haveSeenRemoveComments || p.getTransformationName().equals("RemoveAllComments");
+        }
+        assertFalse(haveSeenRemoveComments);
     }
 
     @Test
