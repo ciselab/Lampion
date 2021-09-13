@@ -6,6 +6,7 @@ import com.github.ciselab.lampion.transformations.transformers.RemoveAllComments
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import spoon.Launcher;
+import spoon.SpoonException;
 import spoon.reflect.CtModel;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
@@ -149,16 +150,21 @@ public class Engine {
         // Pick the next (random) element
         // Pick a random transformer
         // apply the transformer and add the result to the aggregation
+        long transformationFailures = 0;
         for (long a = 0; a < totalTransformationsToDo; a++) {
-            CtElement toAlter = getNextCtElement();
+            try {
+                CtElement toAlter = getNextCtElement();
 
-            int index = random.nextInt(quantifiedTransformers.size());
-            Transformer transformer = quantifiedTransformers.get(index);
+                int index = random.nextInt(quantifiedTransformers.size());
+                Transformer transformer = quantifiedTransformers.get(index);
 
-            TransformationResult result = transformer.applyAtRandom(toAlter);
-            results.add(result);
+                TransformationResult result = transformer.applyAtRandom(toAlter);
+                results.add(result);
+            } catch (SpoonException spoonException){
+                //TODO: Redo-Logic
+                transformationFailures++;
+            }
         }
-
         // Step 2.4:
         // Repair parent relationships which may have broken
         // classes.stream().forEach(c -> c.updateAllParentsBelow());
@@ -168,12 +174,17 @@ public class Engine {
                 + Duration.between(startOfEngine,endOfTransformations) + " seconds");
         logger.info("Of the " + results.size() + " Transformations applied, "
                 + results.stream().filter(u -> u.equals(new EmptyTransformationResult())).count() + " where malformed");
+        logger.info(transformationFailures + " transformations produced (Spoon-)errors");
 
         // Step 2.5:
-        // If enabled, remove all comments (set them invisible)
+        // If enabled, remove all comments (by setting them invisible)
         if (removeAllComments) {
-            RemoveAllCommentsTransformer commentRemover = new RemoveAllCommentsTransformer();
-            classes.forEach(c -> commentRemover.applyAtRandom(c));
+            try {
+                RemoveAllCommentsTransformer commentRemover = new RemoveAllCommentsTransformer();
+                classes.forEach(c -> commentRemover.applyAtRandom(c));
+            } catch (SpoonException spoonException) {
+                logger.error("Received a SpoonException while removing comments",spoonException);
+            }
         }
         classes.forEach(c -> c.updateAllParentsBelow());
 
