@@ -1,6 +1,7 @@
 package com.github.ciselab.lampion.program;
 
 import com.github.ciselab.lampion.manifest.MockWriter;
+import com.github.ciselab.lampion.transformations.TransformationResult;
 import com.github.ciselab.lampion.transformations.Transformer;
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
 import com.github.ciselab.lampion.transformations.transformers.IfFalseElseTransformer;
@@ -435,7 +436,7 @@ public class EngineTests {
         testObject.run();
 
         mock.receivedResults.forEach(
-                p -> assertFalse(p.getTransformedElement().toString().contains("JavaDoc"))
+                p -> assertFalse(p.getTransformedElement().toString().contains("Comment") ||p.getTransformedElement().toString().contains("JavaDoc"))
         );
     }
 
@@ -457,7 +458,7 @@ public class EngineTests {
         testObject.run();
 
         mock.receivedResults.forEach(
-                p -> assertFalse(p.getTransformedElement().toString().contains("InlineComment"))
+                p -> assertFalse(p.getTransformedElement().toString().contains("Comment") ||p.getTransformedElement().toString().contains("JavaDoc"))
         );
     }
 
@@ -478,9 +479,79 @@ public class EngineTests {
 
         testObject.run();
 
-        mock.receivedResults.forEach(
-                p -> assertFalse(p.getTransformedElement().toString().contains("BlockComment"))
-        );
+        for(TransformationResult p : mock.receivedResults){
+            assertFalse(p.getTransformedElement().toString().contains("Comment") ||p.getTransformedElement().toString().contains("JavaDoc"));
+        }
+    }
+
+    @Test
+    void testEngineRun_withDeleteComments_SingleTrans_ShouldDeleteBlockComments(){
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_with_comments";
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfFalseElseTransformer());
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+
+        // Do just little transformations to be faster
+        testObject.setNumberOfTransformationsPerScope(1, Engine.TransformationScope.global);
+
+        testObject.setRemoveAllComments(true);
+
+        testObject.run();
+
+        for(TransformationResult p : mock.receivedResults){
+            assertFalse(p.getTransformedElement().toString().contains("Comment") ||p.getTransformedElement().toString().contains("JavaDoc"));
+        }
+    }
+
+    @Tag("Regression")
+    @Test
+    void testRemoveComments_doNotRemoveComments_commentsShouldBeKept(){
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_with_comments";
+        TransformerRegistry registry = new TransformerRegistry("Test");
+
+        Transformer ifFalse = new IfFalseElseTransformer(2);
+        registry.registerTransformer(ifFalse);
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+
+        // Do just little transformations to be faster
+        testObject.setNumberOfTransformationsPerScope(4, Engine.TransformationScope.global);
+
+        testObject.setRemoveAllComments(false);
+
+        testObject.run();
+
+        for(TransformationResult p : mock.receivedResults){
+            assertTrue(p.getTransformedElement().toString().contains("Comment") ||p.getTransformedElement().toString().contains("JavaDoc"));
+        }
+    }
+
+    @Test
+    void testEngineRun_withDeleteComments_ZeroTrans_ShouldDeleteBlockComments(){
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_with_comments";
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfFalseElseTransformer());
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+
+        // Do just little transformations to be faster
+        testObject.setNumberOfTransformationsPerScope(0, Engine.TransformationScope.global);
+
+        testObject.setRemoveAllComments(true);
+
+        testObject.run();
+
+        for(TransformationResult p : mock.receivedResults){
+            assertFalse(p.getTransformedElement().toString().contains("BlockComment"));
+        }
     }
 
     @Test

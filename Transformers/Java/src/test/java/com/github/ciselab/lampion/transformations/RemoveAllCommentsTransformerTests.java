@@ -39,6 +39,23 @@ public class RemoveAllCommentsTransformerTests {
     }
 
     @Test
+    void createSeeded_constructorShouldWork(){
+        RemoveAllCommentsTransformer transformer = new RemoveAllCommentsTransformer(25);
+    }
+
+    @Test
+    void applyToMethodWithTwoComments_withSeededTransformer_ShouldHaveNoCommentsAfterwards(){
+        CtClass ast = Launcher.parseClass("package lampion.test.examples; // some comment \n class A { int sum(int a, int b) { return a + b; \n // some more comments \n} }");
+
+        RemoveAllCommentsTransformer transformer = new RemoveAllCommentsTransformer(25);
+
+        transformer.applyAtRandom(ast);
+
+        assertFalse(ast.toString().contains("//"));
+    }
+
+
+    @Test
     void applyToMethodWithInnerComment_ShouldHaveNoCommentsAfterwards(){
         CtClass ast = Launcher.parseClass("package lampion.test.examples; class A { int sum(int a, int b) { return a + b; \n // Inner Comment \n} }");
 

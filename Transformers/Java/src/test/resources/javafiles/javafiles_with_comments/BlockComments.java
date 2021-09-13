@@ -4,7 +4,7 @@ package lampion.test.examples;
 /*
 BlockComment A
  */
-public class BlockComments {
+public class BlocksExample {
 
     /*
     BlockComment B

@@ -7,8 +7,6 @@ open module com.github.ciselab.lampion {
 
     requires spoon.core;
 
-
-    requires org.apache.logging.slf4j;
     requires org.slf4j;
 
     requires org.apache.logging.log4j;

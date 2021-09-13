@@ -2,7 +2,7 @@ package lampion.test.examples;
 
 
 // InlineComment A
-public class InlineComments {
+public class InlineExample {
 
     // InlineComment B
 

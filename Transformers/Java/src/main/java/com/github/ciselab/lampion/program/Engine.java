@@ -22,7 +22,7 @@ import java.util.*;
  * It takes a registry equipped with all relevant
  * Transformers, and applies them quantified in a certain configuration to a given AST.
  * In the end, if wished the TransformationResults are written to an SQL database
- * and the altered files are written to files.
+ * and the altered programs are written to files.
  *
  * The default behaviour is to apply all available transformations evenly distributed.
  * If others are wanted, a distribution transformation is required, see "setDistribution".
@@ -175,6 +175,7 @@ public class Engine {
             RemoveAllCommentsTransformer commentRemover = new RemoveAllCommentsTransformer();
             classes.forEach(c -> commentRemover.applyAtRandom(c));
         }
+        classes.forEach(c -> c.updateAllParentsBelow());
 
         // Step 3:
         // Write Transformed Code

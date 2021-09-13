@@ -4,7 +4,7 @@ package lampion.test.examples;
 /**
  * JavaDoc A
  */
-public class JavaDocComments {
+public class DocExample {
 
     /**
      * JavaDoc B
