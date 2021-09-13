@@ -600,6 +600,36 @@ public class EngineTests {
 
     @Tag("System")
     @Tag("File")
+    @Tag("Regression")
+    @Test
+    void testEngineRun_withDeleteComments_noTransformations_ShouldHaveRemovalInManifest(){
+        // At the beginning, the comment-removal-transformations were outside of the manifest logic
+        // After 1.2 they are run separate (after transformations) but also added to the manifest
+        // They were often / usually run, but they threw an error while somewhat still working
+
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_with_comments";
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfFalseElseTransformer());
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+
+        testObject.setNumberOfTransformationsPerScope(0, Engine.TransformationScope.global);
+
+        testObject.setRemoveAllComments(true);
+
+        testObject.run();
+
+        boolean haveSeenRemoveComments = false;
+        for(TransformationResult p : mock.receivedResults){
+            haveSeenRemoveComments = haveSeenRemoveComments || p.getTransformationName().equals("RemoveAllComments");
+        }
+        assertTrue(haveSeenRemoveComments);
+    }
+
+    @Tag("System")
+    @Tag("File")
     @Test
     void testEngineRun_withoutDeleteComments_ShouldHaveNoRemovalInManifest(){
         // At the beginning, the comment-removal-transformations were outside of the manifest logic
