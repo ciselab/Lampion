@@ -10,7 +10,7 @@ RUN mvn package verify
 #### Deploying the application
 FROM azul/zulu-openjdk-alpine:16
 
-ARG TRANSFORMER_VERSION
+ARG TRANSFORMER_VERSION="1.3-SNAPSHOT"
 
 LABEL maintainer="L.H.Applis@tu-delft.nl"
 LABEL name="lampion/java-transformer"

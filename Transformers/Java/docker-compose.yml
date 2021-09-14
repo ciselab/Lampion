@@ -9,7 +9,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        TRANSFORMER_VERSION: 1.1
+        TRANSFORMER_VERSION: 1.3-SNAPSHOT
     image: lampion/java-transformer:latest
     volumes:
       - ./compose_output:/app/obfuscator_output
