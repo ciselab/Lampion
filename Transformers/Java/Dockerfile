@@ -1,6 +1,6 @@
 ##### Stage 1
 ##### Build and Run tests
-FROM maven:3.6.3-openjdk-15 as builder
+FROM maven:3.6.3-openjdk-16 as builder
 
 WORKDIR /app
 COPY . .
@@ -8,11 +8,15 @@ RUN mvn package verify
 
 #### STAGE 2
 #### Deploying the application
-FROM azul/zulu-openjdk-alpine:15
+FROM azul/zulu-openjdk-alpine:16
 
 ARG TRANSFORMER_VERSION
 
-LABEL org.opencontainers.image.source https://github.com/ciselab/Lampion
+LABEL maintainer="L.H.Applis@tu-delft.nl"
+LABEL name="lampion/java-transformer"
+LABEL org.opencontainers.image.source="https://github.com/ciselab/Lampion"
+LABEL url="https://github.com/ciselab/Lampion"
+LABEL vcs="https://github.com/ciselab/Lampion"
 
 ENV dir /usr/app
 
