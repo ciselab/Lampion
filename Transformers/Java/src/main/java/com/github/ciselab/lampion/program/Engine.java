@@ -180,6 +180,9 @@ public class Engine {
         // If enabled, remove all comments (by setting them invisible)
         if (removeAllComments) {
             RemoveAllCommentsTransformer commentRemover = new RemoveAllCommentsTransformer();
+            // The Comment-Remover will inherit all compilation problems remaining - hence it does not try to compile
+            // But it is not the comment-remover's fault, this would have to be fixed somewhere else
+            commentRemover.setTryingToCompile(false);
             try {
                 for (var c : classes){
                     TransformationResult removeCommentResult = commentRemover.applyAtRandom(c);
