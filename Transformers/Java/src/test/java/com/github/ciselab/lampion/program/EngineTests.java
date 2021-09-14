@@ -389,6 +389,29 @@ public class EngineTests {
                 .collect(Collectors.groupingBy(t -> ((CtClass)t.getTransformedElement().getParent(p -> p instanceof CtClass)).getSimpleName())).entrySet().size());
     }
 
+
+    @Tag("System")
+    @Tag("File")
+    @RepeatedTest(3)
+    void testPerClassScope_ShouldApplyEvenlyToMethods(){
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_perMethodEach";
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfFalseElseTransformer());
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+        testObject.setWriteJavaOutput(false);
+
+        testObject.setNumberOfTransformationsPerScope(5, Engine.TransformationScope.perClass);
+
+        testObject.run();
+
+        // Easy Check on Size
+        assertEquals(10,mock.receivedResults.size());
+    }
+
     @Tag("System")
     @Tag("File")
     @RepeatedTest(3)
@@ -418,6 +441,28 @@ public class EngineTests {
                 .collect(Collectors.groupingBy(t -> ((CtMethod)t.getTransformedElement()).getSimpleName())).entrySet().size());
     }
 
+
+    @Tag("System")
+    @Tag("File")
+    @RepeatedTest(3)
+    void testPerMethodScope_ShouldApplyMultipleOfMethods(){
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_perMethodEach";
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfFalseElseTransformer());
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+
+        MockWriter mock = new MockWriter();
+        testObject.setManifestWriter(mock);
+        testObject.setWriteJavaOutput(false);
+
+        testObject.setNumberOfTransformationsPerScope(3, Engine.TransformationScope.perMethod);
+
+        testObject.run();
+
+        // Easy Check on Size
+        assertEquals(12,mock.receivedResults.size());
+    }
 
     @Tag("System")
     @Tag("File")
@@ -697,6 +742,17 @@ public class EngineTests {
         TransformerRegistry registry = new TransformerRegistry("Test");
 
         assertThrows(UnsupportedOperationException.class, () ->  new Engine(pathToTestFileFolder,"  \n",registry));
+    }
+
+    @Test
+    void testSetSeed_ChangesSeed(){
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_with_comments";
+        TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfFalseElseTransformer());
+
+        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
+
+        testObject.setRandomSeed(250);
     }
 
     @Test
