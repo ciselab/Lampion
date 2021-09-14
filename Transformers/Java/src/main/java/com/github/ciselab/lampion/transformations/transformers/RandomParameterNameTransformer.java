@@ -54,17 +54,11 @@ public class RandomParameterNameTransformer extends BaseTransformer {
         }
 
         Optional<CtMethod> oToAlter = pickRandomMethod(ast);
-        if(oToAlter.isEmpty()){
-            return new EmptyTransformationResult();
-        }
+        // Check for existance of methods is done beforehand per constraints, so I just get the result right away
         CtMethod toAlter = oToAlter.get();
 
         Optional<CtVariable> oVarToAlter = pickRandomParameter(toAlter);
-
-        if(oVarToAlter.isEmpty()) {
-            return new EmptyTransformationResult();
-        }
-
+        // oVarToAlter always exists, as both check for params and check for non-changed params are done by constraints.
         // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
         CtMethod savedElement = toAlter.clone();
         savedElement.setParent(toAlter.getParent());
@@ -124,10 +118,7 @@ public class RandomParameterNameTransformer extends BaseTransformer {
                         && !((CtMethod) c).getParameters().isEmpty()        // the method has parameters
                         && pickRandomParameter((CtMethod) c ).isPresent()   // there are free parameters left
         ).list();
-
-        if(allMethods.isEmpty()){
-            return Optional.empty();
-        }
+        // Check for non-empty Methods is done beforehand per constraints
 
         // Pick a number between 0 and count(methods)
         int randomValidIndex = random.nextInt(allMethods.size());

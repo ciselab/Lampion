@@ -165,6 +165,32 @@ public class IfTrueTransformerTests {
     }
 
     @Test
+    void testApplyTo_ClassWithNoMethods_ShouldNotAlterAnything(){
+        CtClass ast = Launcher.parseClass("package lampion.test.examples; \n " +
+                "class A { \n" +
+                "}");
+
+        IfTrueTransformer transformer = new IfTrueTransformer(25);
+        transformer.applyAtRandom(ast);
+
+        Predicate<CtElement> isAltered = m -> m.toString().contains("if (true)");
+        assertFalse(isAltered.test(ast));
+    }
+
+    @Test
+    void testApplyTo_ClassWithNoMethods_ShouldReturnEmptyResult(){
+        CtClass ast = Launcher.parseClass("package lampion.test.examples; \n " +
+                "class A { \n" +
+                "}");
+
+        IfTrueTransformer transformer = new IfTrueTransformer(25);
+
+        TransformationResult result = transformer.applyAtRandom(ast);
+
+        assertEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Test
     void testExclusive_isExclusiveWithNothing(){
         IfTrueTransformer transformer = new IfTrueTransformer();
 
@@ -244,6 +270,83 @@ public class IfTrueTransformerTests {
 
         assertTrue(result.getInitialScopeOfTransformation().isPresent());
         assertTrue(result.getBeforeAfterComparison().isPresent());
+    }
+
+
+    @Tag("Regression")
+    @Test
+    void applyToMethodWithShortReturn_ifBlockShouldCompile(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { short getA() { return 1;} }");
+
+        IfTrueTransformer transformer = new IfTrueTransformer();
+
+        transformer.setTryingToCompile(true);
+
+        // This could throw an error
+        transformer.applyAtRandom(testObject);
+        // Pass test if no error is thrown
+        return;
+    }
+
+    @Tag("Regression")
+    @Test
+    void applyToMethodWithByteReturn_ifBlockShouldCompile(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { byte getA() { return 1;} }");
+
+        IfTrueTransformer transformer = new IfTrueTransformer();
+
+        transformer.setTryingToCompile(true);
+
+        // This could throw an error
+        transformer.applyAtRandom(testObject);
+        // Pass test if no error is thrown
+        return;
+    }
+
+    @Tag("Regression")
+    @Test
+    void applyToMethodWithLongReturn_ifBlockShouldCompile(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { long getA() { return 1;} }");
+
+        IfTrueTransformer transformer = new IfTrueTransformer();
+
+        transformer.setTryingToCompile(true);
+
+        // This could throw an error
+        transformer.applyAtRandom(testObject);
+        // Pass test if no error is thrown
+        return;
+    }
+
+    @Test
+    void applyToMethodWithShortReturn_elseBlockShouldHaveDefaultValue(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { short getA() { return 1;} }");
+
+        IfTrueTransformer transformer = new IfTrueTransformer();
+
+        transformer.applyAtRandom(testObject);
+        assertTrue(testObject.toString().contains("return 0;"));
+    }
+
+    @Test
+    void applyToMethodWithByteReturn_elseBlockShouldHaveDefaultValue(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { byte getA() { return 1;} }");
+
+        IfTrueTransformer transformer = new IfTrueTransformer();
+
+        transformer.applyAtRandom(testObject);
+
+        assertTrue(testObject.toString().contains("return 0;"));
+    }
+
+    @Test
+    void applyToMethodWithLongReturn_elseBlockShouldHaveDefaultValue(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { long getA() { return 1;} }");
+
+        IfTrueTransformer transformer = new IfTrueTransformer();
+
+        transformer.applyAtRandom(testObject);
+        assertTrue(testObject.toString().contains("return 0L;"));
     }
 
 

@@ -104,6 +104,33 @@ public class AddUnusedVariableTransformerTests {
         assertNotEquals(new EmptyTransformationResult(),result);
     }
 
+    @Test
+    void applyToMethod_withDifferentSeeds_ShouldBeDifferentOutputs(){
+        // This is more a test of the "setSeed" Method from BaseTransformer
+        AddUnusedVariableTransformer transformer = new AddUnusedVariableTransformer(100);
+
+        CtElement ast1 =  Launcher.parseClass(
+                "package lampion.test.examples; \n" +
+                        "class A { \n" +
+                        "int some(int a){return a;} \n" +
+                        "}");
+
+        CtElement ast2 =  Launcher.parseClass(
+                "package lampion.test.examples; \n" +
+                        "class A { \n" +
+                        "int some(int a){return a;} \n" +
+                        "}");
+
+        var result1 = transformer.applyAtRandom(ast1);
+
+        transformer.setSeed(200);
+        var result2 = transformer.applyAtRandom(ast2);
+
+        assertNotEquals(new EmptyTransformationResult(),result1);
+        assertNotEquals(new EmptyTransformationResult(),result2);
+        assertNotEquals(ast1.toString(),ast2.toString());
+    }
+
     @Tag("Integration")
     @Test
     void applyNeutralElementTransformer_AfterUnusedVariableTransformer_shouldWork(){
@@ -234,6 +261,37 @@ public class AddUnusedVariableTransformerTests {
         AddUnusedVariableTransformer transformer = new AddUnusedVariableTransformer();
 
         assertFalse(transformer.isFullRandomStrings());
+    }
+
+    @Test
+    void applyTo_Apply100Times_withCompilation_shouldNotFail(){
+        AddUnusedVariableTransformer transformer = new AddUnusedVariableTransformer(25);
+        transformer.setFullRandomStrings(true);
+        transformer.setTryingToCompile(true);
+
+        CtElement ast =  Launcher.parseClass("package lampion.test.examples; class A { " +
+                "void some(){}" +
+                "}");
+
+        for (int i = 0; i<100; i++){
+            TransformationResult result = transformer.applyAtRandom(ast);
+            assertNotEquals(new EmptyTransformationResult(),result);
+        }
+    }
+    @Test
+    void applyTo_Apply100Times_withoutCompilation_shouldNotFail(){
+        AddUnusedVariableTransformer transformer = new AddUnusedVariableTransformer(25);
+        transformer.setFullRandomStrings(true);
+        transformer.setTryingToCompile(false);
+
+        CtElement ast =  Launcher.parseClass("package lampion.test.examples; class A { " +
+                "void some(){}" +
+                "}");
+
+        for (int i = 0; i<100; i++){
+            TransformationResult result = transformer.applyAtRandom(ast);
+            assertNotEquals(new EmptyTransformationResult(),result);
+        }
     }
 
     static CtElement classWithoutReturnMethod(){

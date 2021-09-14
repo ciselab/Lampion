@@ -155,6 +155,33 @@ public class IfFalseElseTransformerTests {
         assertTrue(methodAAltered ^ methodBAltered);
     }
 
+
+    @Test
+    void testApplyTo_ClassWithNoMethods_ShouldNotAlterAnything(){
+        CtClass ast = Launcher.parseClass("package lampion.test.examples; \n " +
+                "class A { \n" +
+                "}");
+
+        IfFalseElseTransformer transformer = new IfFalseElseTransformer(25);
+        transformer.applyAtRandom(ast);
+
+        Predicate<CtElement> isAltered = m -> m.toString().contains("if (false)");
+        assertFalse(isAltered.test(ast));
+    }
+
+    @Test
+    void testApplyTo_ClassWithNoMethods_ShouldReturnEmptyResult(){
+        CtClass ast = Launcher.parseClass("package lampion.test.examples; \n " +
+                "class A { \n" +
+                "}");
+
+        IfFalseElseTransformer transformer = new IfFalseElseTransformer(25);
+
+        TransformationResult result = transformer.applyAtRandom(ast);
+
+        assertEquals(new EmptyTransformationResult(),result);
+    }
+
     @Test
     void testExclusive_isExclusiveWithNothing(){
         IfFalseElseTransformer transformer = new IfFalseElseTransformer();
@@ -266,6 +293,83 @@ public class IfFalseElseTransformerTests {
         // Pass test if no error is thrown
         return;
     }
+
+    @Tag("Regression")
+    @Test
+    void applyToMethodWithShortReturn_ElseBlockShouldCompile(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { short getA() { return 1;} }");
+
+        IfFalseElseTransformer transformer = new IfFalseElseTransformer();
+
+        transformer.setTryingToCompile(true);
+
+        // This could throw an error
+        transformer.applyAtRandom(testObject);
+        // Pass test if no error is thrown
+        return;
+    }
+
+    @Tag("Regression")
+    @Test
+    void applyToMethodWithByteReturn_ElseBlockShouldCompile(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { byte getA() { return 1;} }");
+
+        IfFalseElseTransformer transformer = new IfFalseElseTransformer();
+
+        transformer.setTryingToCompile(true);
+
+        // This could throw an error
+        transformer.applyAtRandom(testObject);
+        // Pass test if no error is thrown
+        return;
+    }
+
+    @Tag("Regression")
+    @Test
+    void applyToMethodWithLongReturn_ElseBlockShouldCompile(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { long getA() { return 1;} }");
+
+        IfFalseElseTransformer transformer = new IfFalseElseTransformer();
+
+        transformer.setTryingToCompile(true);
+
+        // This could throw an error
+        transformer.applyAtRandom(testObject);
+        // Pass test if no error is thrown
+        return;
+    }
+
+    @Test
+    void applyToMethodWithShortReturn_ifBlockShouldHaveDefaultValue(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { short getA() { return 1;} }");
+
+        IfFalseElseTransformer transformer = new IfFalseElseTransformer();
+
+        transformer.applyAtRandom(testObject);
+        assertTrue(testObject.toString().contains("return 0;"));
+    }
+
+    @Test
+    void applyToMethodWithByteReturn_ifBlockShouldHaveDefaultValue(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { byte getA() { return 1;} }");
+
+        IfFalseElseTransformer transformer = new IfFalseElseTransformer();
+
+        transformer.applyAtRandom(testObject);
+
+        assertTrue(testObject.toString().contains("return 0;"));
+    }
+
+    @Test
+    void applyToMethodWithLongReturn_ifBlockShouldHaveDefaultValue(){
+        CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { long getA() { return 1;} }");
+
+        IfFalseElseTransformer transformer = new IfFalseElseTransformer();
+
+        transformer.applyAtRandom(testObject);
+        assertTrue(testObject.toString().contains("return 0L;"));
+    }
+
 
     static CtElement classWithoutReturnMethod(){
         CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { void m() { System.out.println(\"yeah\");} }");

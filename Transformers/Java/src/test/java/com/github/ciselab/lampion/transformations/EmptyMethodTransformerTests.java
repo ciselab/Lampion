@@ -89,6 +89,35 @@ public class EmptyMethodTransformerTests {
         assertNotEquals(new EmptyTransformationResult(),result);
     }
 
+    @Test
+    void applyToClassWithOneEmptyMethod_returnsEmptyTransformationResult(){
+        CtClass ast = Launcher.parseClass("package lampion.test.examples; \n " +
+                "class A { \n" +
+                "public void a(){} \n" +
+                "\n }");
+
+        EmptyMethodTransformer transformer = new EmptyMethodTransformer();
+
+        var result = transformer.applyAtRandom(ast);
+
+        assertEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Test
+    void applyToClassWithThreeEmptyMethod_returnsEmptyTransformationResult(){
+        CtClass ast = Launcher.parseClass("package lampion.test.examples; \n " +
+                "class A { \n" +
+                "public void a(){} \n" +
+                "public void b(){} \n" +
+                "public void c(){} \n" +
+                "\n }");
+
+        EmptyMethodTransformer transformer = new EmptyMethodTransformer();
+
+        var result = transformer.applyAtRandom(ast);
+
+        assertEquals(new EmptyTransformationResult(),result);
+    }
 
     @Tag("Regression")
     @RepeatedTest(3)
@@ -147,6 +176,22 @@ public class EmptyMethodTransformerTests {
 
         assertTrue(result.getInitialScopeOfTransformation().isPresent());
         assertTrue(result.getBeforeAfterComparison().isPresent());
+    }
+
+    @Test
+    void testGetStringRandomness_onFullRandom_ShouldGiveFullRandom(){
+        EmptyMethodTransformer transformer = new EmptyMethodTransformer();
+        transformer.setFullRandomStrings(true);
+
+        assertTrue(transformer.isFullRandomStrings());
+    }
+
+    @Test
+    void testGetStringRandomness_onPseudoRandom_ShouldGivePseudoRandom(){
+        EmptyMethodTransformer transformer = new EmptyMethodTransformer();
+        transformer.setFullRandomStrings(false);
+
+        assertFalse(transformer.isFullRandomStrings());
     }
 
     static CtElement addOneExample(){

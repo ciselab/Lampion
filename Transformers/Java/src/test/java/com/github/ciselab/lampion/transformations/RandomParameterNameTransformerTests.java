@@ -1,5 +1,6 @@
 package com.github.ciselab.lampion.transformations;
 
+import com.github.ciselab.lampion.transformations.transformers.EmptyMethodTransformer;
 import com.github.ciselab.lampion.transformations.transformers.RandomInlineCommentTransformer;
 import com.github.ciselab.lampion.transformations.transformers.RandomParameterNameTransformer;
 import org.junit.jupiter.api.RepeatedTest;
@@ -228,6 +229,19 @@ public class RandomParameterNameTransformerTests {
     }
 
     @Test
+    void applyToClassWithoutMethods_withPackage_returnsEmptyTransformationResult(){
+        CtClass ast = Launcher.parseClass("package lampion.test.package; \n" +
+                "class A { \n" +
+                "}");
+
+        RandomParameterNameTransformer transformer = new RandomParameterNameTransformer();
+
+        var result = transformer.applyAtRandom(ast);
+
+        assertEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Test
     void testExclusive_isExclusiveWithNothing(){
         RandomParameterNameTransformer transformer = new RandomParameterNameTransformer();
 
@@ -295,6 +309,21 @@ public class RandomParameterNameTransformerTests {
         assertTrue(result.getBeforeAfterComparison().isPresent());
     }
 
+    @Test
+    void testGetStringRandomness_onFullRandom_ShouldGiveFullRandom(){
+        RandomParameterNameTransformer transformer = new RandomParameterNameTransformer();
+        transformer.setFullRandomStrings(true);
+
+        assertTrue(transformer.isFullRandomStrings());
+    }
+
+    @Test
+    void testGetStringRandomness_onPseudoRandom_ShouldGivePseudoRandom(){
+        RandomParameterNameTransformer transformer = new RandomParameterNameTransformer();
+        transformer.setFullRandomStrings(false);
+
+        assertFalse(transformer.isFullRandomStrings());
+    }
 
     static CtElement addOneExample(){
         CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { int addOne(int a) { return a + 1 }");

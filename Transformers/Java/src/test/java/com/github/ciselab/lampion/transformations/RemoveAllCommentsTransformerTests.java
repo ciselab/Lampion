@@ -149,6 +149,13 @@ public class RemoveAllCommentsTransformerTests {
         assertTrue(result.getBeforeAfterComparison().isPresent());
     }
 
+    @Test
+    void checkExclusiveWith_shouldBeEmpty(){
+        RemoveAllCommentsTransformer transformer = new RemoveAllCommentsTransformer();
+
+        assertTrue(transformer.isExclusiveWith().isEmpty());
+    }
+
     static CtElement commentExample(){
         CtClass testObject = Launcher.parseClass("package lampion.test.examples; // some comment \n class A { int sum(int a, int b) { return a + b;} }");
 
