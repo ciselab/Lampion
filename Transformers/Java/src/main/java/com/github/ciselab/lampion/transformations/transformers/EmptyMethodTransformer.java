@@ -161,6 +161,8 @@ public class EmptyMethodTransformer extends BaseTransformer {
      * Returns a random method of the ast.
      * Check whether ast is empty is done earlier using constraints.
      *
+     * Note: Cannot easily be extracted, as there is an extra, unique check for non-empty methods.
+     *
      * @param ast the toplevel element from which to pick a random method
      * @return a random nonempty Method that was not created by this transformer. Reference is passed, so altering this element will alter the toplevel ast.
      */

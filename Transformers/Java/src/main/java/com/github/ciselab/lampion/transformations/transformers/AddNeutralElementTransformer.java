@@ -154,7 +154,7 @@ public class AddNeutralElementTransformer extends BaseTransformer {
         so I just checked for both supported types and throw an exception otherwise.
          */
         Factory factory = toAlter.getFactory();
-        CtLiteral neutralElement = getNeutralElement(toAlter);
+        CtLiteral neutralElement = TransformerUtils.getNeutralElement(toAlter);
 
         if(toAlter instanceof CtLiteral) {
             CtLiteral copy = (CtLiteral) toAlter.clone();
@@ -181,34 +181,6 @@ public class AddNeutralElementTransformer extends BaseTransformer {
             throw new UnsupportedOperationException("Received an unsupported type of CtTypedElement to add Neutral Elements to");
         }
         toAlter.getParent().updateAllParentsBelow();
-    }
-
-    /**
-     * This method helps returns the neutral element for a set of supported types.
-     * Some items are not that easily added in java, e.g. if one adds two chars, they become an integer (same goes for bytes).
-     *
-     * Here is the article on Java primitive type promotion
-     * https://docs.oracle.com/javase/specs/jls/se7/html/jls-5.html#jls-5.6.2
-     *
-     * Supported types are
-     *  - String
-     *  - Int
-     *  - Float
-     *  - Long
-     *
-     * @param lit the literal to which to get a neutral element
-     * @return
-     */
-    private CtLiteral<?> getNeutralElement(CtTypedElement<?> lit){
-        Factory factory = lit.getFactory();
-        switch(lit.getType().getSimpleName()){
-            case "int": return factory.createLiteral(0);
-            case "long": return factory.createLiteral(0L);
-            case "float": return factory.createLiteral(0.0f);
-            case "double": return factory.createLiteral(0.0d);
-            case "String": return factory.createLiteral("");
-            default: throw new UnsupportedOperationException("Received unsupported type for neutral elements");
-        }
     }
 
     private boolean isSupportedType(CtTypeReference type) {

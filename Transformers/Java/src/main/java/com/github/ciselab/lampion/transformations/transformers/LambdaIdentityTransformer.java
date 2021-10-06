@@ -67,7 +67,7 @@ public class LambdaIdentityTransformer extends BaseTransformer {
             return new EmptyTransformationResult();
         }
 
-        CtLiteral toAlter = pickRandomLiteral(ast);
+        CtLiteral toAlter = TransformerUtils.pickRandomLiteral(ast,random);
         // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
         CtLiteral savedElement = toAlter.clone();
         savedElement.setParent(toAlter.getParent());
@@ -116,22 +116,6 @@ public class LambdaIdentityTransformer extends BaseTransformer {
         }
 
         restoreAstAndImports(containingclass);
-    }
-
-    /**
-     * Returns a random literal of the ast.
-     * Check whether ast is empty is done earlier using constraints.
-     *
-     * @param ast the toplevel element from which to pick a random method
-     * @return a random element. Reference is passed, so altering this element will alter the toplevel ast.
-     */
-    private CtLiteral pickRandomLiteral(CtElement ast) {
-        // Check for all methods
-        List<CtLiteral> allLiterals = ast.filterChildren(c -> c instanceof CtLiteral).list();
-        // Pick a number between 0 and count(methods)
-        int randomValidIndex = random.nextInt(allLiterals.size());
-        // return the method at the position
-        return allLiterals.get(randomValidIndex);
     }
 
     /**

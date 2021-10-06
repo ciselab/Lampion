@@ -152,7 +152,7 @@ public class AddUnusedVariableTransformer extends BaseTransformer {
             nameOfVarToAdd = RandomNameFactory.getCamelcasedAnimalString(random);
         }
         CtTypeReference typeofVarToAdd = pickRandomSupportedType(factory);
-        var valueOfVarToAdd = pickRandomElementForType(typeofVarToAdd);
+        var valueOfVarToAdd = TransformerUtils.pickRandomElementForType(typeofVarToAdd,fullRandomStrings,random);
 
         // Step 2: Pick a random block of the method or the whole body otherwise
         List<CtBlock> blocks = toAlter.filterChildren(u -> u instanceof CtBlock).list()
@@ -183,36 +183,6 @@ public class AddUnusedVariableTransformer extends BaseTransformer {
         // Pick one
         int toPick = random.nextInt(possibleTypes.size());
         return possibleTypes.get(toPick);
-    }
-
-    private CtLiteral pickRandomElementForType(CtTypeReference t){
-        Factory factory = t.getFactory();
-
-        switch (t.getSimpleName()) {
-            case "boolean","Boolean": {
-                var coin = random.nextInt(1);
-                return factory.createLiteral((coin==0));
-            }
-            case "float","Float": {
-                return factory.createLiteral(random.nextFloat());
-            }
-            case "int","Integer": {
-                return factory.createLiteral(random.nextInt(10000));
-            }
-            case "Long","long": {
-                return factory.createLiteral(random.nextLong());
-            }
-            case "String": {
-                if(fullRandomStrings){
-                    return factory.createLiteral(RandomNameFactory.getRandomComment(random));
-                } else {
-                    return factory.createLiteral(RandomNameFactory.getAnimalComment(3,random));
-                }
-            }
-            default: {
-                throw new UnsupportedOperationException("Received an Unkown Type for AddUnusedVariableTransformer picking random values");
-            }
-        }
     }
 
     /**

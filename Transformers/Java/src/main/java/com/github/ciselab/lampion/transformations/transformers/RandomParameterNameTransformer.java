@@ -108,6 +108,8 @@ public class RandomParameterNameTransformer extends BaseTransformer {
      * It returns empty if there are either no methods with parameters,
      * or all parameters are already altered by this transformer.
      *
+     * Note: Cannot easily be extracted, as there is an extra, unique check for methods with parameters.
+     *
      * @param ast the toplevel element from which to pick a random method
      * @return a random method. Empty if there are no suited left. Reference is passed, so altering this element will alter the toplevel ast
      */

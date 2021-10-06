@@ -104,7 +104,7 @@ public class IfFalseElseTransformer extends BaseTransformer {
         if(! toAlter.filterChildren(c -> c instanceof CtReturn).list().isEmpty()){
             ifWrapper.setThenStatement(
                     factory.createBlock().addStatement(
-                            factory.createCodeSnippetStatement("return "+getNullElement(toAlter.getType()))
+                            factory.createCodeSnippetStatement("return "+TransformerUtils.getNullElement(toAlter.getType()))
                     )
             );
         }
@@ -115,33 +115,6 @@ public class IfFalseElseTransformer extends BaseTransformer {
         CtClass containingClass = toAlter.getParent(p -> p instanceof CtClass);
 
         restoreAstAndImports(containingClass);
-    }
-
-    /**
-     * This method helps with building the else block of an if-true transformations.
-     * The reason for this is, that the "return null" is not sufficient for primitive datatypes.
-     * "return null" is an ok statement for "Integer" but not for "int".
-     *
-     * This method returns
-     * 0 for numeric types (.0d for double, .0f for float)
-     * '\u0000' for Char
-     * false for boolean
-     * null for anything else
-     *
-     * @param type
-     * @return
-     */
-    private String getNullElement(CtTypeReference type){
-        switch(type.getSimpleName()){
-            case "byte": return "0";
-            case "short": return "0";
-            case "int": return "0";
-            case "long": return "0L";
-            case "char": return "Character.MIN_VALUE";
-            case "float": return "0.0f";
-            case "double": return "0.0d";
-            default: return "null";
-        }
     }
 
     /**
