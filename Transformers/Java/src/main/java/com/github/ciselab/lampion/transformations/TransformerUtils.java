@@ -10,6 +10,15 @@ import spoon.reflect.reference.CtTypeReference;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * This class holds some static functions used within the transformers.
+ * At the moment, they are not strongly re-used, but I extracted them from their transformers as they were too
+ * generic from where they were previously.
+ *
+ * All methods that take a random-element change the random in-place,
+ * hence calling methods with the same random twice will give different results.
+ * See the corresponding Unit-Tests for the behaviour.
+ */
 public class TransformerUtils {
 
     /**
@@ -23,7 +32,7 @@ public class TransformerUtils {
      * - String [see "fullRandomStrings"]
      *
      * @param t the type for which to pick a random element.
-     * @param fullRandomStrings whether or not to use fully random or pseudo random strings
+     * @param fullRandomStrings whether to use fully random or pseudo random strings
      * @param random the random number provider of the transformer, should be seeded. Will be altered here.
      * @return a CtLiteral of the type t with a random value
      */
@@ -120,7 +129,7 @@ public class TransformerUtils {
      * Check whether ast is empty must be done earlier using constraints / additional logic.
      *
      * @param ast the toplevel element from which to pick a random method
-     * @param random the random number provider of the transformer, should be seeded. Will be altered here.
+     * @param random the random number provider of the transformer, should be seeded. Will be altered in-place.
      * @return a random element. Reference is passed, so altering this element will alter the toplevel ast.
      */
     public static CtLiteral pickRandomLiteral(CtElement ast, Random random) {
