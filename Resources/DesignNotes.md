@@ -134,6 +134,32 @@ This approach helps to be a bit more flexible in terms of the database and also 
 
 - [TransformationCategory.java](../Transformers/Java/src/main/java/com/github/ciselab/lampion/transformations/TransformationCategory.java)
 
+## On Metaprogramming vs. per-Language-Transformers
+
+I have been looking into a unified approach to have all transformers in one program. 
+That would be, e.g. one Java Program that can also transform python programs. Reason for this was for one a generic concept in one tool, 
+but also that I feel most comfortable with Java and I (at this point) can write nicer tests. 
+
+I have looked into [ANTLR ](https://github.com/antlr/antlr4), which is a parser generator. 
+I do not want to shame them, ofcourse they do a better job than me, but using it would complicate things out of the realm of possibilities. 
+To name one problem, the Python AST and the Java AST have nearly no similarities, so every Transformer would have to be implemented anew. 
+Another problem amongst many is, that ANTLR (extensively) uses Reflection, and I made bad experiences with them how they infect your system to rely more and more on reflections.
+I know of other meta-programming libraries (e.g. [Shen](http://shenlanguage.org/)) but they usually focus on code-generation, and not on parsing first. 
+Other parser-libraries like Happy suffer the same problems as ANTLR just in a different language. 
+To make it feasable I would have to maintain grammars and mappings of grammars for every language supported, and that sounds not like my cup of tea. 
+
+So, option B is to have one sub-repository per transformer that chooses it's langauge and tools accordingly. 
+This has as a drawback a potential explosion of tools and frameworks. 
+But it also has positive effects: 
+
+- The transformers can be developed / progressed independent of each other, that means Transformer A cannot block experiments of Transformer B
+- Volunteers can contribute in their favorite language and the individuals should have lesser barriers
+- The tools for each language are usually best maintained 
+- Releases and artifacts are clearer separated
+
+I hope to address the diverging artifacts and interfaces by having a similar Docker image, similar configuration and same alternation manifest.
+In theory the transformers should look and feel the same, just written in a different language.  
+
 ## Java-Transformer
 
 ### Registration of Transformers
