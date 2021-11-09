@@ -13,11 +13,24 @@ pip install libcst
 ```
 
 Build (in Python-Root): 
+
 ```
 python -m build
 ```
 
 Test (in Python-Root):
+
 ```
 pytest
+```
+
+Install the python transformer
+
+``` 
+pip install .\dist\lampion_python_transformer-0.0.1-py2.py3-none-any.whl
+```
+
+Run with: 
+``` 
+python -m lampion
 ```
