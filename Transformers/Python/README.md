@@ -27,7 +27,7 @@ pytest
 Install the python transformer
 
 ``` 
-pip install .\dist\lampion_python_transformer-0.0.1-py2.py3-none-any.whl
+pip install --force-reinstall .\dist\lampion_python_transformer-0.0.1-py2.py3-none-any.whl
 ```
 
 Run with: 

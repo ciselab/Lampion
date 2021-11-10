@@ -1,28 +1,34 @@
-FROM python:3.9.7
+ARG PYTHON_VERSION=3.9.7
+FROM python:${PYTHON_VERSION}
 
 ARG LAMPION_VERSION=0.0.1
 ARG WHEEL_POSTFIX=py2.py3-none-any
 
+LABEL maintainer="L.H.Applis@tu-delft.nl"
+
+# Where the lampion should be applied/run, default to a sample file
+ENV target="/lampion_target/hello_world.py"
+ENV configfile=""
+
 WORKDIR /lampion
 
+#Copy project files
 COPY src ./src
 COPY tests ./tests
 COPY LICENSE .
 COPY README.md .
 COPY setup.cfg .
 COPY pyproject.toml .
+COPY entrypoint.sh .
 
+#Copy the example
+COPY tests/test_inputs/hello_world.py /lampion_target/
 
 RUN pip install --upgrade pytest libcst build
 
 RUN pytest -q
 RUN python3 -m build --wheel
 
-
-#RUN pip install --force-reinstall --only-binary=./dist/lampion_python_transformer-${LAMPION_VERSION}-${WHEEL_POSTFIX}.whl ./dist/lampion_python_transformer-${LAMPION_VERSION}-${WHEEL_POSTFIX}.whl
 RUN pip install /lampion/dist/lampion_python_transformer-${LAMPION_VERSION}-${WHEEL_POSTFIX}.whl
 
-#ENTRYPOINT ["tail","/dev/null","-f"]
-#./usr/local/lib/python3.9/site-packages/lampion
-
-ENTRYPOINT ["python","-m","lampion"]
+ENTRYPOINT ["sh","entrypoint.sh"]
