@@ -1,9 +1,8 @@
 import sys
 
 import libcst as cst
-from libcst.tool import dump
 
-from src.lampion.transformers.renamevar import RenameParameterTransformer
+from lampion.transformers.renamevar import RenameParameterTransformer
 
 
 def dry_run(path):
@@ -16,17 +15,20 @@ def dry_run(path):
 
     print("Starting my Transformer")
 
+    #homebrew_transformer = AddVariableTransformer()
     homebrew_transformer = RenameParameterTransformer()
+
+    #post_change_cst = \
     sample_cst.visit(homebrew_transformer)
 
+    print(sample_cst.code)
 
 def file_to_string(path):
     # TODO: Check Folder vs. File
     with open(path, 'r') as file:
         return file.read()
 
-
-if __name__ == '__main__':
+def main():
     # TODO: Check ARGnum
     # TODO: Test for missing args
     path = sys.argv[1]

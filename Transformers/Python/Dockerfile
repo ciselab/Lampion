@@ -13,13 +13,14 @@ ENV configfile=""
 WORKDIR /lampion
 
 #Copy project files
-COPY src ./src
+COPY lampion ./lampion
 COPY tests ./tests
 COPY LICENSE .
 COPY README.md .
 COPY setup.cfg .
 COPY pyproject.toml .
 COPY entrypoint.sh .
+COPY requirements.txt .
 
 #Copy the example
 COPY tests/test_inputs/hello_world.py /lampion_target/
