@@ -26,20 +26,18 @@ class AddVariableTransformer(cst.CSTTransformer):
     # TODO: Exit after one application (with a flag or something?)
 
     def visit_SimpleStatementLine(self, node: "SimpleStatementLine") -> Optional[bool]:
-        #print("Visiting SimpleStatementLine, depth: ", self.depth, "->", self.depth + 1)
         self.depth = self.depth + 1
 
 
     def leave_SimpleStatementLine(
         self, original_node: "SimpleStatementLine", updated_node: "SimpleStatementLine"
     ) -> Union["BaseStatement", FlattenSentinel["BaseStatement"], RemovalSentinel]:
-        #print("Leaving SimpleStatementLine, depth: ", self.depth, "->", self.depth + 1, "stmt",self.stmts+1)
         self.depth = self.depth - 1
         self.stmts = self.stmts + 1
 
         added_stmt = _makeSnippet()
         # Flatten Sentinels are what we want to replace 1 existing element (here 1 statement) with 1 or more statements
-        # It takes care of things like intendation
+        # It takes care of things like indentation
         return cst.FlattenSentinel([added_stmt,updated_node])
 
 
@@ -55,7 +53,7 @@ def _get_random_string(length):
     if length<1:
         raise ValueError("Random Strings must have length 1 minimum.")
     # choose from all lowercase letter
-    letters = string.ascii_lowercase + string.ascii_uppercase +"1234567890"
+    letters = string.ascii_letters + string.digits
     first_letter = random.choice(string.ascii_lowercase)
     result_str = ''.join(random.choice(letters) for i in range(length-1))
     return first_letter + result_str

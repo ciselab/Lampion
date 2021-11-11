@@ -34,6 +34,11 @@ Run with:
 python -m lampion
 ```
 
+Check linting with:
+``` 
+pylint ./lampion
+```
+
 ## Requirements
 
 - Docker 11+

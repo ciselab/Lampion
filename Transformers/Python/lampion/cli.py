@@ -1,6 +1,7 @@
 import sys
 
 import libcst as cst
+import random
 
 from lampion.transformers.addvar import AddVariableTransformer
 from lampion.transformers.renamevar import RenameParameterTransformer
@@ -38,4 +39,7 @@ def main():
     # TODO: Check ARGnum
     # TODO: Test for missing args
     path = sys.argv[1]
+
+    random.seed(69)
+
     dry_run(path)
