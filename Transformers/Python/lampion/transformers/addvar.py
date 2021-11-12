@@ -11,11 +11,13 @@ from libcst import MaybeSentinel, FlattenSentinel, RemovalSentinel
 
 
 # TODO: Flag for types?
+from lampion.transformers.basetransformer import BaseTransformer
 
-class AddVariableTransformer(cst.CSTTransformer):
+
+class AddVariableTransformer(BaseTransformer):
 
     def __init__(self):
-        print("AddVariableTransformer Init called")
+        print("AddVariableTransformer Created")
         self.depth: int = 0
         self.stmts: int = 0
 
