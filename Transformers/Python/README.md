@@ -20,7 +20,7 @@ python -m build
 Test (in Python-Root):
 
 ```
-pytest
+python -m pytest tests/
 ```
 
 Install the python transformer
