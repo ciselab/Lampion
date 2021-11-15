@@ -40,5 +40,6 @@ def main():
     random.seed(69)
 
     log.basicConfig(filename='lampion.log', encoding='utf-8', level=log.DEBUG)
+    log.getLogger().addHandler(log.StreamHandler(sys.stdout))
 
     dry_run(path)
