@@ -1,33 +1,29 @@
 import sys
 
 import libcst as cst
+import logging as log
 import random
 
-from lampion.transformers.addvar import AddVariableTransformer
-from lampion.transformers.renamevar import RenameParameterTransformer
+from lampion.components.engine import Engine
 
 
 def dry_run(path):
-    print(f'Welcome to the Lampion-Python-Transformer')
+    log.info(f'Welcome to the Lampion-Python-Transformer')
 
-    print("Reading File")
+    log.info(f"Reading File(s) from {path}")
     # Read a sample file with hellow world
     f = file_to_string(path)
     sample_cst = cst.parse_module(f)
 
-    print("Starting my Transformer")
+    engine = Engine({}, "PLACEHOLDER", "PLACEHOLDER")
 
-    homebrew_transformer = AddVariableTransformer()
-    #homebrew_transformer = RenameParameterTransformer()
-
-    #post_change_cst = \
-    some = sample_cst.visit(homebrew_transformer)
-
-    print(sample_cst.code)
-    print("========================")
-    print("         Goes To        ")
-    print("========================")
-    print(some.code)
+    some = engine.run([sample_cst])[0]
+    log.debug("========================")
+    log.debug(sample_cst.code)
+    log.debug("========================")
+    log.debug("         Goes To        ")
+    log.debug("========================")
+    log.debug(some.code)
 
 
 def file_to_string(path):
@@ -42,5 +38,7 @@ def main():
     path = sys.argv[1]
 
     random.seed(69)
+
+    log.basicConfig(filename='lampion.log', encoding='utf-8', level=log.DEBUG)
 
     dry_run(path)
