@@ -15,7 +15,7 @@ def dry_run(path):
     f = file_to_string(path)
     sample_cst = cst.parse_module(f)
 
-    engine = Engine({}, "PLACEHOLDER", "PLACEHOLDER")
+    engine = Engine({}, "PLACEHOLDER")
 
     some = engine.run([sample_cst])[0]
     log.debug("========================")

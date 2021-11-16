@@ -37,14 +37,13 @@ class Engine:
     This Engine is intentionally separated from any CLI / call to be better testable.
     """
 
-    def __init__(self, config,input_dir: str,output_dir: str):
+    def __init__(self, config,output_dir: str):
         log.debug("Creating Engine ...")
         self.transformers = _create_transformers(config)
         self.config = config
-        self.input_dir = input_dir
         self.output_dir = output_dir
 
-        log.info(f"Initiated Engine with Input from {self.input_dir} "
+        log.info(f"Initiated Engine "
                  f"writing output to {self.output_dir} with {len(self.transformers)} Transformers")
 
     input_dir: str = None
