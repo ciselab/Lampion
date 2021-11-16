@@ -22,6 +22,8 @@ Test (in Python-Root):
 ```
 python -m pytest tests/
 ```
+Or with coverage `python -m pytest --cov=lampion tests/`
+
 
 Install the python transformer
 
