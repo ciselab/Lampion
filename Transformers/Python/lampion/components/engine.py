@@ -5,6 +5,8 @@ from lampion.transformers.basetransformer import BaseTransformer
 
 import logging as log
 
+
+
 class Engine:
     """ The primary Engine that runs all of the Transformers on a piece of Code.
 
@@ -37,11 +39,20 @@ class Engine:
     This Engine is intentionally separated from any CLI / call to be better testable.
     """
 
-    def __init__(self, config,output_dir: str):
+    def __init__(self, config: dict = None, output_dir: str = "PLACEHOLDER"):
         log.debug("Creating Engine ...")
-        self.transformers = _create_transformers(config)
-        self.config = config
+
+        if config is None or len(config) == 0:
+            log.info("Received no Config for Engine - running with default values")
+            self.config = _default_config()
+        else:
+            log.info("Received a Config for Engine - overwritting default values for everything found")
+            overwrite_config = _default_config()
+            overwrite_config.update(config)
+            self.config = overwrite_config
+
         self.output_dir = output_dir
+        self.transformers = _create_transformers(self.config)
 
         log.info(f"Initiated Engine "
                  f"writing output to {self.output_dir} with {len(self.transformers)} Transformers")
@@ -53,8 +64,7 @@ class Engine:
     config = {}
     transformers: [BaseTransformer] = []
 
-
-    def run(self,csts: ["Node"]) -> ["Node"]:
+    def run(self, csts: ["Node"]) -> ["Node"]:
         """
         Primary Method of the Engine.
         Does the following in order:
@@ -80,10 +90,12 @@ class Engine:
         log.info("Starting Engine")
         altered_csts = csts
 
-        #TODO: Read this from config
-        max_transformations = 10
+        random.seed(self.config["seed"])
+
+        # TODO: Read this from config
+        max_transformations = self.config["transformations"]
         while self.successful_transformations < max_transformations:
-            cst_index = random.randint(0,len(altered_csts)-1)
+            cst_index = random.randint(0, len(altered_csts) - 1)
             cst = csts[cst_index]
             del altered_csts[cst_index]
 
@@ -97,10 +109,16 @@ class Engine:
                 altered_csts.append(changed_cst)
             else:
                 log.debug("Transformer failed - retrying with another one")
-                self.failed_transformations = self.failed_transformations +1
+                self.failed_transformations = self.failed_transformations + 1
                 transformer.reset()
                 # If the Transformer failed, re-add the unaltered CST
                 altered_csts.append(cst)
+
+        if self.config["writeManifest"]:
+            log.warning("Manifest is currently not enabled!")
+            raise NotImplementedError()
+        else:
+            log.info("Manifest Writing was turned off in Configuration.")
 
         if self.output_dir:
             log.info("Writing to Output is TBD")
@@ -108,7 +126,7 @@ class Engine:
         return altered_csts
 
 
-def _create_transformers(config) -> [BaseTransformer]:
+def _create_transformers(config: dict) -> [BaseTransformer]:
     """ Creates a set of transformers from a given configuration.
 
     :param config:
@@ -117,5 +135,37 @@ def _create_transformers(config) -> [BaseTransformer]:
         A list of created transformers, if they are configurable their configuration is also read from the config.
     """
 
+    transformers = []
+    if not config:
+        raise ValueError("Received None as Configuration")
+    if len(config) == 0:
+        raise ValueError("Received Empty Configuration")
+
+    if config["AddUnusedVariableTransformer"]:
+        transformers.append(AddVariableTransformer())
     # TODO: Currently I only have one Transformer
-    return [AddVariableTransformer()]
+
+    return transformers
+
+
+def _default_config() -> dict:
+    """
+    Creates a default configuration, used if none was provided or if the provided configuration did not cover all values.
+    Please be careful with the spelling of the dictionary.
+
+    :return: The default configuration of the program.
+    """
+    default_config = {}
+    # Program Wide Attributes
+    default_config["seed"] = 11
+    default_config["transformations"] = 50
+    default_config["transformationscope"] = "global"
+
+    # Manifest Attributes (Currently Disabled)
+    default_config["writeManifest"] = False
+
+    # Transformer Related Attributes
+    default_config["AddUnusedVariableTransformer"] = True
+    default_config["UnusedVariableStringRandomness"] = "full"
+
+    return default_config
