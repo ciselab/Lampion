@@ -1,5 +1,6 @@
 import random
 
+from lampion.transformers.addcomment import AddCommentTransformer
 from lampion.transformers.addvar import AddVariableTransformer
 from lampion.transformers.basetransformer import BaseTransformer
 
@@ -143,7 +144,10 @@ def _create_transformers(config: dict) -> [BaseTransformer]:
 
     if config["AddUnusedVariableTransformer"]:
         transformers.append(AddVariableTransformer())
-    # TODO: Currently I only have one Transformer
+
+    if config["AddCommentTransformer"]:
+        transformers.append(AddCommentTransformer())
+    # TODO: Add many more Transformers!
 
     return transformers
 
@@ -167,5 +171,8 @@ def _default_config() -> dict:
     # Transformer Related Attributes
     default_config["AddUnusedVariableTransformer"] = True
     default_config["UnusedVariableStringRandomness"] = "full"
+
+    default_config["AddCommentTransformer"] = True
+    default_config["AddCommentStringRandomness"] = "full"
 
     return default_config

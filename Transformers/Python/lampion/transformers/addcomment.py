@@ -10,14 +10,13 @@ import libcst as cst
 import libcst.codegen.gather
 from libcst import FlattenSentinel, RemovalSentinel
 
-# TODO: Flag to add types to the var ?
 from lampion.transformers.basetransformer import BaseTransformer
 
 
-class AddVariableTransformer(BaseTransformer):
+class AddCommentTransformer(BaseTransformer):
 
     def __init__(self):
-        log.info("AddVariableTransformer Created")
+        log.info("AddCommentTransformer Created")
         self._depth: int = 0
         self._stmts: int = 0
         self._worked = False
@@ -67,11 +66,10 @@ class AddVariableTransformer(BaseTransformer):
         self.reset()
 
 def _makeSnippet() -> "Node":
-    name = _get_random_string(10)
-    # TODO: make random value of different types
-    value = random.randint(2, 1000)
+    pieces  = [_get_random_string(random.randint(1,8)) for x in range(1,random.randint(2,5))]
 
-    return libcst.parse_statement(f"{name} = {value}")
+    comment = "# " + " ".join(pieces) + " \n"
+    return libcst.parse_module(comment)
 
 
 def _get_random_string(length: int) -> str:
