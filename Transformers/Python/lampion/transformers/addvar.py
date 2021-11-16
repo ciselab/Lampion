@@ -26,6 +26,9 @@ class AddVariableTransformer(BaseTransformer):
     _stmts = 0
     _worked = False
 
+    _supported_types = ["int", "float", "double", "str"]
+    _add_types = True
+
     def visit_SimpleStatementLine(self, node: "SimpleStatementLine") -> Optional[bool]:
         self._depth = self._depth + 1
 
@@ -40,7 +43,7 @@ class AddVariableTransformer(BaseTransformer):
         self._depth = self._depth - 1
         self._stmts = self._stmts + 1
 
-        added_stmt = _makeSnippet()
+        added_stmt = self._makeSnippet()
 
         # Case 2: We did not alter yet, at the current (random) statement apply it in 1 of 20 cases.
         # TODO: this has a slight bias towards early nodes if the file is long?
@@ -66,12 +69,25 @@ class AddVariableTransformer(BaseTransformer):
     def postprocessing(self) -> None:
         self.reset()
 
-def _makeSnippet() -> "Node":
-    name = _get_random_string(10)
-    # TODO: make random value of different types
-    value = random.randint(2, 1000)
+    def _makeSnippet(self) -> "Node":
+        name = _get_random_string(10)
 
-    return libcst.parse_statement(f"{name} = {value}")
+        type = random.choice(self._supported_types)
+
+        if self._add_types:
+            name = f"{name}: {type}"
+
+        value = ""
+        if type == "str":
+            value = f"\"{_get_random_string(random.randint(3,30))}\""
+        if type == "int":
+            value = random.randint(2, 1000)
+        if type == "float":
+            value = random.random()
+        if type == "double":
+            value = random.random()
+
+        return libcst.parse_statement(f"{name} = {value}")
 
 
 def _get_random_string(length: int) -> str:
