@@ -10,7 +10,6 @@ from lampion.components.engine import Engine
 
 def dry_run(path):
     log.info(f'Welcome to the Lampion-Python-Transformer')
-
     log.info(f"Reading File(s) from {path}")
 
     csts = read_input_dir(path)
@@ -18,6 +17,7 @@ def dry_run(path):
     engine = Engine({}, "PLACEHOLDER")
 
     some = engine.run(csts)[0]
+
     log.debug("========================")
     log.debug(csts[0].code)
     log.debug("========================")
@@ -47,6 +47,7 @@ def read_input_dir(path: str) -> ["Node"]:
         results = []
         for dirpath, dnames, fnames in os.walk(path):
             #TODO: Create a lookup of files:cst ?
+            #TODO: Exclude __init__.py files? But keep it in Lookup?
             for f in fnames:
                 if f.endswith(".py"):
                     ff = _file_to_string(os.path.join(dirpath, f))
