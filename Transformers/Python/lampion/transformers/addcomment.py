@@ -14,6 +14,23 @@ from lampion.transformers.basetransformer import BaseTransformer
 
 
 class AddCommentTransformer(BaseTransformer):
+    """
+    Transformer that adds a random comment at a random position.
+
+    Sometimes there is a probability that the Transformer is not applied just by randomness.
+    For that case, just re-run it if it did not work.
+    This is automatically done in Engine and documented in tests.
+
+    Before:
+    > def hi():
+    >   print("Hello World")
+
+    After:
+    > def hi():
+    >   # WKJNWHE MKPWEHÜ HG90ß15
+    >   print("Hello World")
+
+    """
 
     def __init__(self):
         log.info("AddCommentTransformer Created")
@@ -64,6 +81,9 @@ class AddCommentTransformer(BaseTransformer):
 
     def postprocessing(self) -> None:
         self.reset()
+
+    def categories(self) -> [str]:
+        return ["Naming","Comment"]
 
 def _makeSnippet() -> "Node":
     pieces  = [_get_random_string(random.randint(1,8)) for x in range(1,random.randint(2,5))]

@@ -15,6 +15,25 @@ from lampion.transformers.basetransformer import BaseTransformer
 
 
 class AddVariableTransformer(BaseTransformer):
+    """
+    Transformer that adds a random unused variable at a random position.
+
+    Sometimes there is a probability that the Transformer is not applied just by randomness.
+    For that case, just re-run it if it did not work.
+    This is automatically done in Engine and documented in tests.
+
+    Before:
+    > def hi():
+    >   print("Hello World")
+
+    After:
+    > def hi():
+    >   hgwe: str = "anjlkgwe"
+    >   print("Hello World")
+
+    Currently it can add ints, floats, doubles and strings.
+    Adding the type is an optional flag.
+    """
 
     def __init__(self):
         log.info("AddVariableTransformer Created")
@@ -65,6 +84,9 @@ class AddVariableTransformer(BaseTransformer):
 
     def worked(self) -> bool:
         return self._worked
+
+    def categories(self) -> [str]:
+        return ["Naming","Smell"]
 
     def postprocessing(self) -> None:
         self.reset()

@@ -64,6 +64,14 @@ class BaseTransformer(cst.CSTTransformer):
         """
         return self._was_applied
 
+    def categories(self) -> [str]:
+        """
+        Gives the categories specified for this transformer.
+        Used only for information and maybe later for filter purposes.
+        :return: The categories what this transformer can be summarized with.
+        """
+        raise NotImplementedError()
+
     def _can_be_applied(self, node: "BaseNode") -> bool:
         """Checks whether all constraints for the Transformer are met to be applied.
 
