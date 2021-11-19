@@ -8,7 +8,7 @@ from typing import Optional, Union
 import libcst
 import libcst as cst
 import libcst.codegen.gather
-from libcst import FlattenSentinel, RemovalSentinel
+from libcst import FlattenSentinel, RemovalSentinel, CSTNode
 
 from lampion.transformers.basetransformer import BaseTransformer
 
@@ -34,7 +34,7 @@ class AddVariableTransformer(BaseTransformer):
     Adding the type is an optional flag.
     """
 
-    def apply(self, cst: "Node") -> "Node":
+    def apply(self, cst: CSTNode) -> CSTNode:
         visitor = self.__AddVarVisitor()
 
         altered_cst = cst
@@ -105,7 +105,7 @@ class AddVariableTransformer(BaseTransformer):
         _supported_types = ["int", "float", "double", "str"]
         _add_types = True
 
-        def _makeSnippet(self) -> "Node":
+        def _makeSnippet(self) -> CSTNode:
             name = _get_random_string(10)
 
             type = random.choice(self._supported_types)

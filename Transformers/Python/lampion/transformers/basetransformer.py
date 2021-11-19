@@ -1,3 +1,5 @@
+from libcst import CSTNode
+
 
 class BaseTransformer():
     """Base class for metamorphic transformers, provides methods needed for Engine to work.
@@ -33,7 +35,7 @@ class BaseTransformer():
         """
         raise NotImplementedError()
 
-    def apply(self, cst: "Node") -> "Node":
+    def apply(self, cst: CSTNode) -> CSTNode:
         """
         Apply the Transformer to a given CST.
         The returned CST might not be changed, if the transformer did not work (check the worked() method for this).
@@ -86,7 +88,7 @@ class BaseTransformer():
         """
         raise NotImplementedError()
 
-    def _can_be_applied(self, node: "BaseNode") -> bool:
+    def _can_be_applied(self, node: CSTNode) -> bool:
         """Checks whether all constraints for the Transformer are met to be applied.
 
         :parameter node : libcst.BaseNode

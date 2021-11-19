@@ -8,7 +8,7 @@ from typing import Optional, Union
 import libcst
 import libcst as cst
 import libcst.codegen.gather
-from libcst import FlattenSentinel, RemovalSentinel
+from libcst import FlattenSentinel, RemovalSentinel, CSTNode
 
 from lampion.transformers.basetransformer import BaseTransformer
 
@@ -39,7 +39,7 @@ class AddCommentTransformer(BaseTransformer):
 
     _worked = False
 
-    def apply(self, cst: "Node") -> "Node":
+    def apply(self, cst: CSTNode) -> CSTNode:
         visitor = self.__AddCommentVisitor()
 
         altered_cst = cst
@@ -106,7 +106,7 @@ class AddCommentTransformer(BaseTransformer):
                 return updated_node
 
 
-def _makeSnippet() -> "Node":
+def _makeSnippet() -> CSTNode:
     pieces  = [_get_random_string(random.randint(1,8)) for x in range(1,random.randint(2,5))]
 
     comment = "# " + " ".join(pieces) + " \n"

@@ -5,6 +5,8 @@ import libcst as cst
 import logging as log
 import random
 
+from libcst import CSTNode
+
 from lampion.components.engine import Engine
 
 
@@ -26,7 +28,7 @@ def dry_run(path):
     log.debug(some.code)
 
 
-def read_input_dir(path: str) -> ["Node"]:
+def read_input_dir(path: str) -> [CSTNode]:
     """
     This method parses a given path to one or more Libcst Modules.
     It handles that you can pass the path to one file or to a folder .

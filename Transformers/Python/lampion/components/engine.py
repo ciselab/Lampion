@@ -1,5 +1,7 @@
 import random
 
+from libcst import CSTNode
+
 from lampion.transformers.addcomment import AddCommentTransformer
 from lampion.transformers.addvar import AddVariableTransformer
 from lampion.transformers.basetransformer import BaseTransformer
@@ -21,8 +23,6 @@ class Engine:
             How often transformers were called that worked - used for termination.
         - config : Dict
             The configuration
-        - input_dir : Path
-            Where to read in the AST using LibCST's methods
         - output_dir : Path
             Where to write the AST after transformations, using the same structure as input_dir
 
@@ -65,7 +65,7 @@ class Engine:
     config = {}
     transformers: [BaseTransformer] = []
 
-    def run(self, csts: ["Node"]) -> ["Node"]:
+    def run(self, csts: [CSTNode]) -> [CSTNode]:
         """
         Primary Method of the Engine.
         Does the following in order:
@@ -81,7 +81,7 @@ class Engine:
 
         The initial CSTs should remain unchanged.
 
-        :param cst: Either A Single LibCST Module (if Input was a single file)
+        :param csts:Either A Single LibCST Module (if Input was a single file)
                     wrapped in a list or a list of such Modules (if Input was a folder).
         :return: The changed CST(s)
 
