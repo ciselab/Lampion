@@ -102,7 +102,7 @@ class Engine:
 
             transformer = random.choice(self.transformers)
             transformer.reset()
-            changed_cst = cst.visit(transformer)
+            changed_cst = transformer.apply(cst)
             if transformer.worked():
                 log.debug("Transformer worked")
                 self.successful_transformations = self.successful_transformations + 1

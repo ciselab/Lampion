@@ -72,11 +72,7 @@ def visit_until_worked(cst, transformer):
     :param transformer:
     :return:
     """
-    i = 0
-    altered = None
-    while i < 1000 and not transformer.worked():
-        altered = cst.visit(transformer)
-        i = i + 1
+    altered = transformer.apply(cst)
     return altered
 
 

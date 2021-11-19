@@ -34,47 +34,33 @@ class AddCommentTransformer(BaseTransformer):
 
     def __init__(self):
         log.info("AddCommentTransformer Created")
-        self._depth: int = 0
-        self._stmts: int = 0
+
         self._worked = False
 
-    _depth = 0
-    _stmts = 0
     _worked = False
 
-    def visit_SimpleStatementLine(self, node: "SimpleStatementLine") -> Optional[bool]:
-        self._depth = self._depth + 1
+    def apply(self, cst: "Node") -> "Node":
+        visitor = self.__AddCommentVisitor()
 
-    def leave_SimpleStatementLine(
-            self, original_node: "SimpleStatementLine", updated_node: "SimpleStatementLine"
-    ) -> Union["BaseStatement", FlattenSentinel["BaseStatement"], RemovalSentinel]:
+        altered_cst = cst
 
-        # Case 1: We successfully applied the Transformer, exit early, do nothing.
-        if self._worked:
-            return updated_node
+        tries: int = 0
+        max_tries : int = 100
 
-        self._depth = self._depth - 1
-        self._stmts = self._stmts + 1
+        while (not self._worked) and tries <= max_tries:
+            altered_cst = cst.visit(visitor)
+            self._worked = visitor.finished
+            tries = tries + 1
 
-        added_stmt = _makeSnippet()
+        if tries == max_tries:
+            log.warning(f"Add Variable Visitor failed after {max_tries} attempt")
 
-        # Case 2: We did not alter yet, at the current (random) statement apply it in 1 of 20 cases.
-        # TODO: this has a slight bias towards early nodes if the file is long?
-        # TODO: Is there a way to see all nodes and pick one by random.choice(allNodes) ?
-        if random.random() < 0.05:
-            self._worked = True
-            # FlattenSentinels are what we want to replace 1 existing element (here 1 statement) with 1 or more statements
-            # It takes care of things like indentation
-            return cst.FlattenSentinel([added_stmt, updated_node])
-        # Case 3: We did not alter it and chance was not triggered.
-        # Re-Run the Transformer, better luck next time.
-        else:
-            return updated_node
+        #TODO: add Post-Processing Values here
+
+        return altered_cst
 
     def reset(self) -> None:
         self._worked = False
-        self._depth = 0
-        self._stmts = 0
 
     def worked(self) -> bool:
         return self._worked
@@ -84,6 +70,41 @@ class AddCommentTransformer(BaseTransformer):
 
     def categories(self) -> [str]:
         return ["Naming","Comment"]
+
+    class __AddCommentVisitor(cst.CSTTransformer):
+
+        def __init__(self):
+            log.debug("AddVariableVisitor Created")
+            self._finished = False
+
+        finished: bool = False
+
+        def visit_SimpleStatementLine(self, node: "SimpleStatementLine") -> Optional[bool]:
+            return
+
+        def leave_SimpleStatementLine(
+                self, original_node: "SimpleStatementLine", updated_node: "SimpleStatementLine"
+        ) -> Union["BaseStatement", FlattenSentinel["BaseStatement"], RemovalSentinel]:
+
+            # Case 1: We successfully applied the Transformer, exit early, do nothing.
+            if self.finished:
+                return updated_node
+
+            added_stmt = _makeSnippet()
+
+            # Case 2: We did not alter yet, at the current (random) statement apply it in 1 of 20 cases.
+            # TODO: this has a slight bias towards early nodes if the file is long?
+            # TODO: Is there a way to see all nodes and pick one by random.choice(allNodes) ?
+            if random.random() < 0.05:
+                self.finished = True
+                # FlattenSentinels are what we want to replace 1 existing element (here 1 statement) with 1 or more statements
+                # It takes care of things like indentation
+                return cst.FlattenSentinel([added_stmt, updated_node])
+            # Case 3: We did not alter it and chance was not triggered.
+            # Re-Run the Transformer, better luck next time.
+            else:
+                return updated_node
+
 
 def _makeSnippet() -> "Node":
     pieces  = [_get_random_string(random.randint(1,8)) for x in range(1,random.randint(2,5))]

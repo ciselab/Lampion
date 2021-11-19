@@ -10,7 +10,6 @@ import libcst as cst
 import libcst.codegen.gather
 from libcst import FlattenSentinel, RemovalSentinel
 
-# TODO: Flag to add types to the var ?
 from lampion.transformers.basetransformer import BaseTransformer
 
 
@@ -35,52 +34,28 @@ class AddVariableTransformer(BaseTransformer):
     Adding the type is an optional flag.
     """
 
-    def __init__(self):
-        log.info("AddVariableTransformer Created")
-        self._depth: int = 0
-        self._stmts: int = 0
-        self._worked = False
+    def apply(self, cst: "Node") -> "Node":
+        visitor = self.__AddVarVisitor()
 
-    _depth = 0
-    _stmts = 0
-    _worked = False
+        altered_cst = cst
 
-    _supported_types = ["int", "float", "double", "str"]
-    _add_types = True
+        tries: int = 0
+        max_tries : int = 100
 
-    def visit_SimpleStatementLine(self, node: "SimpleStatementLine") -> Optional[bool]:
-        self._depth = self._depth + 1
+        while (not self._worked) and  tries <= max_tries:
+            altered_cst = cst.visit(visitor)
+            self._worked = visitor.finished
+            tries = tries + 1
 
-    def leave_SimpleStatementLine(
-            self, original_node: "SimpleStatementLine", updated_node: "SimpleStatementLine"
-    ) -> Union["BaseStatement", FlattenSentinel["BaseStatement"], RemovalSentinel]:
+        if tries == max_tries:
+            log.warning(f"Add Variable Visitor failed after {max_tries} attempt")
 
-        # Case 1: We successfully applied the Transformer, exit early, do nothing.
-        if self._worked:
-            return updated_node
+        #TODO: add Post-Processing Values here
 
-        self._depth = self._depth - 1
-        self._stmts = self._stmts + 1
-
-        added_stmt = self._makeSnippet()
-
-        # Case 2: We did not alter yet, at the current (random) statement apply it in 1 of 20 cases.
-        # TODO: this has a slight bias towards early nodes if the file is long?
-        # TODO: Is there a way to see all nodes and pick one by random.choice(allNodes) ?
-        if random.random() < 0.05:
-            self._worked = True
-            # FlattenSentinels are what we want to replace 1 existing element (here 1 statement) with 1 or more statements
-            # It takes care of things like indentation
-            return cst.FlattenSentinel([added_stmt, updated_node])
-        # Case 3: We did not alter it and chance was not triggered.
-        # Re-Run the Transformer, better luck next time.
-        else:
-            return updated_node
+        return altered_cst
 
     def reset(self) -> None:
         self._worked = False
-        self._depth = 0
-        self._stmts = 0
 
     def worked(self) -> bool:
         return self._worked
@@ -91,26 +66,64 @@ class AddVariableTransformer(BaseTransformer):
     def postprocessing(self) -> None:
         self.reset()
 
-    def _makeSnippet(self) -> "Node":
-        name = _get_random_string(10)
 
-        type = random.choice(self._supported_types)
+    class __AddVarVisitor(cst.CSTTransformer):
 
-        if self._add_types:
-            name = f"{name}: {type}"
+        def __init__(self):
+            log.debug("AddVariableVisitor Created")
+            self.finished = False
 
-        value = ""
-        if type == "str":
-            value = f"\"{_get_random_string(random.randint(3,30))}\""
-        if type == "int":
-            value = random.randint(2, 1000)
-        if type == "float":
-            value = random.random()
-        if type == "double":
-            value = random.random()
+        finished = False
 
-        return libcst.parse_statement(f"{name} = {value}")
+        def visit_SimpleStatementLine(self, node: "SimpleStatementLine") -> Optional[bool]:
+            return
 
+        def leave_SimpleStatementLine(
+                self, original_node: "SimpleStatementLine", updated_node: "SimpleStatementLine"
+        ) -> Union["BaseStatement", FlattenSentinel["BaseStatement"], RemovalSentinel]:
+
+            # Case 1: We successfully applied the Transformer, exit early, do nothing.
+            if self.finished:
+                return updated_node
+
+            added_stmt = self._makeSnippet()
+
+            # Case 2: We did not alter yet, at the current (random) statement apply it in 1 of 20 cases.
+            # TODO: this has a slight bias towards early nodes if the file is long?
+            # TODO: Is there a way to see all nodes and pick one by random.choice(allNodes) ?
+            if random.random() < 0.05:
+                self.finished = True
+                # FlattenSentinels are what we want to replace 1 existing element (here 1 statement) with 1 or more statements
+                # It takes care of things like indentation
+                return cst.FlattenSentinel([added_stmt, updated_node])
+            # Case 3: We did not alter it and chance was not triggered.
+            # Re-Run the Transformer, better luck next time.
+            else:
+                return updated_node
+
+
+        _supported_types = ["int", "float", "double", "str"]
+        _add_types = True
+
+        def _makeSnippet(self) -> "Node":
+            name = _get_random_string(10)
+
+            type = random.choice(self._supported_types)
+
+            if self._add_types:
+                name = f"{name}: {type}"
+
+            value = ""
+            if type == "str":
+                value = f"\"{_get_random_string(random.randint(3,30))}\""
+            if type == "int":
+                value = random.randint(2, 1000)
+            if type == "float":
+                value = random.random()
+            if type == "double":
+                value = random.random()
+
+            return libcst.parse_statement(f"{name} = {value}")
 
 def _get_random_string(length: int) -> str:
     if length < 1:
