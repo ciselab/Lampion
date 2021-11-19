@@ -16,7 +16,7 @@ def dry_run(path):
 
     csts = read_input_dir(path)
 
-    engine = Engine({}, "PLACEHOLDER")
+    engine = Engine({}, "lampion_output")
 
     some = engine.run(csts)[0]
 

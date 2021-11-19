@@ -1,3 +1,5 @@
+import errno
+import os.path
 import random
 
 from libcst import CSTNode
@@ -40,7 +42,7 @@ class Engine:
     This Engine is intentionally separated from any CLI / call to be better testable.
     """
 
-    def __init__(self, config: dict = None, output_dir: str = "PLACEHOLDER"):
+    def __init__(self, config: dict = None, output_dir: str = "./lampion_output"):
         log.debug("Creating Engine ...")
 
         if config is None or len(config) == 0:
@@ -87,6 +89,9 @@ class Engine:
 
         The Nodes could be read in here too, but I wanted to separate it for better testability.
         This way, the Node can be passed to the engine without IO and the return can be asserted in tests.
+        Similiarly, the paths are passed around with the CST as I do not want to loose them,
+        because we definetely loose the order of them. So I feared that a simple dictionary might reach it's
+        limitations and introduce bugs. To avoid it, I have put it like this. But feel free to make it elegant.
         """
         log.info("Starting Engine")
         # This deep clone helps to make a copy of the CSTs, so that the input does not change by accident.
@@ -123,9 +128,22 @@ class Engine:
             log.info("Manifest Writing was turned off in Configuration.")
 
         if self.output_dir:
-            log.info("Writing to Output is TBD")
+            log.info(f"Writing to Output to {self.output_dir}")
+            self._output_to_files(altered_csts)
 
         return altered_csts
+
+    def _output_to_files(self,csts: []) -> None:
+        for (p, cst) in csts:
+            pp = os.path.join("./", self.output_dir, p)
+            log.debug(f"Writing {p} to {pp}")
+
+            # Create the (all) folders before trying to make the file
+            os.makedirs(os.path.dirname(pp), exist_ok=True)
+            # Open the File as write, with overwriting existing content
+            with open(pp,"w") as output_file:
+                output_file.write(cst.code)
+                output_file.close()
 
 
 def _create_transformers(config: dict) -> [BaseTransformer]:
