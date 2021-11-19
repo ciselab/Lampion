@@ -102,7 +102,7 @@ class AddVariableTransformer(BaseTransformer):
                 return updated_node
 
 
-        _supported_types = ["int", "float", "double", "str"]
+        _supported_types = ["int", "float", "str"]
         _add_types = True
 
         def _makeSnippet(self) -> CSTNode:
@@ -119,8 +119,6 @@ class AddVariableTransformer(BaseTransformer):
             if type == "int":
                 value = random.randint(2, 1000)
             if type == "float":
-                value = random.random()
-            if type == "double":
                 value = random.random()
 
             return libcst.parse_statement(f"{name} = {value}")
