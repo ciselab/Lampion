@@ -65,7 +65,7 @@ class Engine:
     config = {}
     transformers: [BaseTransformer] = []
 
-    def run(self, csts: [CSTNode]) -> [CSTNode]:
+    def run(self, csts: [(str,CSTNode)]) -> [(str,CSTNode)]:
         """
         Primary Method of the Engine.
         Does the following in order:
@@ -89,7 +89,8 @@ class Engine:
         This way, the Node can be passed to the engine without IO and the return can be asserted in tests.
         """
         log.info("Starting Engine")
-        altered_csts = csts
+        # This deep clone helps to make a copy of the CSTs, so that the input does not change by accident.
+        altered_csts = [(path,node.deep_clone()) for (path,node) in csts]
 
         random.seed(self.config["seed"])
 
@@ -97,7 +98,7 @@ class Engine:
         max_transformations = self.config["transformations"]
         while self.successful_transformations < max_transformations:
             cst_index = random.randint(0, len(altered_csts) - 1)
-            cst = csts[cst_index]
+            (path,cst) = csts[cst_index]
             del altered_csts[cst_index]
 
             transformer = random.choice(self.transformers)
@@ -107,13 +108,13 @@ class Engine:
                 log.debug("Transformer worked")
                 self.successful_transformations = self.successful_transformations + 1
                 transformer.postprocessing()
-                altered_csts.append(changed_cst)
+                altered_csts.append((path,changed_cst))
             else:
                 log.debug("Transformer failed - retrying with another one")
                 self.failed_transformations = self.failed_transformations + 1
                 transformer.reset()
                 # If the Transformer failed, re-add the unaltered CST
-                altered_csts.append(cst)
+                altered_csts.append((path,cst))
 
         if self.config["writeManifest"]:
             log.warning("Manifest is currently not enabled!")

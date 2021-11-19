@@ -21,21 +21,23 @@ def dry_run(path):
     some = engine.run(csts)[0]
 
     log.debug("========================")
-    log.debug(csts[0].code)
+    log.debug(csts[0][1].code)
     log.debug("========================")
     log.debug("         Goes To        ")
     log.debug("========================")
-    log.debug(some.code)
+    log.debug(some[1].code)
 
 
-def read_input_dir(path: str) -> [CSTNode]:
+def read_input_dir(path: str) -> [(str,CSTNode)]:
     """
     This method parses a given path to one or more Libcst Modules.
     It handles that you can pass the path to one file or to a folder .
     In case of a folder, all .py files are read in.
 
+    Every found CST gets it's (relative) path safed to it, to enable later printing.
+
     :param path: The (relative or absolute) path to either a .py-file or a folder containing .py-files.
-    :return: the parsed libcst modules of the found python files
+    :return: the parsed libcst modules of the found python files with an ID assigned to it
     :raises: ValueError if the path was not found / did not exist
     :raises: LibCst Error if the files were faulty and not parsable.
     """
@@ -54,7 +56,7 @@ def read_input_dir(path: str) -> [CSTNode]:
                 if f.endswith(".py"):
                     ff = _file_to_string(os.path.join(dirpath, f))
                     found_cst = cst.parse_module(ff)
-                    results.append(found_cst)
+                    results.append((os.path.join(dirpath, f),found_cst))
         return results
     # Case 2: Path is a file
     elif os.path.isfile(path):
@@ -64,7 +66,7 @@ def read_input_dir(path: str) -> [CSTNode]:
             raise ValueError("File Path did not end in .py!")
         f = _file_to_string(path)
         found_cst = cst.parse_module(f)
-        return [found_cst]
+        return [(path,found_cst)]
     # ErrorCase: Weird Path
     else:
         raise ValueError("Your path seemed to be neither a directory nor a file!")
