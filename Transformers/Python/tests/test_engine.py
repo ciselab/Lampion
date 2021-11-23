@@ -105,7 +105,7 @@ def test_with_one_file_after_transformation_path_is_the_same():
 
     assert post_change_path == initial_path
 
-def test_run_with_two_Files_paths_match():
+def test_run_with_two_csts_paths_match():
     testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
@@ -116,11 +116,46 @@ def test_run_with_two_Files_paths_match():
 
     altered_csts = testobject.run(csts)
 
-    altered_cst_path_A = [x for x in altered_csts if "Hello" in x[1].code][0][0]
-    altered_cst_path_B = [x for x in altered_csts if "Goodbye" in x[1].code][0][0]
+    altered_cst_A = [x for x in altered_csts if "Hello" in x[1].code]
+    altered_cst_B = [x for x in altered_csts if "Goodbye" in x[1].code]
 
+    altered_cst_path_A = altered_cst_A[0][0]
+    altered_cst_path_B = altered_cst_B[0][0]
     assert altered_cst_path_A == "PLACEHOLDER_A"
     assert altered_cst_path_B == "PLACEHOLDER_B"
+
+
+def test_run_with_two_csts_second_method_is_kept():
+    testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
+
+    example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
+    example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
+
+    csts = [("PLACEHOLDER_A",example_cst_A), ("PLACEHOLDER_B",example_cst_B)]
+
+    altered_csts = testobject.run(csts)
+
+    altered_cst_B = [x for x in altered_csts if "Goodbye" in x[1].code]
+
+    # If one of them is 0 and the other one is two,
+    # then there was an issue in putting them back in the engines running asts
+    assert len(altered_cst_B) == 1
+
+def test_run_with_two_csts_first_method_is_kept():
+    testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
+
+    example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
+    example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
+
+    csts = [("PLACEHOLDER_A",example_cst_A), ("PLACEHOLDER_B",example_cst_B)]
+
+    altered_csts = testobject.run(csts)
+
+    altered_cst_A = [x for x in altered_csts if "Hello" in x[1].code]
+
+    # If one of them is 0 and the other one is two,
+    # then there was an issue in putting them back in the engines running asts
+    assert len(altered_cst_A) == 1
 
 def test_config_default_config_is_not_none_and_not_empty():
     testobject = Engine()

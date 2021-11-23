@@ -12,7 +12,33 @@ def test_addcomment_working_example_should_add_line():
     altered_cst = visit_until_worked(example_cst, transformer)
 
     altered_code = altered_cst.code
-    print(altered_code)
+    lines = len(altered_code.splitlines())
+    assert (lines == 3)
+
+def test_addcomment_apply_twice_should_add_two_lines():
+    example_cst = example()
+
+    transformer = AddCommentTransformer()
+    transformer.reset()
+
+    altered_cst = visit_until_worked(example_cst, transformer)
+    transformer.reset()
+    altered_cst_2 = visit_until_worked(altered_cst, transformer)
+
+    altered_code = altered_cst_2.code
+    lines = len(altered_code.splitlines())
+    assert (lines == 4)
+
+def test_addcomment_apply_twice_without_reset_should_only_add_one_line():
+    example_cst = example()
+
+    transformer = AddCommentTransformer()
+    transformer.reset()
+
+    altered_cst = visit_until_worked(example_cst, transformer)
+    altered_cst_2 = visit_until_worked(altered_cst, transformer)
+
+    altered_code = altered_cst_2.code
     lines = len(altered_code.splitlines())
     assert (lines == 3)
 

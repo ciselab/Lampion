@@ -49,7 +49,7 @@ class Engine:
             log.info("Received no Config for Engine - running with default values")
             self.config = _default_config()
         else:
-            log.info("Received a Config for Engine - overwritting default values for everything found")
+            log.info("Received a Config for Engine - overwriting default values for everything found")
             overwrite_config = _default_config()
             overwrite_config.update(config)
             self.config = overwrite_config
@@ -71,15 +71,16 @@ class Engine:
         """
         Primary Method of the Engine.
         Does the following in order:
-        1. While transformations are left:
-            1.1 Pick a cst
-            1.2 Pick a transformer
-            1.3 Apply the Transformer
-            1.4 Iff Transformer worked, inc transformations
-            1.5 repeat 1
-        2. Write SQL Statement (Currently Pending)
-        3. If Outputdir!=None: Write Files
-        4. Return changed Nodes
+
+        - 1. While transformations are left:
+        - 1.1 Pick a cst
+        - 1.2 Pick a transformer
+        - 1.3 Apply the Transformer
+        - 1.4 Iff Transformer worked, inc transformations
+        - 1.5 repeat 1
+        - 2. Write SQL Statement (Currently Pending)
+        - 3. If Outputdir!=None: Write Files
+        - 4. Return changed Nodes
 
         The initial CSTs should remain unchanged.
 
@@ -90,7 +91,7 @@ class Engine:
         The Nodes could be read in here too, but I wanted to separate it for better testability.
         This way, the Node can be passed to the engine without IO and the return can be asserted in tests.
         Similiarly, the paths are passed around with the CST as I do not want to loose them,
-        because we definetely loose the order of them. So I feared that a simple dictionary might reach it's
+        because we definitely loose the order of them. So I feared that a simple dictionary might reach it's
         limitations and introduce bugs. To avoid it, I have put it like this. But feel free to make it elegant.
         """
         log.info("Starting Engine")
@@ -102,24 +103,27 @@ class Engine:
         # TODO: Read this from config
         max_transformations = self.config["transformations"]
         while self.successful_transformations < max_transformations:
+            # 1.1 pick a cst
             cst_index = random.randint(0, len(altered_csts) - 1)
-            (path,cst) = csts[cst_index]
+            (running_path,running_cst) = altered_csts[cst_index]
             del altered_csts[cst_index]
-
+            # 1.2 pick a transformer
             transformer = random.choice(self.transformers)
             transformer.reset()
-            changed_cst = transformer.apply(cst)
+            # 1.3 apply the transformer
+            changed_cst = transformer.apply(running_cst)
+
             if transformer.worked():
                 log.debug("Transformer worked")
                 self.successful_transformations = self.successful_transformations + 1
                 transformer.postprocessing()
-                altered_csts.append((path,changed_cst))
+                altered_csts.append((running_path,changed_cst))
             else:
                 log.debug("Transformer failed - retrying with another one")
                 self.failed_transformations = self.failed_transformations + 1
                 transformer.reset()
                 # If the Transformer failed, re-add the unaltered CST
-                altered_csts.append((path,cst))
+                altered_csts.append((running_path,running_cst))
 
         if self.config["writeManifest"]:
             log.warning("Manifest is currently not enabled!")
