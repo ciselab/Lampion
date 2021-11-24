@@ -11,6 +11,7 @@ import libcst.codegen.gather
 from libcst import FlattenSentinel, RemovalSentinel, CSTNode
 
 from lampion.transformers.basetransformer import BaseTransformer
+from lampion.utils.naming import get_random_string
 
 
 class AddVariableTransformer(BaseTransformer):
@@ -106,7 +107,7 @@ class AddVariableTransformer(BaseTransformer):
         _add_types = True
 
         def _makeSnippet(self) -> CSTNode:
-            name = _get_random_string(10)
+            name = get_random_string(10)
 
             type = random.choice(self._supported_types)
 
@@ -115,7 +116,7 @@ class AddVariableTransformer(BaseTransformer):
 
             value = ""
             if type == "str":
-                value = f"\"{_get_random_string(random.randint(3,30))}\""
+                value = f"\"{get_random_string(random.randint(3,30))}\""
             if type == "int":
                 value = random.randint(2, 1000)
             if type == "float":
@@ -123,11 +124,3 @@ class AddVariableTransformer(BaseTransformer):
 
             return libcst.parse_statement(f"{name} = {value}")
 
-def _get_random_string(length: int) -> str:
-    if length < 1:
-        raise ValueError("Random Strings must have length 1 minimum.")
-    # choose from all lowercase letter
-    letters = string.ascii_letters + string.digits
-    first_letter = random.choice(string.ascii_lowercase)
-    result_str = ''.join(random.choice(letters) for i in range(length - 1))
-    return first_letter + result_str

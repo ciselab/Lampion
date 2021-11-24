@@ -10,6 +10,7 @@ import logging as log
 from libcst import MaybeSentinel, FlattenSentinel, RemovalSentinel, CSTNode
 
 from lampion.transformers.basetransformer import BaseTransformer
+from lampion.utils.naming import get_random_string
 
 
 class RenameVariableTransformer(BaseTransformer):
@@ -56,7 +57,7 @@ class RenameVariableTransformer(BaseTransformer):
                 return cst
 
             to_replace = random.choice(seen_names)
-            replacement = _get_random_string(5)
+            replacement = get_random_string(5)
 
             renamer = self.__Renamer(to_replace,replacement)
 
@@ -124,12 +125,3 @@ class RenameVariableTransformer(BaseTransformer):
                 return updated_node.with_changes(value=self.replacement)
             else:
                 return updated_node
-
-def _get_random_string(length: int) -> str:
-    if length < 1:
-        raise ValueError("Random Strings must have length 1 minimum.")
-    # choose from all lowercase letter
-    letters = string.ascii_letters + string.digits
-    first_letter = random.choice(string.ascii_lowercase)
-    result_str = ''.join(random.choice(letters) for i in range(length - 1))
-    return first_letter + result_str

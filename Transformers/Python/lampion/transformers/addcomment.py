@@ -11,6 +11,7 @@ import libcst.codegen.gather
 from libcst import FlattenSentinel, RemovalSentinel, CSTNode
 
 from lampion.transformers.basetransformer import BaseTransformer
+from lampion.utils.naming import get_random_string
 
 
 class AddCommentTransformer(BaseTransformer):
@@ -107,17 +108,7 @@ class AddCommentTransformer(BaseTransformer):
 
 
 def _makeSnippet() -> CSTNode:
-    pieces  = [_get_random_string(random.randint(1,8)) for x in range(1,random.randint(2,5))]
+    pieces  = [get_random_string(random.randint(1,8)) for x in range(1,random.randint(2,5))]
 
     comment = "# " + " ".join(pieces) + " \n"
     return libcst.parse_module(comment)
-
-
-def _get_random_string(length: int) -> str:
-    if length < 1:
-        raise ValueError("Random Strings must have length 1 minimum.")
-    # choose from all lowercase letter
-    letters = string.ascii_letters + string.digits
-    first_letter = random.choice(string.ascii_lowercase)
-    result_str = ''.join(random.choice(letters) for i in range(length - 1))
-    return first_letter + result_str
