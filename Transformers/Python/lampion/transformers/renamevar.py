@@ -1,16 +1,11 @@
-# Transformer-Example
-# https://libcst.readthedocs.io/en/latest/tutorial.html
 import random
-import string
-from typing import Optional, Union
-
 import libcst as cst
 import logging as log
 
-from libcst import MaybeSentinel, FlattenSentinel, RemovalSentinel, CSTNode
+from libcst import CSTNode
 
 from lampion.transformers.basetransformer import BaseTransformer
-from lampion.utils.naming import get_random_string
+from lampion.utils.naming import get_random_string,get_pseudo_random_string
 
 
 class RenameVariableTransformer(BaseTransformer):
@@ -38,6 +33,16 @@ class RenameVariableTransformer(BaseTransformer):
 
     """
 
+    __string_randomness: str
+
+    def __init__(self, string_randomness: str = "pseudo"):
+        if (string_randomness == "pseudo") or (string_randomness == "full"):
+            self.__string_randomness = string_randomness
+        else:
+            raise ValueError("Unrecognized Value for String Randomness, supported are pseudo and full")
+
+        log.info("RenameVariableTransformer Created")
+
     def apply(self, cst: CSTNode) -> CSTNode:
         visitor = self.__VariableCollector()
 
@@ -57,7 +62,13 @@ class RenameVariableTransformer(BaseTransformer):
                 return cst
 
             to_replace = random.choice(seen_names)
-            replacement = get_random_string(5)
+            if self.__string_randomness == "pseudo":
+                replacement = get_pseudo_random_string()
+            elif self.__string_randomness == "full":
+                replacement = get_random_string(5)
+            else:
+                raise ValueError(
+                    "Something changed the StringRandomness in RenameVariableTransformer to an invalid value.")
 
             renamer = self.__Renamer(to_replace,replacement)
 
@@ -121,7 +132,6 @@ class RenameVariableTransformer(BaseTransformer):
         self, original_node: "Name", updated_node: "Name"
     ) -> "BaseExpression":
             if original_node.value == self.to_replace:
-                #print(f"Renamer found a node with name to replace! {self.to_replace}")
                 return updated_node.with_changes(value=self.replacement)
             else:
                 return updated_node

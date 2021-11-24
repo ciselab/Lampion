@@ -11,7 +11,7 @@ import libcst.codegen.gather
 from libcst import FlattenSentinel, RemovalSentinel, CSTNode
 
 from lampion.transformers.basetransformer import BaseTransformer
-from lampion.utils.naming import get_random_string
+from lampion.utils.naming import get_random_string, get_pseudo_random_string
 
 
 class AddVariableTransformer(BaseTransformer):
@@ -34,6 +34,16 @@ class AddVariableTransformer(BaseTransformer):
     Currently it can add ints, floats, doubles and strings.
     Adding the type is an optional flag.
     """
+
+    __string_randomness: str
+
+    def __init__(self, string_randomness: str = "pseudo"):
+        if (string_randomness == "pseudo") or (string_randomness == "full"):
+            self.__string_randomness = string_randomness
+        else:
+            raise ValueError("Unrecognized Value for String Randomness, supported are pseudo and full")
+
+        log.info("AddVariableTransformer Created")
 
     def apply(self, cst: CSTNode) -> CSTNode:
         visitor = self.__AddVarVisitor()
@@ -70,9 +80,10 @@ class AddVariableTransformer(BaseTransformer):
 
     class __AddVarVisitor(cst.CSTTransformer):
 
-        def __init__(self):
+        def __init__(self,string_randomness:str = "pseudo"):
             log.debug("AddVariableVisitor Created")
             self.finished = False
+            self.__string_randomness = string_randomness
 
         finished = False
 
@@ -87,7 +98,7 @@ class AddVariableTransformer(BaseTransformer):
             if self.finished:
                 return updated_node
 
-            added_stmt = self._makeSnippet()
+            added_stmt = self._makeSnippet(self.__string_randomness)
 
             # Case 2: We did not alter yet, at the current (random) statement apply it in 1 of 20 cases.
             # TODO: this has a slight bias towards early nodes if the file is long?
@@ -106,8 +117,13 @@ class AddVariableTransformer(BaseTransformer):
         _supported_types = ["int", "float", "str"]
         _add_types = True
 
-        def _makeSnippet(self) -> CSTNode:
-            name = get_random_string(10)
+        def _makeSnippet(self,string_randomness: str = "pseudo") -> CSTNode:
+            if string_randomness == "pseudo":
+                name = get_pseudo_random_string()
+            elif string_randomness == "full":
+                name = get_random_string(5)
+            else:
+                raise ValueError("Something changed the StringRandomness in AddVariableTransformer to an invalid value.")
 
             type = random.choice(self._supported_types)
 

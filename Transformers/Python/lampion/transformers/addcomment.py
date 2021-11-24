@@ -11,7 +11,7 @@ import libcst.codegen.gather
 from libcst import FlattenSentinel, RemovalSentinel, CSTNode
 
 from lampion.transformers.basetransformer import BaseTransformer
-from lampion.utils.naming import get_random_string
+from lampion.utils.naming import get_random_string, get_pseudo_random_string
 
 
 class AddCommentTransformer(BaseTransformer):
@@ -33,12 +33,18 @@ class AddCommentTransformer(BaseTransformer):
 
     """
 
-    def __init__(self):
-        log.info("AddCommentTransformer Created")
 
+    def __init__(self, string_randomness: str = "pseudo"):
+        if (string_randomness == "pseudo") or (string_randomness == "full"):
+            self.__string_randomness = string_randomness
+        else:
+            raise ValueError("Unrecognized Value for String Randomness, supported are pseudo and full")
+
+        log.info("AddCommentTransformer Created")
         self._worked = False
 
     _worked = False
+    __string_randomness: str
 
     def apply(self, cst: CSTNode) -> CSTNode:
         visitor = self.__AddCommentVisitor()
@@ -46,7 +52,7 @@ class AddCommentTransformer(BaseTransformer):
         altered_cst = cst
 
         tries: int = 0
-        max_tries : int = 100
+        max_tries : int = 10
 
         while (not self._worked) and tries <= max_tries:
             altered_cst = cst.visit(visitor)
@@ -54,7 +60,7 @@ class AddCommentTransformer(BaseTransformer):
             tries = tries + 1
 
         if tries == max_tries:
-            log.warning(f"Add Variable Visitor failed after {max_tries} attempt")
+            log.warning(f"Add Comment Visitor failed after {max_tries} attempt")
 
         #TODO: add Post-Processing Values here
 
@@ -74,11 +80,13 @@ class AddCommentTransformer(BaseTransformer):
 
     class __AddCommentVisitor(cst.CSTTransformer):
 
-        def __init__(self):
+        def __init__(self, string_randomness: str = "pseudo"):
             log.debug("AddVariableVisitor Created")
             self._finished = False
+            self.__string_randomness = string_randomness
 
         finished: bool = False
+        __string_randomness: str
 
         def visit_SimpleStatementLine(self, node: "SimpleStatementLine") -> Optional[bool]:
             return
@@ -91,7 +99,7 @@ class AddCommentTransformer(BaseTransformer):
             if self.finished:
                 return updated_node
 
-            added_stmt = _makeSnippet()
+            added_stmt = _makeSnippet(string_randomness=self.__string_randomness)
 
             # Case 2: We did not alter yet, at the current (random) statement apply it in 1 of 20 cases.
             # TODO: this has a slight bias towards early nodes if the file is long?
@@ -107,8 +115,18 @@ class AddCommentTransformer(BaseTransformer):
                 return updated_node
 
 
-def _makeSnippet() -> CSTNode:
-    pieces  = [get_random_string(random.randint(1,8)) for x in range(1,random.randint(2,5))]
-
+def _makeSnippet(string_randomness: str = "pseudo") -> CSTNode:
+    if string_randomness == "full":
+        pieces  = [get_random_string(random.randint(1,8)) for x in range(1,random.randint(2,5))]
+    elif string_randomness == "pseudo":
+        suppliers = [
+            lambda: get_pseudo_random_string(with_keyword=True,with_job=False,with_animal=False,with_adjective=False),
+            lambda: get_pseudo_random_string(with_keyword=False,with_job=True,with_animal=False,with_adjective=False),
+            lambda: get_pseudo_random_string(with_keyword=False,with_job=False,with_animal=True,with_adjective=False),
+            lambda: get_pseudo_random_string(with_keyword=False,with_job=False,with_animal=False,with_adjective=True),
+        ]
+        pieces  = [random.choice(suppliers)() for x in range(1,random.randint(3,8))]
+    else:
+        raise ValueError("Unrecognized Value for String Randomness, supported are pseudo and full")
     comment = "# " + " ".join(pieces) + " \n"
     return libcst.parse_module(comment)
