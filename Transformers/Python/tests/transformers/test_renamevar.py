@@ -17,6 +17,31 @@ def test_add_var_method_has_one_variable_should_change():
     altered_code = altered_cst.code
     assert example_cst.code != altered_code
 
+
+
+def test_add_var_method_has_one_variable_transformer_worked():
+    example_cst = libcst.parse_module("def hi(): \n\ta = 1\n\tprint(\"Hello World\")\n\treturn a")
+
+    transformer = RenameVariableTransformer()
+    transformer.reset()
+
+    altered_cst = transformer.apply(example_cst)
+
+    altered_code = altered_cst.code
+    assert transformer.worked()
+
+def test_add_var_method_has_one_variable_that_exists_in_str_should_be_kept_in_str():
+    example_cst = libcst.parse_module("def hi(): \n\tname = 1\n\tprint(f\"name is {name}\")")
+
+    transformer = RenameVariableTransformer()
+    transformer.reset()
+
+    altered_cst = transformer.apply(example_cst)
+
+    altered_code = altered_cst.code
+    assert "name" in altered_code
+    assert "name = 1" not in altered_code
+
 def test_add_var_method_has_one_variable_should_change_at_all_places():
     example_cst = libcst.parse_module("def hi(): \n\tyyy = 1\n\tyyy = yyy + 1\n\treturn yyy")
 
@@ -108,6 +133,16 @@ def test_add_var_method_has_no_variables_should_stay_unchanged():
     altered_code = altered_cst.code
     assert example_cst.code == altered_code
 
+def test_add_var_method_has_no_variables_transformer_did_not_work():
+    example_cst = libcst.parse_module("def hi(): \n\tprint(\"Hello World\")")
+
+    transformer = RenameVariableTransformer()
+    transformer.reset()
+
+    transformer.apply(example_cst)
+
+    assert not transformer.worked()
+
 
 def test_rename_var_method_is_in_class_class_should_stay_unchanged():
     example_cst = libcst.parse_module("class some:\n\tdef hi():  \n\t\ta = 1\n\t\tprint(\"Hello World\")")
@@ -121,7 +156,7 @@ def test_rename_var_method_is_in_class_class_should_stay_unchanged():
     assert "some" in altered_code
 
 def test_rename_var_method_is_in_class_attribute_can_change():
-    example_cst = libcst.parse_module("class some:\n\tbbb = 3\n\tdef hi():  \n\t\ta = 1\n\t\tprint(\"Hello World\")")
+    example_cst = libcst.parse_module("class some:\n\tbbb = 3\n\tdef hi():  \n\t\tprint(\"Hello World\")")
 
     transformer = RenameVariableTransformer()
     i = 0
