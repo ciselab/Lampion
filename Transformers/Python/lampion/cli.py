@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import sys
 
@@ -10,13 +12,14 @@ from libcst import CSTNode
 from lampion.components.engine import Engine
 
 
-def dry_run(path):
+def dry_run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampion_output"):
     log.info(f'Welcome to the Lampion-Python-Transformer')
-    log.info(f"Reading File(s) from {path}")
+    log.info(f"Reading File(s) from {path_to_code}")
 
-    csts = read_input_dir(path)
+    csts = read_input_dir(path_to_code)
+    config = read_config_file(path_to_config)
 
-    engine = Engine({}, "lampion_output")
+    engine = Engine(config, output_prefix)
 
     some = engine.run(csts)[0]
 
@@ -28,7 +31,7 @@ def dry_run(path):
     log.debug(some[1].code)
 
 
-def read_input_dir(path: str) -> [(str,CSTNode)]:
+def read_input_dir(path: str) -> [(str, CSTNode)]:
     """
     This method parses a given path to one or more Libcst Modules.
     It handles that you can pass the path to one file or to a folder .
@@ -50,13 +53,12 @@ def read_input_dir(path: str) -> [(str,CSTNode)]:
         log.debug("Received Path is a Directory - Looking for multiple files")
         results = []
         for dirpath, dnames, fnames in os.walk(path):
-            #TODO: Create a lookup of files:cst ?
-            #TODO: Exclude __init__.py files? But keep it in Lookup?
+            # TODO: Exclude __init__.py files? But keep it in Lookup?
             for f in fnames:
                 if f.endswith(".py"):
                     ff = _file_to_string(os.path.join(dirpath, f))
                     found_cst = cst.parse_module(ff)
-                    results.append((os.path.join(dirpath, f),found_cst))
+                    results.append((os.path.join(dirpath, f), found_cst))
         return results
     # Case 2: Path is a file
     elif os.path.isfile(path):
@@ -66,13 +68,85 @@ def read_input_dir(path: str) -> [(str,CSTNode)]:
             raise ValueError("File Path did not end in .py!")
         f = _file_to_string(path)
         found_cst = cst.parse_module(f)
-        return [(path,found_cst)]
+        return [(path, found_cst)]
     # ErrorCase: Weird Path
     else:
         raise ValueError("Your path seemed to be neither a directory nor a file!")
 
 
-def _file_to_string(path: str):
+def read_config_file(path: str) -> dict:
+    """
+    Reads the Configuration-File at a given path.
+    The Configuration File is supposed to be named .properties and consist of key=value-pairs.
+    Any Boolean or int is parsed for the dictionary, everything that did not match this is kept as a string.
+    Error Handling for bad-string input is pushed towards the methods relying on the config.
+
+    A default config is given, so it is possible to give a partial config and result in a running program.
+    Any default value is overwritten by the found config.
+    :param path: the path to the config file, "None" for going with default values
+    :return: a dictionary parsed from the configuration file
+    :raises: ValueError in case of non-existing file.
+    """
+    # Shortwire default values
+    if path is None:
+        log.info("Received \"None\" as path to config file, going with default values")
+        return {}
+
+    # Check Input-Values
+    if not os.path.exists(path) or not os.path.isfile(path):
+        raise ValueError("Path to ConfigFile did not exist or was not a file!")
+    if ".properties" not in path:
+        log.warning(f"The configuration-file at {path} did not end with the expected .properties")
+
+    # Read in File, check for emptyness
+    lines: [str] = []
+    with open(path,"r") as config_file:
+        lines = config_file.readlines()
+    if not lines:
+        log.warning(f"The configuration-file at {path} was empty")
+        return {}
+    # Split the Lines and add to tuples
+    tuples: [(str,str)] = []
+    for line in lines:
+        parts = line.split("=",1)
+        tuples.append((parts[0],parts[1]))
+    # Try to parse the tuples and return dict
+    config: dict = {}
+    for tuple in tuples:
+        # Try to parse to bool
+        parsed_value = __str2bool(tuple[1])
+        if isinstance(parsed_value,bool):
+            config[tuple[0]] = parsed_value
+            continue
+        # Try to parse to int
+        parsed_value = __str2int(tuple[1])
+        if isinstance(parsed_value,int):
+            config[tuple[0]] = parsed_value
+            continue
+        # otherwise keep it
+        config[tuple[0]] = tuple[1]
+    # Return the Dict
+    return config
+
+def __str2bool(value) -> str | bool:
+    """
+    Parses a str to bool if possible. Returns the str otherwise.
+    """
+    if value.lower() in ["yes","true","1"]:
+        return True
+    if value.lower() in ["no", "false", "0"]:
+        return False
+    return value
+
+def __str2int(value) -> str | int:
+    """
+    Parses a str to int if possible. Returns the str otherwise.
+    """
+    if value.isnumeric():
+        return int(value)
+    return value
+
+def _file_to_string(path: str) -> str:
     with open(path, 'r') as file:
         return file.read()
 

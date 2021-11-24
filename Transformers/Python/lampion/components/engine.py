@@ -9,6 +9,8 @@ from lampion.transformers.basetransformer import BaseTransformer
 
 import logging as log
 
+from lampion.transformers.renameparam import RenameParameterTransformer
+from lampion.transformers.renamevar import RenameVariableTransformer
 
 
 class Engine:
@@ -165,11 +167,18 @@ def _create_transformers(config: dict) -> [BaseTransformer]:
         raise ValueError("Received Empty Configuration")
 
     if config["AddUnusedVariableTransformer"]:
-        transformers.append(AddVariableTransformer())
+        transformers.append(AddVariableTransformer(string_randomness=config["UnusedVariableStringRandomness"]))
 
     if config["AddCommentTransformer"]:
-        transformers.append(AddCommentTransformer())
-    # TODO: Add many more Transformers!
+        transformers.append(AddCommentTransformer(string_randomness=config["AddCommentStringRandomness"]))
+
+    if config["RenameVariableTransformer"]:
+        transformers.append(RenameVariableTransformer(string_randomness=config["RenameParameterStringRandomness"]))
+
+    if config["RenameParameterTransformer"]:
+        transformers.append(RenameParameterTransformer(string_randomness=config["RenameVariableStringRandomness"]))
+
+            # TODO: Add many more Transformers!
 
     return transformers
 
@@ -196,5 +205,11 @@ def _default_config() -> dict:
 
     default_config["AddCommentTransformer"] = True
     default_config["AddCommentStringRandomness"] = "full"
+
+    default_config["RenameParameterTransformer"] = True
+    default_config["RenameParameterStringRandomness"] = "full"
+
+    default_config["RenameVariableTransformer"] = True
+    default_config["RenameVariableStringRandomness"] = "full"
 
     return default_config
