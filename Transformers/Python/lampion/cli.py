@@ -12,10 +12,15 @@ from libcst import CSTNode
 from lampion.components.engine import Engine
 
 
-def dry_run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampion_output"):
+def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampion_output") -> None:
     """
-    Current proxy for testing and prototyping.
-    I think this will move into main later.
+    Primary function to read the files, read the configuration, and run the engine.
+    Separated from main for testability, as main() needs sys-args.
+
+    :param path_to_code: Path to Directory or File of Code.
+    :param path_to_config: Path to Configuration to read in.
+    :param output_prefix: Prefix to put before the output, will be created if not existing.
+    :return: None
     """
     log.info(f'Welcome to the Lampion-Python-Transformer')
     log.info(f"Reading File(s) from {path_to_code}")
@@ -23,16 +28,15 @@ def dry_run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "la
     csts = read_input_dir(path_to_code)
     config = read_config_file(path_to_config)
 
+    # Set seed a-new if one was found in config.
+    if config["seed"] and isinstance(config["seed"],int):
+        random.seed(config["seed"])
+
     engine = Engine(config, output_prefix)
 
-    some = engine.run(csts)[0]
+    engine.run(csts)[0]
 
-    log.debug("========================")
-    log.debug(csts[0][1].code)
-    log.debug("========================")
-    log.debug("         Goes To        ")
-    log.debug("========================")
-    log.debug(some[1].code)
+    log.info("Python Transformer finished - exiting")
 
 
 def read_input_dir(path: str) -> [(str, CSTNode)]:
@@ -164,7 +168,14 @@ def _file_to_string(path: str) -> str:
         return file.read()
 
 
-def main():
+def main() -> None:
+    """
+    Reads / Checks Sys-Args and runs engine accordingly.
+    Also sets global elements like a default seed (in case config has none) and logging.
+
+    Separated from run() for testability, as this main needs sys-args and run() is "clean".
+    :return: None, exit 0 on success.
+    """
     # TODO: Check ARGnum
     # TODO: Test for missing args
     path = sys.argv[1]
@@ -174,4 +185,6 @@ def main():
     log.basicConfig(filename='lampion.log', encoding='utf-8', level=log.DEBUG)
     log.getLogger().addHandler(log.StreamHandler(sys.stdout))
 
-    dry_run(path)
+    run(path)
+
+    os.system.exit(0)
