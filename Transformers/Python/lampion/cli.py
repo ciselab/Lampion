@@ -13,6 +13,10 @@ from lampion.components.engine import Engine
 
 
 def dry_run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampion_output"):
+    """
+    Current proxy for testing and prototyping.
+    I think this will move into main later.
+    """
     log.info(f'Welcome to the Lampion-Python-Transformer')
     log.info(f"Reading File(s) from {path_to_code}")
 
@@ -108,7 +112,16 @@ def read_config_file(path: str) -> dict:
     # Split the Lines and add to tuples
     tuples: [(str,str)] = []
     for line in lines:
-        parts = line.split("=",1)
+        # Filter out Empty Lines, and other tokens like Line-ends \n
+        if line.strip() == "":
+            continue
+        if line.startswith("#"):
+            continue
+        if "=" not in line:
+            continue
+        # Remove bad / unwanted elements from the line before splitting
+        cleaned_line = line.strip().replace(" ","").replace("\n","")
+        parts = cleaned_line.split("=",1)
         tuples.append((parts[0],parts[1]))
     # Try to parse the tuples and return dict
     config: dict = {}

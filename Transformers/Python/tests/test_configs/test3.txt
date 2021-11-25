@@ -1,0 +1,7 @@
+transformation_scope=global
+
+AddUnusedVariableTransformer=True
+UnusedVariableStringRandomness=full
+
+AddCommentTransformer=False
+AddCommentStringRandomness=full
