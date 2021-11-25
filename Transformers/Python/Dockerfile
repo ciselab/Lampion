@@ -27,7 +27,7 @@ COPY tests/test_inputs/hello_world.py /lampion_target/
 
 RUN pip install --upgrade pytest libcst build
 
-RUN pytest -q
+RUN python3 -m pytest tests/
 RUN python3 -m build --wheel
 
 RUN pip install /lampion/dist/lampion_python_transformer-${LAMPION_VERSION}-${WHEEL_POSTFIX}.whl
