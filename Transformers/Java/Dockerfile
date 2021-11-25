@@ -1,6 +1,6 @@
 ##### Stage 1
 ##### Build and Run tests
-FROM maven:3.6.3-openjdk-16 as builder
+FROM maven:3.8.4-openjdk-17 as builder
 
 WORKDIR /app
 COPY . .
@@ -8,7 +8,7 @@ RUN mvn package verify
 
 #### STAGE 2
 #### Deploying the application
-FROM azul/zulu-openjdk-alpine:16
+FROM azul/zulu-openjdk-alpine:17
 
 ARG TRANSFORMER_VERSION="1.3-SNAPSHOT"
 

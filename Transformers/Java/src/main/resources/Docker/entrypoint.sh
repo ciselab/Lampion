@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-#  TODO: Add Function Description
+#!/bin/bash
 
 echo "Starting the Lampion Transformer Container"
 
