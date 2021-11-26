@@ -77,6 +77,31 @@ def test_run_with_default_transformers_with_two_CSTs_both_changed():
     assert altered_cst_B != example_B_value
 
 
+def test_run_with_default_transformers_with_two_CSTs_output_has_paths_to_compare():
+    # This is a regression test, as when I wanted to print some of the changed code
+    # It started to explode around my head
+    testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
+
+    example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
+    example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
+
+    csts = [("PLACEHOLDER_A",example_cst_A), ("PLACEHOLDER_B",example_cst_B)]
+
+    altered_csts = testobject.run(csts)
+
+    assert len(altered_csts) == 2
+
+    first_altered_cst = altered_csts[0]
+
+    assert first_altered_cst[0]
+    assert first_altered_cst[1]
+
+    second_altered_cst = altered_csts[1]
+
+    assert second_altered_cst[0]
+    assert second_altered_cst[1]
+
+
 
 def test_run_with_default_transformers_with_two_CSTs_both_inputs_stay_unchanged():
     testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")

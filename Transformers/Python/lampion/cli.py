@@ -12,7 +12,7 @@ from libcst import CSTNode
 from lampion.components.engine import Engine
 
 
-def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampion_output") -> None:
+def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampion_output", print_sample_diff: bool = True) -> None:
     """
     Primary function to read the files, read the configuration, and run the engine.
     Separated from main for testability, as main() needs sys-args.
@@ -20,6 +20,7 @@ def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampio
     :param path_to_code: Path to Directory or File of Code.
     :param path_to_config: Path to Configuration to read in.
     :param output_prefix: Prefix to put before the output, will be created if not existing.
+    :param print_sample_diff: Whether or not to output one CST to Log. Default is true.
     :return: None
     """
     log.info(f'Welcome to the Lampion-Python-Transformer')
@@ -34,7 +35,21 @@ def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampio
 
     engine = Engine(config, output_prefix)
 
-    engine.run(csts)[0]
+    altered_csts = engine.run(csts)
+
+    if print_sample_diff:
+        initial_tuple = random.choice(csts)
+        altered_tuple = [x for x in altered_csts if x[0] == initial_tuple[0]][0]
+
+        initial_cst_code = str((initial_tuple[1]).code)
+        altered_cst_code = str((altered_tuple[1]).code)
+
+        print("Before:\n")
+        print(initial_cst_code)
+        print("\n")
+        print("After:\n")
+        print(altered_cst_code)
+        print("\n")
 
     log.info("Python Transformer finished - exiting")
 
@@ -187,4 +202,4 @@ def main() -> None:
 
     run(path)
 
-    os.system.exit(0)
+    sys.exit(0)
