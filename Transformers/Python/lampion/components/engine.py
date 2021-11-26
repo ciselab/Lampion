@@ -4,11 +4,13 @@ import random
 from libcst import CSTNode
 
 from lampion.transformers.addcomment import AddCommentTransformer
+from lampion.transformers.addneutral import AddNeutralElementTransformer
 from lampion.transformers.addvar import AddVariableTransformer
 from lampion.transformers.basetransformer import BaseTransformer
 
 import logging as log
 
+from lampion.transformers.lambdaidentity import LambdaIdentityTransformer
 from lampion.transformers.renameparam import RenameParameterTransformer
 from lampion.transformers.renamevar import RenameVariableTransformer
 
@@ -178,6 +180,12 @@ def _create_transformers(config: dict) -> [BaseTransformer]:
     if config["RenameParameterTransformer"]:
         transformers.append(RenameParameterTransformer(string_randomness=config["RenameVariableStringRandomness"]))
 
+    if config["LambdaIdentityTransformer"]:
+        transformers.append(LambdaIdentityTransformer())
+
+    if config["AddNeutralElementTransformer"]:
+        transformers.append(AddNeutralElementTransformer())
+
         # TODO: Add many more Transformers!
 
     return transformers
@@ -211,5 +219,9 @@ def _default_config() -> dict:
 
     default_config["RenameVariableTransformer"] = True
     default_config["RenameVariableStringRandomness"] = "full"
+
+    default_config["AddNeutralElementTransformer"] = True
+
+    default_config["LambdaIdentityTransformer"] = True
 
     return default_config

@@ -52,7 +52,7 @@ class AddNeutralElementTransformer(BaseTransformer):
         altered_cst = cst
 
         tries: int = 0
-        max_tries: int = 25
+        max_tries: int = 100
 
         while (not self._worked) and tries <= max_tries:
             cst.visit(visitor)
