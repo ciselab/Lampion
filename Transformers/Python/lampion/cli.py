@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import sys
+import argparse                                     # For handling a nice commandline interface
 
 import libcst as cst
 import logging as log
@@ -191,15 +192,46 @@ def main() -> None:
     Separated from run() for testability, as this main needs sys-args and run() is "clean".
     :return: None, exit 0 on success.
     """
-    # TODO: Check ARGnum
-    # TODO: Test for missing args
-    path = sys.argv[1]
 
-    random.seed(69)
+    parser = argparse.ArgumentParser(
+        description='Applies metamorphic transformations to Python Coe in Order to make it verbose & different but functionally identical'
+    )
+    parser.add_argument('config', metavar='config', type=str, nargs=1,
+                        help='The config file to use with the transformer')
+    parser.add_argument('input', metavar='input', type=str, nargs=1,
+                        help='A path to either a folder containing .py files or a path to a .py file')
+    parser.add_argument('output',metavar='output', type=str, nargs=1, default="lampion_output",
+                        help="Prefix for the folder to place output in. Within this new folder, the initial structure will be replicated. Any files will be overwritten.")
 
-    log.basicConfig(filename='lampion.log', encoding='utf-8', level=log.DEBUG)
+    parser.add_argument('loglevel',metavar="log", type=str, nargs="?", default="info",
+                        help="The loglevel for printing logs. Default \'info\'. supported: \'warn\',\'info\',\'debug\'" )
+
+    parser.add_argument('example', metavar="exp", type=bool, nargs="?", default=True,
+                        help="Whether or not to print an example of a changed file. ")
+
+    args = parser.parse_args()
+
+    path = args.input[0]
+    config = args.config[0]
+    output = args.output[0]
+    example = args.example
+
+    loglevel = log.INFO
+    if args.loglevel[0].lower() == "debug":
+        loglevel = log.DEBUG
+    elif args.loglevel[0].lower() == "info":
+        loglevel = log.INFO
+    elif args.loglevel[0].lower() == "warn":
+        loglevel = log.WARNING
+    else:
+        print("Received unknown/unsupported format for loglevel - defaulting to info")
+
+
+    random.seed(19961106)
+
+    log.basicConfig(filename='lampion.log', level=loglevel)
     log.getLogger().addHandler(log.StreamHandler(sys.stdout))
 
-    run(path)
+    run(path_to_code=path,path_to_config=config,output_prefix=output,print_sample_diff=example)
 
     sys.exit(0)

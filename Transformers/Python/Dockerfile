@@ -8,7 +8,10 @@ LABEL maintainer="L.H.Applis@tu-delft.nl"
 
 # Where the lampion should be applied/run, default to a sample file
 ENV target="/lampion_target/hello_world.py"
-ENV configfile=""
+ENV configfile="./tests/test_configs/empty.properties"
+ENV output="/lampion_output/"
+ENV loglevel="info"
+ENV print_example="true"
 
 WORKDIR /lampion
 
