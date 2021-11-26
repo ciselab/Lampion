@@ -9,14 +9,15 @@ import libcst as cst
 from lampion.transformers.basetransformer import BaseTransformer
 
 
-class AddNeutralElementTransformer(BaseTransformer):
+class LambdaIdentityTransformer(BaseTransformer):
     """
-    Transformer that adds neutral elements after literals.
-    Currently, this supports strings, ints and doubles.
+    Transformer that wraps literals in a lambda function that is immediately called.
+    This procedure is often called an identity-function, hence the name of the transformer.
     Brackets are added pre-cautiously, even if they might be redundant.
 
     IMPORTANT: This is not identical behaviour to the Java Transformer, as the Python Transformer only works for Literals,
     while Java works on any typed element.
+    TODO: Extend this behaviour for more elements than literals? In theory all expressions are fine.
 
     Before:
     > def example():
@@ -24,7 +25,7 @@ class AddNeutralElementTransformer(BaseTransformer):
 
     After:
     > def example():
-    >   return (1 + 0)
+    >   return ((lambda: 1)())
 
 
     Before:
@@ -34,7 +35,7 @@ class AddNeutralElementTransformer(BaseTransformer):
 
     After:
     > def example2():
-    >   name = ("World" + "")
+    >   name = ((lambda:"World")())
     >   print(f"Hello {name}")
 
     The above added elements have redundant ( ) but I add them intentionally,
@@ -43,7 +44,7 @@ class AddNeutralElementTransformer(BaseTransformer):
     """
 
     def __init__(self):
-        log.info("AddNeutralElementTransformer Created")
+        log.info("LambdaIdentityTransformer Created")
         self._worked = False
 
     def apply(self, cst: CSTNode) -> CSTNode:
@@ -76,7 +77,7 @@ class AddNeutralElementTransformer(BaseTransformer):
             self._worked = replacer.worked
 
         if tries == max_tries:
-            log.warning(f"Add Neutral Element Transformer failed after {max_tries} attempts")
+            log.warning(f"Lambda Identity Transformer failed after {max_tries} attempts")
 
         # TODO: add Post-Processing Values here
 
@@ -121,7 +122,7 @@ class AddNeutralElementTransformer(BaseTransformer):
         ) -> "BaseExpression":
             if self.replace_type == "float" and original_node.deep_equals(self.to_replace) and not self.worked:
                 literal = str(original_node.value)
-                replacement = f"({literal}+0.0)"
+                replacement = f"((lambda: {literal})())"
                 expr = cst.parse_expression(replacement)
                 updated_node = updated_node.deep_replace(updated_node, expr)
                 self.worked = True
@@ -135,7 +136,7 @@ class AddNeutralElementTransformer(BaseTransformer):
         ) -> "BaseExpression":
             if self.replace_type == "integer" and original_node.deep_equals(self.to_replace) and not self.worked:
                 literal = str(original_node.value)
-                replacement = f"({literal}+0)"
+                replacement = f"((lambda: {literal})())"
                 expr = cst.parse_expression(replacement)
                 updated_node = updated_node.deep_replace(updated_node, expr)
                 self.worked = True
@@ -149,7 +150,7 @@ class AddNeutralElementTransformer(BaseTransformer):
         ) -> "BaseExpression":
             if self.replace_type == "simple_string" and original_node.deep_equals(self.to_replace) and not self.worked:
                 literal = str(original_node.value)
-                replacement = f"({literal}+\"\")"
+                replacement = f"((lambda: {literal})())"
                 expr = cst.parse_expression(replacement)
                 updated_node = updated_node.deep_replace(updated_node, expr)
                 self.worked = True
