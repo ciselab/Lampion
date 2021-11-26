@@ -5,6 +5,7 @@ import libcst as cst
 import logging as log
 
 from libcst import CSTNode
+import libcst as cst
 
 from lampion.transformers.basetransformer import BaseTransformer
 from lampion.utils.naming import get_random_string, get_pseudo_random_string
@@ -56,9 +57,9 @@ class AddNeutralElementTransformer(BaseTransformer):
             cst.visit(visitor)
 
             seen_literals = \
-                [("simple_string",x) for x in visitor.seen_strings]
-            ++  [("float",x) for x in visitor.seen_floats]
-            ++  [("integer",x) for x in visitor.seen_integers]
+                [("simple_string",x) for x in visitor.seen_strings] \
+            +  [("float",x) for x in visitor.seen_floats] \
+            +  [("integer",x) for x in visitor.seen_integers]
             # Exit early: No local Variables!
             if len(seen_literals) == 0:
                 self._worked = False
@@ -87,7 +88,7 @@ class AddNeutralElementTransformer(BaseTransformer):
         return self._worked
 
     def categories(self) -> [str]:
-        return ["Naming"]
+        return ["Smell","Operators"]
 
     def postprocessing(self) -> None:
         self.reset()
@@ -117,9 +118,13 @@ class AddNeutralElementTransformer(BaseTransformer):
         def leave_Float(
         self, original_node: "Float", updated_node: "Float"
     ) -> "BaseExpression":
-            if self.replace_type == "float":
-                # TODO: Add float logic
+            if self.replace_type == "float" and original_node.deep_equals(self.to_replace) and not self.worked:
                 self.worked = True
+
+                literal = str(original_node.value)
+                replacement = f"({literal}+0.0)"
+                expr = cst.parse_expression(replacement)
+                updated_node = updated_node.deep_replace(updated_node,expr)
                 return updated_node
             else:
                 return updated_node

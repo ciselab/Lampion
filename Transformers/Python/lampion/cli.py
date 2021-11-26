@@ -29,7 +29,7 @@ def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampio
     config = read_config_file(path_to_config)
 
     # Set seed a-new if one was found in config.
-    if config["seed"] and isinstance(config["seed"],int):
+    if "seed" in config.keys() and config["seed"] and isinstance(config["seed"],int):
         random.seed(config["seed"])
 
     engine = Engine(config, output_prefix)
