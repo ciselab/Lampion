@@ -5,6 +5,11 @@ ARG TRANSFORMER_VERSION=0.0.1
 ARG WHEEL_POSTFIX=py2.py3-none-any
 
 LABEL maintainer="L.H.Applis@tu-delft.nl"
+LABEL name="lampion/python-transformer"
+LABEL description="A metamorphic transformer for python code"
+LABEL org.opencontainers.image.source="https://github.com/ciselab/Lampion"
+LABEL vcs="https://github.com/ciselab/Lampion/"
+LABEL url="https://github.com/ciselab/Lampion/"
 
 # Where the lampion should be applied/run, default to a sample file
 ENV target="/lampion_target/hello_world.py"

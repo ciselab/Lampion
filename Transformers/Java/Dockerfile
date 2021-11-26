@@ -14,6 +14,7 @@ ARG TRANSFORMER_VERSION="1.3-SNAPSHOT"
 
 LABEL maintainer="L.H.Applis@tu-delft.nl"
 LABEL name="lampion/java-transformer"
+LABEL description="A metamorphic transformer for Java code"
 LABEL org.opencontainers.image.source="https://github.com/ciselab/Lampion"
 LABEL url="https://github.com/ciselab/Lampion"
 LABEL vcs="https://github.com/ciselab/Lampion"

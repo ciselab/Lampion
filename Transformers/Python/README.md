@@ -41,6 +41,13 @@ Check linting with:
 pylint ./lampion
 ```
 
+### Docker
+
+```bash
+docker build -t lampion/python-transformer:unstable .
+docker run lampion/python-transformer:unstable
+```
+
 ## Requirements
 
 - Docker 11+
