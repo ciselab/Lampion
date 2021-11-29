@@ -1,5 +1,3 @@
-import pytest
-
 import libcst as cst
 from libcst import CSTNode
 
@@ -19,7 +17,7 @@ def test_create_engine_with_none_config():
 def test_default_engine_has_transformers():
     testobject = Engine({}, "PLACEHOLDER")
 
-    assert len(testobject._transformers) > 0
+    assert len(testobject.get_transformers()) > 0
 
 
 def test_run_with_default_transformers_gives_output():
@@ -187,22 +185,22 @@ def test_run_with_two_csts_first_method_is_kept():
 def test_config_default_config_is_not_none_and_not_empty():
     testobject = Engine()
 
-    assert testobject._config
-    assert len(testobject._config) > 0
+    assert testobject.get_config()
+    assert len(testobject.get_config()) > 0
 
 
 def test_config_empty_config_uses_default():
     testobject = Engine(config={})
 
-    assert testobject._config
-    assert len(testobject._config) > 0
+    assert testobject.get_config()
+    assert len(testobject.get_config()) > 0
 
 
 def test_config_with_overwritten_seed_should_be_new_seed():
     overwrite_config = {"seed": 100}
 
     testobject = Engine(config=overwrite_config)
-    received_seed = testobject._config["seed"]
+    received_seed = testobject.get_config()["seed"]
 
     assert received_seed == 100
 

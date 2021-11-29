@@ -33,7 +33,7 @@ class AddCommentTransformer(BaseTransformer, ABC):
     """
 
     def __init__(self, string_randomness: str = "pseudo"):
-        if (string_randomness == "pseudo") or (string_randomness == "full"):
+        if string_randomness in ["pseudo","full"]:
             self.__string_randomness = string_randomness
         else:
             raise ValueError("Unrecognized Value for String Randomness, supported are pseudo and full")
@@ -116,7 +116,13 @@ class AddCommentTransformer(BaseTransformer, ABC):
         return ["Naming","Comment"]
 
     class __AddCommentVisitor(cst.CSTTransformer):
+        """
+        LibCST Transformer that runs over CSTS and (maybe) adds a random comment.
+        Shape of the comment is determined in the "__init__" method.
 
+        May is not applied by chance, to see whether it was successfully applied check
+        the attribute "finished".
+        """
         def __init__(self, string_randomness: str = "pseudo"):
             if string_randomness in ["pseudo","full"]:
                 self.__string_randomness = string_randomness
@@ -155,8 +161,8 @@ class AddCommentTransformer(BaseTransformer, ABC):
             # TODO: Is there a way to see all nodes and pick one by random.choice(allNodes) ?
             if random.random() < 0.05:
                 self.finished = True
-                # FlattenSentinels are what we want to replace 1 existing element (here 1 statement) with 1 or more statements
-                # It takes care of things like indentation
+                # FlattenSentinels are what we want to replace 1 existing element (here 1 statement)
+                # with 1 or more statements. It takes care of things like indentation
                 return cst.FlattenSentinel([added_stmt, updated_node])
             # Case 3: We did not alter it and chance was not triggered.
             # Re-Run the Transformer, better luck next time.
