@@ -1,4 +1,5 @@
 import random
+from abc import ABC
 from typing import Optional
 
 import logging as log
@@ -9,7 +10,7 @@ import libcst as cst
 from lampion.transformers.basetransformer import BaseTransformer
 
 
-class LambdaIdentityTransformer(BaseTransformer):
+class LambdaIdentityTransformer(BaseTransformer, ABC):
     """
     Transformer that wraps literals in a lambda function that is immediately called.
     This procedure is often called an identity-function, hence the name of the transformer.
@@ -140,15 +141,31 @@ class LambdaIdentityTransformer(BaseTransformer):
         seen_integers = []
 
         def visit_Float(self, node: "Float") -> Optional[bool]:
+            """
+            LibCST built-in traversal that puts all seen float-literals in the known literals.
+            """
             self.seen_floats.append(node)
 
         def visit_Integer(self, node: "Integer") -> Optional[bool]:
+            """
+            LibCST built-in traversal that puts all seen float-literals in the known literals.
+            """
             self.seen_integers.append(node)
 
         def visit_SimpleString(self, node: "SimpleString") -> Optional[bool]:
+            """
+            LibCST built-in traversal that puts all seen SimpleString-literals in the known literals.
+            """
             self.seen_strings.append(node)
 
     class __Replacer(cst.CSTTransformer):
+        """
+        The CSTTransformer that traverses the CST and replaces literals with lambda: literal.
+        Currently to cover issues with scoping / identity of literals,
+        the first instance of the literal will be altered.
+
+        See the tests for an expression of the behaviour.
+        """
 
         def __init__(self, to_replace: "CSTNode", replace_type: str):
             self.to_replace = to_replace
@@ -158,6 +175,14 @@ class LambdaIdentityTransformer(BaseTransformer):
         def leave_Float(
                 self, original_node: "Float", updated_node: "Float"
         ) -> "BaseExpression":
+            """
+            LibCST function to traverse floats.
+            If the float to replace is found, it is replaced by
+            > 0.5 -> ((lambda: 0.5)())
+            :param original_node: The node before change
+            :param updated_node: The node after (downstream) changes
+            :return: the updated node after our changes
+            """
             if self.replace_type == "float" and original_node.deep_equals(self.to_replace) and not self.worked:
                 literal = str(original_node.value)
                 replacement = f"((lambda: {literal})())"
@@ -171,6 +196,14 @@ class LambdaIdentityTransformer(BaseTransformer):
         def leave_Integer(
                 self, original_node: "Integer", updated_node: "Integer"
         ) -> "BaseExpression":
+            """
+            LibCST function to traverse integers.
+            If the integer to replace is found, it is replaced by
+            > 5 -> ((lambda: 5)())
+            :param original_node: The node before change
+            :param updated_node: The node after (downstream) changes
+            :return: the updated node after our changes
+            """
             if self.replace_type == "integer" and original_node.deep_equals(self.to_replace) and not self.worked:
                 literal = str(original_node.value)
                 replacement = f"((lambda: {literal})())"
@@ -184,6 +217,14 @@ class LambdaIdentityTransformer(BaseTransformer):
         def leave_SimpleString(
                 self, original_node: "SimpleString", updated_node: "SimpleString"
         ) -> "BaseExpression":
+            """
+            LibCST function to traverse simple strings.
+            If the simple-string to replace is found, it is replaced by
+            > "hey" -> ((lambda: "hey")())
+            :param original_node: The node before change
+            :param updated_node: The node after (downstream) changes
+            :return: the updated node after our changes
+            """
             if self.replace_type == "simple_string" and original_node.deep_equals(self.to_replace) and not self.worked:
                 literal = str(original_node.value)
                 replacement = f"((lambda: {literal})())"

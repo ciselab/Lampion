@@ -1,11 +1,10 @@
 # Transformer-Example
 # https://libcst.readthedocs.io/en/latest/tutorial.html
-import string
 import random
 import logging as log
-from typing import Optional, Union
+from abc import ABC
+from typing import Union
 
-import libcst
 import libcst as cst
 import libcst.codegen.gather
 from libcst import FlattenSentinel, RemovalSentinel, CSTNode
@@ -14,7 +13,7 @@ from lampion.transformers.basetransformer import BaseTransformer
 from lampion.utils.naming import get_random_string, get_pseudo_random_string
 
 
-class AddCommentTransformer(BaseTransformer):
+class AddCommentTransformer(BaseTransformer, ABC):
     """
     Transformer that adds a random comment at a random position.
 
@@ -130,13 +129,21 @@ class AddCommentTransformer(BaseTransformer):
         finished: bool = False
         __string_randomness: str
 
-        def visit_SimpleStatementLine(self, node: "SimpleStatementLine") -> Optional[bool]:
-            return
-
         def leave_SimpleStatementLine(
                 self, original_node: "SimpleStatementLine", updated_node: "SimpleStatementLine"
         ) -> Union["BaseStatement", FlattenSentinel["BaseStatement"], RemovalSentinel]:
+            """
+            LibCSTTransformer that adds a random comment at a random place.
+            Currently, at every statement a coin is flipped whether before the statement
+            the comment will be introduced.
+            Hence, this method can finish without any application.
+            For this case, the Transformer re-runs this visitor in case of non-application.
 
+            Double-Application is guarded with a flag.
+            :param original_node: The original node before any traversal
+            :param updated_node:  The node after (downstream) changes
+            :return: The node after our changes
+            """
             # Case 1: We successfully applied the Transformer, exit early, do nothing.
             if self.finished:
                 return updated_node
@@ -153,8 +160,7 @@ class AddCommentTransformer(BaseTransformer):
                 return cst.FlattenSentinel([added_stmt, updated_node])
             # Case 3: We did not alter it and chance was not triggered.
             # Re-Run the Transformer, better luck next time.
-            else:
-                return updated_node
+            return updated_node
 
 
 def _make_snippet(string_randomness: str = "pseudo") -> CSTNode:

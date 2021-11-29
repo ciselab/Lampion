@@ -1,9 +1,9 @@
 # Transformer-Example
 # https://libcst.readthedocs.io/en/latest/tutorial.html
-import string
 import random
 import logging as log
-from typing import Optional, Union
+from abc import ABC
+from typing import Union
 
 import libcst as cst
 import libcst.codegen.gather
@@ -13,7 +13,7 @@ from lampion.transformers.basetransformer import BaseTransformer
 from lampion.utils.naming import get_random_string, get_pseudo_random_string
 
 
-class AddVariableTransformer(BaseTransformer):
+class AddVariableTransformer(BaseTransformer, ABC):
     """
     Transformer that adds a random unused variable at a random position.
 
@@ -126,13 +126,21 @@ class AddVariableTransformer(BaseTransformer):
 
         finished = False
 
-        def visit_SimpleStatementLine(self, node: "SimpleStatementLine") -> Optional[bool]:
-            return
-
         def leave_SimpleStatementLine(
                 self, original_node: "SimpleStatementLine", updated_node: "SimpleStatementLine"
         ) -> Union["BaseStatement", FlattenSentinel["BaseStatement"], RemovalSentinel]:
+            """
+            LibCSTTransformer that adds random variables at a random place.
+            Currently, at every statement a coin is flipped whether before the statement
+            a random variable should be introduced.
+            hence, this method can finish without any application.
+            For this case, the Transformer re-runs this visitor in case of non-application.
 
+            Double-Application is guarded with a flag.
+            :param original_node: The original node before any traversal
+            :param updated_node:  The node after (downstream) changes
+            :return: The node after our changes
+            """
             # Case 1: We successfully applied the Transformer, exit early, do nothing.
             if self.finished:
                 return updated_node
@@ -144,18 +152,30 @@ class AddVariableTransformer(BaseTransformer):
             # TODO: Is there a way to see all nodes and pick one by random.choice(allNodes) ?
             if random.random() < 0.05:
                 self.finished = True
-                # FlattenSentinels are what we want to replace 1 existing element (here 1 statement) with 1 or more statements
-                # It takes care of things like indentation
+                # FlattenSentinels are what we want to replace 1 existing element (here 1 statement)
+                # with 1 or more statements. It takes care of things like indentation.
                 return cst.FlattenSentinel([added_stmt, updated_node])
             # Case 3: We did not alter it and chance was not triggered.
             # Re-Run the Transformer, better luck next time.
-            else:
-                return updated_node
+            return updated_node
 
         _supported_types = ["int", "float", "str"]
         _add_types = True
 
         def _make_snippet(self, string_randomness: str = "pseudo") -> CSTNode:
+            """
+            Helper-Function to produce a snippet of
+            > random_name = random_value
+            or
+            > random_name: according_type = random_value
+
+            Producible types (chosen at random) are string, integer and float.
+            Whether or not to add types to these snippets is managed by a class-level attribute.
+
+            :param string_randomness: How the variable-names should look like. Supported input is "pseudo" or "full".
+            :return: A CST Assign-Statement with random values, names and types.
+            :raises: ValueError in case of different strings.
+            """
             if string_randomness == "pseudo":
                 name = get_pseudo_random_string()
             elif string_randomness == "full":
@@ -164,17 +184,17 @@ class AddVariableTransformer(BaseTransformer):
                 raise ValueError(
                     "Something changed the StringRandomness in AddVariableTransformer to an invalid value.")
 
-            type = random.choice(self._supported_types)
+            type_str = random.choice(self._supported_types)
 
             if self._add_types:
-                name = f"{name}: {type}"
+                name = f"{name}: {type_str}"
 
             value = ""
-            if type == "str":
+            if type_str == "str":
                 value = f"\"{get_random_string(random.randint(3, 30))}\""
-            if type == "int":
+            if type_str == "int":
                 value = random.randint(2, 1000)
-            if type == "float":
+            if type_str == "float":
                 value = random.random()
 
             return libcst.parse_statement(f"{name} = {value}")

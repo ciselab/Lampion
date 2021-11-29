@@ -3,10 +3,10 @@ from __future__ import annotations
 import os
 import sys
 import random
-import argparse # For handling a nice commandline interface
+import argparse
 
-import libcst as cst
 import logging as log
+import libcst as cst
 
 from libcst import CSTNode
 from lampion.components.engine import Engine
@@ -23,7 +23,7 @@ def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampio
     :param print_sample_diff: Whether or not to output one CST to Log. Default is true.
     :return: None
     """
-    log.info(f'Welcome to the Lampion-Python-Transformer')
+    log.info('Welcome to the Lampion-Python-Transformer')
     log.info(f"Reading File(s) from {path_to_code}")
 
     csts = read_input_dir(path_to_code)
@@ -193,14 +193,17 @@ def main() -> None:
     """
 
     parser = argparse.ArgumentParser(
-        description='Applies metamorphic transformations to Python Coe in Order to make it verbose & different but functionally identical'
+        description='Applies metamorphic transformations to Python Code '
+                    'in Order to make it verbose & different but functionally identical'
     )
     parser.add_argument('config', metavar='config', type=str, nargs=1,
                         help='The config file to use with the transformer')
     parser.add_argument('input', metavar='input', type=str, nargs=1,
                         help='A path to either a folder containing .py files or a path to a .py file')
     parser.add_argument('output',metavar='output', type=str, nargs=1, default="lampion_output",
-                        help="Prefix for the folder to place output in. Within this new folder, the initial structure will be replicated. Any files will be overwritten.")
+                        help="Prefix for the folder to place output in. "
+                             "Within this new folder, the initial structure will be replicated. "
+                             "Any files will be overwritten.")
 
     parser.add_argument('loglevel',metavar="log", type=str, nargs="?", default="info",
                         help="The loglevel for printing logs. Default \'info\'. supported: \'warn\',\'info\',\'debug\'" )

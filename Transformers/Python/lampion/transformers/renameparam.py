@@ -1,4 +1,5 @@
 import random
+from abc import ABC
 from typing import Optional
 
 import libcst as cst
@@ -10,7 +11,7 @@ from lampion.transformers.basetransformer import BaseTransformer
 from lampion.utils.naming import get_random_string, get_pseudo_random_string
 
 
-class RenameParameterTransformer(BaseTransformer):
+class RenameParameterTransformer(BaseTransformer, ABC):
     """
     Transformer that renames a random parameter with a random name.
     The parameter is renamed at all places, that means it will also be changed at
@@ -35,7 +36,7 @@ class RenameParameterTransformer(BaseTransformer):
     _worked: bool
 
     def __init__(self, string_randomness: str = "pseudo"):
-        if string_randomness in ["pseudo","full"]:
+        if string_randomness in ["pseudo", "full"]:
             self.__string_randomness = string_randomness
         else:
             raise ValueError("Unrecognized Value for String Randomness, supported are pseudo and full")
@@ -62,7 +63,7 @@ class RenameParameterTransformer(BaseTransformer):
         tries: int = 0
         max_tries: int = 10
 
-        while (not self._worked) and  tries <= max_tries:
+        while (not self._worked) and tries <= max_tries:
             cst_to_alter.visit(visitor)
             self._worked = visitor.finished
 
@@ -82,7 +83,7 @@ class RenameParameterTransformer(BaseTransformer):
                 raise ValueError(
                     "Something changed the StringRandomness in RenameParamTransformer to an invalid value.")
 
-            renamer = self.__Renamer(to_replace,replacement)
+            renamer = self.__Renamer(to_replace, replacement)
 
             altered_cst = cst_to_alter.visit(renamer)
 
@@ -91,7 +92,7 @@ class RenameParameterTransformer(BaseTransformer):
         if tries == max_tries:
             log.warning(f"Rename Variable Visitor failed after {max_tries} attempt")
 
-        #TODO: add Post-Processing Values here
+        # TODO: add Post-Processing Values here
 
         return altered_cst
 
@@ -135,11 +136,11 @@ class RenameParameterTransformer(BaseTransformer):
         """
         self.reset()
 
-
     class __ParameterCollector(cst.CSTVisitor):
         """
         The CSTVisitor that traverses the CST and collects available parameter-names.
         """
+
         def __init__(self):
             self.seen_params = []
 
@@ -151,7 +152,9 @@ class RenameParameterTransformer(BaseTransformer):
         # If we go only for assigned ones, we do not change parameters / methods etc.
 
         def visit_Param(self, node: "Param") -> Optional[bool]:
-
+            """
+            LibCST method that adds any seen parameter to the objects attribute.
+            """
             self.seen_params.append(node.name)
             return
 
@@ -159,13 +162,14 @@ class RenameParameterTransformer(BaseTransformer):
         """
         The CSTTransformer that traverses the CST and renames parameters.
         """
-        def __init__(self,to_replace:str, replacement:str):
+
+        def __init__(self, to_replace: str, replacement: str):
             self.to_replace = to_replace
             self.replacement = replacement
 
         def leave_Name(
-        self, original_node: "Name", updated_node: "Name"
-    ) -> "BaseExpression":
+                self, original_node: "Name", updated_node: "Name"
+        ) -> "BaseExpression":
             """
             Renames the parameter if it was the one to be altered.
             What to replace and what to replace with are given in __init__.
@@ -178,5 +182,4 @@ class RenameParameterTransformer(BaseTransformer):
             """
             if original_node.value == self.to_replace:
                 return updated_node.with_changes(value=self.replacement)
-            else:
-                return updated_node
+            return updated_node

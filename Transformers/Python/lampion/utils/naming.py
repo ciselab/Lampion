@@ -79,13 +79,11 @@ def get_pseudo_random_string(
     return result
 
 
-"""
-===================================================================================================================
-                                   String Arrays
-      Below this line are just dictionaries of names similar to docker's container names
-      Used for Pseudo Random String Generation, Which looks nicer than full random
-===================================================================================================================
- """
+#===================================================================================================================
+#                                   String Arrays
+#      Below this line are just dictionaries of names similar to docker's container names
+#      Used for Pseudo Random String Generation, Which looks nicer than full random
+#===================================================================================================================
 
 adjectives = ["aged", "biased", "complex", "destructive", "efficient",
               "frugal", "great", "honorable", "iterative",

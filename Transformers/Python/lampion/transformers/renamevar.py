@@ -1,14 +1,16 @@
 import random
-import libcst as cst
+from abc import ABC
+
 import logging as log
+import libcst as cst
 
 from libcst import CSTNode
 
 from lampion.transformers.basetransformer import BaseTransformer
-from lampion.utils.naming import get_random_string,get_pseudo_random_string
+from lampion.utils.naming import get_random_string, get_pseudo_random_string
 
 
-class RenameVariableTransformer(BaseTransformer):
+class RenameVariableTransformer(BaseTransformer, ABC):
     """
     Transformer that renames a random local variable with a random name.
     The variable is renamed at all places, that means it will also be changed at
@@ -37,7 +39,7 @@ class RenameVariableTransformer(BaseTransformer):
     _worked: bool
 
     def __init__(self, string_randomness: str = "pseudo"):
-        if string_randomness in ["pseudo","full"]:
+        if string_randomness in ["pseudo", "full"]:
             self.__string_randomness = string_randomness
         else:
             raise ValueError("Unrecognized Value for String Randomness, supported are pseudo and full")
@@ -64,11 +66,11 @@ class RenameVariableTransformer(BaseTransformer):
         tries: int = 0
         max_tries: int = 10
 
-        while (not self._worked) and  tries <= max_tries:
+        while (not self._worked) and tries <= max_tries:
             cst_to_alter.visit(visitor)
             self._worked = visitor.finished
 
-            seen_names = list(set([x.target.value for x in visitor.seen_variables]))
+            seen_names = list({x.target.value for x in visitor.seen_variables})
             # Exit early: No local Variables!
             if len(seen_names) == 0:
                 self._worked = False
@@ -83,7 +85,7 @@ class RenameVariableTransformer(BaseTransformer):
                 raise ValueError(
                     "Something changed the StringRandomness in RenameVariableTransformer to an invalid value.")
 
-            renamer = self.__Renamer(to_replace,replacement)
+            renamer = self.__Renamer(to_replace, replacement)
 
             altered_cst = cst_to_alter.visit(renamer)
 
@@ -92,7 +94,7 @@ class RenameVariableTransformer(BaseTransformer):
         if tries == max_tries:
             log.warning(f"Rename Variable Visitor failed after {max_tries} attempt")
 
-        #TODO: add Post-Processing Values here
+        # TODO: add Post-Processing Values here
 
         return altered_cst
 
@@ -136,7 +138,6 @@ class RenameVariableTransformer(BaseTransformer):
         """
         self.reset()
 
-
     class __VariableCollector(cst.CSTVisitor):
         """
         CSTVisitor that collects all variable-names in traversal.
@@ -175,20 +176,20 @@ class RenameVariableTransformer(BaseTransformer):
             :return: None
             """
             self.seen_variables.append(node)
-            return
 
     class __Renamer(cst.CSTTransformer):
         """
         The CSTTransformer that traverses the CST and renames variables.
         Currently does not care about the scoping - all occurrences will be renamed.
         """
-        def __init__(self,to_replace:str, replacement:str):
+
+        def __init__(self, to_replace: str, replacement: str):
             self.to_replace = to_replace
             self.replacement = replacement
 
         def leave_Name(
-        self, original_node: "Name", updated_node: "Name"
-    ) -> "BaseExpression":
+                self, original_node: "Name", updated_node: "Name"
+        ) -> "BaseExpression":
             """
             Renames the variable if it was the one to be replaced.
             What to replace and what to replace with are given in __init__.
