@@ -1,9 +1,10 @@
 # Python Transformer
 
 This part of the Lampion Project alters Python Files using metamorphic transformations 
-and returns/writes the altered files as well as a manifest.
+and returns/writes the altered files as well as a manifest (*Manifest still pending*).
 
-It is currently in early development.
+It is currently in early development, I implemented every feature for the first trials, 
+but I expect bugs popping up when you use them on actual data.
 
 
 ## Build & Run
@@ -38,7 +39,7 @@ python -m lampion ./tests/test_configs/test1.properties ./tests/test_inputs/hell
 
 Check linting with:
 ``` bash
-pylint ./lampion
+pylint --rcfile=.pylintrc ./lampion
 ```
 
 ### Docker
