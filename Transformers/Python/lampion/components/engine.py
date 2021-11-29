@@ -63,8 +63,8 @@ class Engine:
         self.__output_dir = output_dir
         self.__transformers = _create_transformers(self.__config)
 
-        log.info(f"Initiated Engine "
-                 f"writing output to {self.__output_dir} with {len(self.__transformers)} Transformers")
+        log.info("Initiated Engine "
+                 "writing output to %s with %i Transformers",self.__output_dir,len(self.__transformers))
 
     __output_dir: str = "./lampion_output"
     __successful_transformations: int = 0
@@ -137,21 +137,27 @@ class Engine:
             log.info("Manifest Writing was turned off in Configuration.")
 
         if self.__output_dir:
-            log.info(f"Writing to Output to {self.__output_dir}")
+            log.info("Writing to Output to %s",self.__output_dir)
             self._output_to_files(altered_csts)
 
         return altered_csts
 
     def get_config(self) -> dict:
+        """
+        :return: the current config, should usually contain parts of the default config.
+        """
         return self.__config
 
     def get_transformers(self) -> BaseTransformer:
+        """
+        :return: the registered transformers
+        """
         return self.__transformers
 
     def _output_to_files(self, csts: ["CSTNode"]) -> None:
         for (p, cst) in csts:
             pp = os.path.join("./", self.__output_dir, p)
-            log.debug(f"Writing {p} to {pp}")
+            log.debug("Writing %s to %s",p,pp)
 
             # Create the (all) folders before trying to make the file
             os.makedirs(os.path.dirname(pp), exist_ok=True)

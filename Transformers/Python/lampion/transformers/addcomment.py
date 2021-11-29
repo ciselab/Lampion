@@ -1,5 +1,6 @@
-# Transformer-Example
-# https://libcst.readthedocs.io/en/latest/tutorial.html
+"""
+Contains the "AddCommentTransformer" that adds a (random) comment at a random position.
+"""
 import random
 import logging as log
 from abc import ABC
@@ -69,7 +70,7 @@ class AddCommentTransformer(BaseTransformer, ABC):
             tries = tries + 1
 
         if tries == max_tries:
-            log.warning(f"Add Comment Visitor failed after {max_tries} attempt")
+            log.warning("Add Comment Transformer failed after %i attempt",max_tries)
 
         #TODO: add Post-Processing Values here
 

@@ -1,9 +1,12 @@
+"""
+Contains the "RenameParameterTransformer" that renames a parameter of a method and all of it's uses.
+"""
 import random
 from abc import ABC
 from typing import Optional
 
-import libcst as cst
 import logging as log
+import libcst as cst
 
 from libcst import CSTNode
 
@@ -67,7 +70,7 @@ class RenameParameterTransformer(BaseTransformer, ABC):
             cst_to_alter.visit(visitor)
             self._worked = visitor.finished
 
-            seen_names = list(set([x.value for x in visitor.seen_params]))
+            seen_names = list({x.value for x in visitor.seen_params})
             # Exit early: No local Variables!
             if len(seen_names) == 0:
                 self._worked = False
@@ -90,7 +93,7 @@ class RenameParameterTransformer(BaseTransformer, ABC):
             tries = tries + 1
 
         if tries == max_tries:
-            log.warning(f"Rename Variable Visitor failed after {max_tries} attempt")
+            log.warning("Rename Variable Transformer failed after %i attempt",max_tries)
 
         # TODO: add Post-Processing Values here
 
@@ -156,7 +159,6 @@ class RenameParameterTransformer(BaseTransformer, ABC):
             LibCST method that adds any seen parameter to the objects attribute.
             """
             self.seen_params.append(node.name)
-            return
 
     class __Renamer(cst.CSTTransformer):
         """

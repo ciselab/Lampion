@@ -1,3 +1,11 @@
+"""
+The CLI module contains
+- a run function to perform the actual toplevel tasks
+- a main function that parses args, sets up random and logging, and starts run
+- read_input_dir to read files from path into LibCST nodes
+- read_config_file to read a config file from path
+- helpers to parse config values
+"""
 from __future__ import annotations
 
 import os
@@ -24,7 +32,7 @@ def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampio
     :return: None
     """
     log.info('Welcome to the Lampion-Python-Transformer')
-    log.info(f"Reading File(s) from {path_to_code}")
+    log.info("Reading File(s) from %s",path_to_code)
 
     csts = read_input_dir(path_to_code)
     config = read_config_file(path_to_config)
@@ -75,7 +83,7 @@ def read_input_dir(path: str) -> [(str, CSTNode)]:
     if os.path.isdir(path):
         log.debug("Received Path is a Directory - Looking for multiple files")
         results = []
-        for dirpath, dnames, fnames in os.walk(path):
+        for dirpath, _, fnames in os.walk(path):
             # TODO: Exclude __init__.py files? But keep it in Lookup?
             for f in fnames:
                 if f.endswith(".py"):
@@ -84,7 +92,7 @@ def read_input_dir(path: str) -> [(str, CSTNode)]:
                     results.append((os.path.join(dirpath, f), found_cst))
         return results
     # Case 2: Path is a file
-    elif os.path.isfile(path):
+    else:
         log.debug("Received Path points to a File")
         # ErrorCase: File is not .py
         if not path.endswith(".py"):
@@ -93,8 +101,7 @@ def read_input_dir(path: str) -> [(str, CSTNode)]:
         found_cst = cst.parse_module(f)
         return [(path, found_cst)]
     # ErrorCase: Weird Path
-    else:
-        raise ValueError("Your path seemed to be neither a directory nor a file!")
+    raise ValueError("Your path seemed to be neither a directory nor a file!")
 
 
 def read_config_file(path: str) -> dict:
@@ -119,14 +126,14 @@ def read_config_file(path: str) -> dict:
     if not os.path.exists(path) or not os.path.isfile(path):
         raise ValueError("Path to ConfigFile did not exist or was not a file!")
     if ".properties" not in path:
-        log.warning(f"The configuration-file at {path} did not end with the expected .properties")
+        log.warning("The configuration-file at %s did not end with the expected .properties",path)
 
     # Read in File, check for emptyness
     lines: [str] = []
     with open(path,"r") as config_file:
         lines = config_file.readlines()
     if not lines:
-        log.warning(f"The configuration-file at {path} was empty")
+        log.warning("The configuration-file at %s was empty",path)
         return {}
     # Split the Lines and add to tuples
     tuples: [(str,str)] = []
@@ -144,19 +151,19 @@ def read_config_file(path: str) -> dict:
         tuples.append((parts[0],parts[1]))
     # Try to parse the tuples and return dict
     config: dict = {}
-    for tuple in tuples:
+    for tup in tuples:
         # Try to parse to bool
-        parsed_value = __str2bool(tuple[1])
+        parsed_value = __str2bool(tup[1])
         if isinstance(parsed_value,bool):
-            config[tuple[0]] = parsed_value
+            config[tup[0]] = parsed_value
             continue
         # Try to parse to int
-        parsed_value = __str2int(tuple[1])
+        parsed_value = __str2int(tup[1])
         if isinstance(parsed_value,int):
-            config[tuple[0]] = parsed_value
+            config[tup[0]] = parsed_value
             continue
         # otherwise keep it
-        config[tuple[0]] = tuple[1]
+        config[tup[0]] = tup[1]
     # Return the Dict
     return config
 

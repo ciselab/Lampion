@@ -1,3 +1,6 @@
+"""
+Contains the "LambdaIdentityTransformer" that wraps literals into lambda functions and calls them.
+"""
 import random
 from abc import ABC
 from typing import Optional
@@ -89,7 +92,7 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
             self._worked = replacer.worked
 
         if tries == max_tries:
-            log.warning(f"Lambda Identity Transformer failed after {max_tries} attempts")
+            log.warning("Lambda Identity Transformer failed after %i attempt",max_tries)
 
         # TODO: add Post-Processing Values here
 

@@ -1,3 +1,6 @@
+"""
+Contains the "RenameVariableTransformer" that renames a variable and all its uses.
+"""
 import random
 from abc import ABC
 
@@ -92,7 +95,7 @@ class RenameVariableTransformer(BaseTransformer, ABC):
             tries = tries + 1
 
         if tries == max_tries:
-            log.warning(f"Rename Variable Visitor failed after {max_tries} attempt")
+            log.warning("Rename Variable Transformer failed after %i attempt",max_tries)
 
         # TODO: add Post-Processing Values here
 

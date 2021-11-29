@@ -1,3 +1,6 @@
+"""
+Contains the "BaseTransformer", a superclass for the other Transformers.
+"""
 from libcst import CSTNode
 
 

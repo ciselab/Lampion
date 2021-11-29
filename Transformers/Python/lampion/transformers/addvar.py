@@ -1,5 +1,6 @@
-# Transformer-Example
-# https://libcst.readthedocs.io/en/latest/tutorial.html
+"""
+Contains the "AddVariableTransformer" that inserts an unused variable with a random value.
+"""
 import random
 import logging as log
 from abc import ABC
@@ -71,7 +72,7 @@ class AddVariableTransformer(BaseTransformer, ABC):
             tries = tries + 1
 
         if tries == max_tries:
-            log.warning(f"Add Variable Visitor failed after {max_tries} attempt")
+            log.warning("Add Variable Visitor failed after %i attempt",max_tries)
 
         # TODO: add Post-Processing Values here
 

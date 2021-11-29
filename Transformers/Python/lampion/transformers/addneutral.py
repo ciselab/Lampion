@@ -1,3 +1,6 @@
+"""
+Contains the "AddNeutralElementTransformer" that adds +0 to integers or +"" to strings.
+"""
 import random
 from abc import ABC
 from typing import Optional
@@ -88,7 +91,7 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
             self._worked = replacer.worked
 
         if tries == max_tries:
-            log.warning(f"Add Neutral Element Transformer failed after {max_tries} attempts")
+            log.warning("Add Add Neutral Element Transformer failed after %i attempt",max_tries)
 
         # TODO: add Post-Processing Values here
 
@@ -195,8 +198,7 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
                 self.worked = True
 
                 return updated_node
-            else:
-                return updated_node
+            return updated_node
 
         def leave_Integer(
                 self, original_node: "Integer", updated_node: "Integer"
