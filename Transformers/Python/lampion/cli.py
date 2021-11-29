@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import os
 import sys
+import random
 
 import libcst as cst
 import logging as log
-import random
 
 from libcst import CSTNode
-
 from lampion.components.engine import Engine
 
 

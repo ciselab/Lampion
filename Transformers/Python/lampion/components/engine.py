@@ -1,3 +1,8 @@
+"""
+Contains the class "Engine", performing the toplevel orchestration of the Transformers,
+also generates the transformers from config
+and provides a default config.
+"""
 import os.path
 import random
 
@@ -178,7 +183,7 @@ def _create_transformers(config: dict) -> [BaseTransformer]:
     if config["RenameParameterTransformer"]:
         transformers.append(RenameParameterTransformer(string_randomness=config["RenameVariableStringRandomness"]))
 
-            # TODO: Add many more Transformers!
+    # TODO: Add many more Transformers!
 
     return transformers
 

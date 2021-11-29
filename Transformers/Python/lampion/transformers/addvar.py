@@ -5,7 +5,6 @@ import random
 import logging as log
 from typing import Optional, Union
 
-import libcst
 import libcst as cst
 import libcst.codegen.gather
 from libcst import FlattenSentinel, RemovalSentinel, CSTNode
