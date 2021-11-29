@@ -20,9 +20,9 @@ def test_read_input_files_on_file_should_give_one_cst():
     assert len(csts) == 1
 
 
-def test_read_input_files_on_empty_dir_should_give_value_error():
-    with pytest.raises(ValueError):
-        csts = lampion.cli.read_input_dir(f"{path_prefix}/test_inputs/no_files")
+def test_read_input_files_on_empty_dir_should_not_give_value_error():
+    csts = lampion.cli.read_input_dir(f"{path_prefix}/test_inputs/no_files")
+    assert len(csts) == 0
 
 
 

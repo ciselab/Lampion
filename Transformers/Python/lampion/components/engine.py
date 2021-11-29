@@ -52,28 +52,27 @@ class Engine:
 
     def __init__(self, config: dict = None, output_dir: str = "./lampion_output"):
         log.debug("Creating Engine ...")
+        self._config = _default_config()
 
         if config is None or len(config) == 0:
             log.info("Received no Config for Engine - running with default values")
-            self.config = _default_config()
         else:
             log.info("Received a Config for Engine - overwriting default values for everything found")
             overwrite_config = _default_config()
             overwrite_config.update(config)
-            self.config = overwrite_config
+            self._config = overwrite_config
 
-        self.output_dir = output_dir
-        self.transformers = _create_transformers(self.config)
+        self.__output_dir = output_dir
+        self._transformers = _create_transformers(self._config)
 
         log.info(f"Initiated Engine "
-                 f"writing output to {self.output_dir} with {len(self.transformers)} Transformers")
+                 f"writing output to {self.__output_dir} with {len(self._transformers)} Transformers")
 
-    input_dir: str = None
-    output_dir: str = "./lampion_output"
-    successful_transformations: int = 0
-    failed_transformations: int = 0
-    config = {}
-    transformers: [BaseTransformer] = []
+    __output_dir: str = "./lampion_output"
+    __successful_transformations: int = 0
+    __failed_transformations: int = 0
+    _config = {}
+    _transformers: [BaseTransformer] = []
 
     def run(self, csts: [(str, CSTNode)]) -> [(str, CSTNode)]:
         """
@@ -106,48 +105,48 @@ class Engine:
         # This deep clone helps to make a copy of the CSTs, so that the input does not change by accident.
         altered_csts = [(path, node.deep_clone()) for (path, node) in csts]
 
-        random.seed(self.config["seed"])
+        random.seed(self._config["seed"])
 
         # TODO: Read this from config
-        max_transformations = self.config["transformations"]
-        while self.successful_transformations < max_transformations:
+        max_transformations = self._config["transformations"]
+        while self.__successful_transformations < max_transformations:
             # 1.1 pick a cst
             cst_index = random.randint(0, len(altered_csts) - 1)
             (running_path, running_cst) = altered_csts[cst_index]
             del altered_csts[cst_index]
             # 1.2 pick a transformer
-            transformer = random.choice(self.transformers)
+            transformer = random.choice(self._transformers)
             transformer.reset()
             # 1.3 apply the transformer
             changed_cst = transformer.apply(running_cst)
 
             if transformer.worked():
                 log.debug("Transformer worked")
-                self.successful_transformations = self.successful_transformations + 1
+                self.__successful_transformations = self.__successful_transformations + 1
                 transformer.postprocessing()
                 altered_csts.append((running_path, changed_cst))
             else:
                 log.debug("Transformer failed - retrying with another one")
-                self.failed_transformations = self.failed_transformations + 1
+                self.__failed_transformations = self.__failed_transformations + 1
                 transformer.reset()
                 # If the Transformer failed, re-add the unaltered CST
                 altered_csts.append((running_path, running_cst))
 
-        if self.config["writeManifest"]:
+        if self._config["writeManifest"]:
             log.warning("Manifest is currently not enabled!")
             raise NotImplementedError()
         else:
             log.info("Manifest Writing was turned off in Configuration.")
 
-        if self.output_dir:
-            log.info(f"Writing to Output to {self.output_dir}")
+        if self.__output_dir:
+            log.info(f"Writing to Output to {self.__output_dir}")
             self._output_to_files(altered_csts)
 
         return altered_csts
 
     def _output_to_files(self, csts: []) -> None:
         for (p, cst) in csts:
-            pp = os.path.join("./", self.output_dir, p)
+            pp = os.path.join("./", self.__output_dir, p)
             log.debug(f"Writing {p} to {pp}")
 
             # Create the (all) folders before trying to make the file
@@ -226,3 +225,5 @@ def _default_config() -> dict:
     default_config["AddNeutralElementTransformer"] = True
 
     default_config["LambdaIdentityTransformer"] = True
+
+    return default_config

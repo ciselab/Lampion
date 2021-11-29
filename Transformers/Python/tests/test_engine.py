@@ -15,10 +15,11 @@ def test_create_engine_with_none_config():
     testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
     assert testobject
 
+
 def test_default_engine_has_transformers():
     testobject = Engine({}, "PLACEHOLDER")
 
-    assert len(testobject.transformers) > 0
+    assert len(testobject._transformers) > 0
 
 
 def test_run_with_default_transformers_gives_output():
@@ -66,7 +67,7 @@ def test_run_with_default_transformers_with_two_CSTs_both_changed():
     example_A_value = str(example_cst_A.code)
     example_B_value = str(example_cst_B.code)
 
-    csts = [("PLACEHOLDER",example_cst_A), ("PLACEHOLDER",example_cst_B)]
+    csts = [("PLACEHOLDER", example_cst_A), ("PLACEHOLDER", example_cst_B)]
 
     altered_csts = testobject.run(csts)
 
@@ -85,7 +86,7 @@ def test_run_with_default_transformers_with_two_CSTs_output_has_paths_to_compare
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
     example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
 
-    csts = [("PLACEHOLDER_A",example_cst_A), ("PLACEHOLDER_B",example_cst_B)]
+    csts = [("PLACEHOLDER_A", example_cst_A), ("PLACEHOLDER_B", example_cst_B)]
 
     altered_csts = testobject.run(csts)
 
@@ -102,7 +103,6 @@ def test_run_with_default_transformers_with_two_CSTs_output_has_paths_to_compare
     assert second_altered_cst[1]
 
 
-
 def test_run_with_default_transformers_with_two_CSTs_both_inputs_stay_unchanged():
     testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
 
@@ -111,7 +111,7 @@ def test_run_with_default_transformers_with_two_CSTs_both_inputs_stay_unchanged(
     example_A_value = str(example_cst_A.code)
     example_B_value = str(example_cst_B.code)
 
-    csts = [("PLACEHOLDER",example_cst_A), ("PLACEHOLDER",example_cst_B)]
+    csts = [("PLACEHOLDER", example_cst_A), ("PLACEHOLDER", example_cst_B)]
 
     testobject.run(csts)
 
@@ -130,14 +130,14 @@ def test_with_one_file_after_transformation_path_is_the_same():
 
     assert post_change_path == initial_path
 
+
 def test_run_with_two_csts_paths_match():
     testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
     example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
 
-
-    csts = [("PLACEHOLDER_A",example_cst_A), ("PLACEHOLDER_B",example_cst_B)]
+    csts = [("PLACEHOLDER_A", example_cst_A), ("PLACEHOLDER_B", example_cst_B)]
 
     altered_csts = testobject.run(csts)
 
@@ -156,7 +156,7 @@ def test_run_with_two_csts_second_method_is_kept():
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
     example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
 
-    csts = [("PLACEHOLDER_A",example_cst_A), ("PLACEHOLDER_B",example_cst_B)]
+    csts = [("PLACEHOLDER_A", example_cst_A), ("PLACEHOLDER_B", example_cst_B)]
 
     altered_csts = testobject.run(csts)
 
@@ -166,13 +166,14 @@ def test_run_with_two_csts_second_method_is_kept():
     # then there was an issue in putting them back in the engines running asts
     assert len(altered_cst_B) == 1
 
+
 def test_run_with_two_csts_first_method_is_kept():
     testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
     example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
 
-    csts = [("PLACEHOLDER_A",example_cst_A), ("PLACEHOLDER_B",example_cst_B)]
+    csts = [("PLACEHOLDER_A", example_cst_A), ("PLACEHOLDER_B", example_cst_B)]
 
     altered_csts = testobject.run(csts)
 
@@ -182,31 +183,33 @@ def test_run_with_two_csts_first_method_is_kept():
     # then there was an issue in putting them back in the engines running asts
     assert len(altered_cst_A) == 1
 
+
 def test_config_default_config_is_not_none_and_not_empty():
     testobject = Engine()
 
-    assert testobject.config
-    assert len(testobject.config) > 0
+    assert testobject._config
+    assert len(testobject._config) > 0
 
 
 def test_config_empty_config_uses_default():
     testobject = Engine(config={})
 
-    assert testobject.config
-    assert len(testobject.config) > 0
+    assert testobject._config
+    assert len(testobject._config) > 0
 
 
 def test_config_with_overwritten_seed_should_be_new_seed():
     overwrite_config = {"seed": 100}
 
     testobject = Engine(config=overwrite_config)
-    received_seed = testobject.config["seed"]
+    received_seed = testobject._config["seed"]
 
     assert received_seed == 100
 
 
-def example() -> (str,CSTNode):
-    return ("PATH_PLACEHOLDER",cst.parse_module("def hi(): \n\tprint(\"Hello World\")"))
+def example() -> (str, CSTNode):
+    return ("PATH_PLACEHOLDER", cst.parse_module("def hi(): \n\tprint(\"Hello World\")"))
 
-def get_first_code(tuples: [(str,CSTNode)]) -> str:
+
+def get_first_code(tuples: [(str, CSTNode)]) -> str:
     return tuples[0][1].code
