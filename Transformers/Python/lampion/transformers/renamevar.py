@@ -34,43 +34,45 @@ class RenameVariableTransformer(BaseTransformer):
     """
 
     __string_randomness: str
+    _worked: bool
 
     def __init__(self, string_randomness: str = "pseudo"):
-        if (string_randomness == "pseudo") or (string_randomness == "full"):
+        if string_randomness in ["pseudo","full"]:
             self.__string_randomness = string_randomness
         else:
             raise ValueError("Unrecognized Value for String Randomness, supported are pseudo and full")
 
         log.info("RenameVariableTransformer Created")
+        _worked = False
 
-    def apply(self, cst: CSTNode) -> CSTNode:
+    def apply(self, cst_to_alter: CSTNode) -> CSTNode:
         """
         Apply the transformer to the given CST.
         Returns the original CST on failure or error.
 
         Check the function "worked()" whether the transformer was applied.
 
-        :param cst: The CST to alter.
+        :param cst_to_alter: The CST to alter.
         :return: The altered CST or the original CST on failure.
 
         Also, see the BaseTransformers notes if you want to implement your own.
         """
         visitor = self.__VariableCollector()
 
-        altered_cst = cst
+        altered_cst = cst_to_alter
 
         tries: int = 0
         max_tries: int = 10
 
         while (not self._worked) and  tries <= max_tries:
-            cst.visit(visitor)
+            cst_to_alter.visit(visitor)
             self._worked = visitor.finished
 
             seen_names = list(set([x.target.value for x in visitor.seen_variables]))
             # Exit early: No local Variables!
             if len(seen_names) == 0:
                 self._worked = False
-                return cst
+                return cst_to_alter
 
             to_replace = random.choice(seen_names)
             if self.__string_randomness == "pseudo":
@@ -83,7 +85,7 @@ class RenameVariableTransformer(BaseTransformer):
 
             renamer = self.__Renamer(to_replace,replacement)
 
-            altered_cst = cst.visit(renamer)
+            altered_cst = cst_to_alter.visit(renamer)
 
             tries = tries + 1
 
@@ -199,5 +201,4 @@ class RenameVariableTransformer(BaseTransformer):
             """
             if original_node.value == self.to_replace:
                 return updated_node.with_changes(value=self.replacement)
-            else:
-                return updated_node
+            return updated_node

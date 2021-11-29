@@ -35,25 +35,38 @@ class AddVariableTransformer(BaseTransformer):
     """
 
     __string_randomness: str
+    _worked: bool
 
     def __init__(self, string_randomness: str = "pseudo"):
-        if (string_randomness == "pseudo") or (string_randomness == "full"):
+        if string_randomness in ["pseudo","full"]:
             self.__string_randomness = string_randomness
         else:
             raise ValueError("Unrecognized Value for String Randomness, supported are pseudo and full")
 
+        self._worked = False
         log.info("AddVariableTransformer Created")
 
-    def apply(self, cst: CSTNode) -> CSTNode:
+    def apply(self, cst_to_alter: CSTNode) -> CSTNode:
+        """
+        Apply the transformer to the given CST.
+        Returns the original CST on failure or error.
+
+        Check the function "worked()" whether the transformer was applied.
+
+        :param cst_to_alter: The CST to alter.
+        :return: The altered CST or the original CST on failure.
+
+        Also, see the BaseTransformers notes if you want to implement your own.
+        """
         visitor = self.__AddVarVisitor()
 
-        altered_cst = cst
+        altered_cst = cst_to_alter
 
         tries: int = 0
         max_tries: int = 100
 
         while (not self._worked) and tries <= max_tries:
-            altered_cst = cst.visit(visitor)
+            altered_cst = cst_to_alter.visit(visitor)
             self._worked = visitor.finished
             tries = tries + 1
 

@@ -35,7 +35,7 @@ class BaseTransformer():
         """
         raise NotImplementedError()
 
-    def apply(self, cst: CSTNode) -> CSTNode:
+    def apply(self, cst_to_alter: CSTNode) -> CSTNode:
         """
         Apply the Transformer to a given CST.
         The returned CST might not be changed, if the transformer did not work (check the worked() method for this).
@@ -46,7 +46,7 @@ class BaseTransformer():
         The suggested way is to create a Visitor within each transformer that inherits from the visitor class.
         Whatsoever, one could also change the code on a string-basis or in any other way and re-parse it after.
 
-        :param cst: The CST that should be altered.
+        :param cst_to_alter: The CST that should be altered.
         :return: The altered CST
         """
         raise NotImplementedError()

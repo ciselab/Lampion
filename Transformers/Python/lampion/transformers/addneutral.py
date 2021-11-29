@@ -46,27 +46,27 @@ class AddNeutralElementTransformer(BaseTransformer):
         log.info("AddNeutralElementTransformer Created")
         self._worked = False
 
-    def apply(self, cst: CSTNode) -> CSTNode:
+    def apply(self, cst_to_alter: CSTNode) -> CSTNode:
         """
         Apply the transformer to the given CST.
         Returns the original CST on failure or error.
 
         Check the function "worked()" whether the transformer was applied.
 
-        :param cst: The CST to alter.
+        :param cst_to_alter: The CST to alter.
         :return: The altered CST or the original CST on failure.
 
         Also, see the BaseTransformers notes if you want to implement your own.
         """
         visitor = self.__LiteralCollector()
 
-        altered_cst = cst
+        altered_cst = cst_to_alter
 
         tries: int = 0
         max_tries: int = 100
 
         while (not self._worked) and tries <= max_tries:
-            cst.visit(visitor)
+            cst_to_alter.visit(visitor)
 
             seen_literals = \
                 [("simple_string", x) for x in visitor.seen_strings] \
@@ -75,13 +75,13 @@ class AddNeutralElementTransformer(BaseTransformer):
             # Exit early: No Literals to work on!
             if len(seen_literals) == 0:
                 self._worked = False
-                return cst
+                return cst_to_alter
 
             to_replace = random.choice(seen_literals)
 
             replacer = self.__Replacer(to_replace[1], to_replace[0])
 
-            altered_cst = cst.visit(replacer)
+            altered_cst = cst_to_alter.visit(replacer)
 
             tries = tries + 1
             self._worked = replacer.worked
@@ -172,7 +172,9 @@ class AddNeutralElementTransformer(BaseTransformer):
         def leave_Integer(
                 self, original_node: "Integer", updated_node: "Integer"
         ) -> "BaseExpression":
-            if self.replace_type == "integer" and original_node.deep_equals(self.to_replace) and not self.worked:
+            if self.replace_type == "integer" \
+                    and original_node.deep_equals(self.to_replace) \
+                    and not self.worked:
                 literal = str(original_node.value)
                 replacement = f"({literal}+0)"
                 expr = cst.parse_expression(replacement)
@@ -180,13 +182,14 @@ class AddNeutralElementTransformer(BaseTransformer):
                 self.worked = True
 
                 return updated_node
-            else:
-                return updated_node
+            return updated_node
 
         def leave_SimpleString(
                 self, original_node: "SimpleString", updated_node: "SimpleString"
         ) -> "BaseExpression":
-            if self.replace_type == "simple_string" and original_node.deep_equals(self.to_replace) and not self.worked:
+            if self.replace_type == "simple_string" \
+                    and original_node.deep_equals(self.to_replace) \
+                    and not self.worked:
                 literal = str(original_node.value)
                 replacement = f"({literal}+\"\")"
                 expr = cst.parse_expression(replacement)
@@ -194,5 +197,4 @@ class AddNeutralElementTransformer(BaseTransformer):
                 self.worked = True
 
                 return updated_node
-            else:
-                return updated_node
+            return updated_node

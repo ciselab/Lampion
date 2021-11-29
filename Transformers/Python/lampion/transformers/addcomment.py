@@ -45,27 +45,27 @@ class AddCommentTransformer(BaseTransformer):
     _worked = False
     __string_randomness: str
 
-    def apply(self, cst: CSTNode) -> CSTNode:
+    def apply(self, cst_to_alter: CSTNode) -> CSTNode:
         """
         Apply the transformer to the given CST.
         Returns the original CST on failure or error.
 
         Check the function "worked()" whether the transformer was applied.
 
-        :param cst: The CST to alter.
+        :param cst_to_alter: The CST to alter.
         :return: The altered CST or the original CST on failure.
 
         Also, see the BaseTransformers notes if you want to implement your own.
         """
         visitor = self.__AddCommentVisitor()
 
-        altered_cst = cst
+        altered_cst = cst_to_alter
 
         tries: int = 0
         max_tries : int = 100
 
         while (not self._worked) and tries <= max_tries:
-            altered_cst = cst.visit(visitor)
+            altered_cst = cst_to_alter.visit(visitor)
             self._worked = visitor.finished
             tries = tries + 1
 
@@ -119,9 +119,13 @@ class AddCommentTransformer(BaseTransformer):
     class __AddCommentVisitor(cst.CSTTransformer):
 
         def __init__(self, string_randomness: str = "pseudo"):
+            if string_randomness in ["pseudo","full"]:
+                self.__string_randomness = string_randomness
+            else:
+                raise ValueError["Received invalid value for String Randomness, supported values are 'pseud' and 'full'"]
+
             log.debug("AddVariableVisitor Created")
-            self._finished = False
-            self.__string_randomness = string_randomness
+            self.finished = False
 
         finished: bool = False
         __string_randomness: str
