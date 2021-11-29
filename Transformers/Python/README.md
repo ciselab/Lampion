@@ -7,19 +7,19 @@ It is currently in early development.
 
 
 ## Build & Run
-```
-pip install libcst
+```bash
+pip install libcst build pytest pytest-cov
 ```
 
 Build (in Python-Root): 
 
-```
+```bash
 python -m build
 ```
 
 Test (in Python-Root):
 
-```
+```bash
 python -m pytest tests/
 ```
 Or with coverage `python -m pytest --cov=lampion tests/`
@@ -27,18 +27,25 @@ Or with coverage `python -m pytest --cov=lampion tests/`
 
 Install the python transformer
 
-``` 
-pip install --force-reinstall .\dist\lampion_python_transformer-0.0.1-py2.py3-none-any.whl
+```bash
+pip install --force-reinstall ./dist/lampion_python_transformer-0.0.1-py2.py3-none-any.whl
 ```
 
 Run with: 
-``` 
-python -m lampion
+```bash
+python -m lampion ./tests/test_configs/test1.properties ./tests/test_inputs/hello_world.py ./lampion_output
 ```
 
 Check linting with:
-``` 
+``` bash
 pylint ./lampion
+```
+
+### Docker
+
+```bash
+docker build -t lampion/python-transformer:unstable .
+docker run lampion/python-transformer:unstable
 ```
 
 ## Requirements

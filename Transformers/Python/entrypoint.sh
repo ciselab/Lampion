@@ -1,1 +1,2 @@
-python -m lampion ${target}
+#!/bin/bash
+python -m lampion ${configfile} ${target} ${output} ${loglevel} ${print_example}

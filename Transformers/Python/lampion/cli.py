@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import sys
 import random
+import argparse # For handling a nice commandline interface
 
 import libcst as cst
 import logging as log
@@ -11,7 +12,7 @@ from libcst import CSTNode
 from lampion.components.engine import Engine
 
 
-def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampion_output") -> None:
+def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampion_output", print_sample_diff: bool = True) -> None:
     """
     Primary function to read the files, read the configuration, and run the engine.
     Separated from main for testability, as main() needs sys-args.
@@ -19,6 +20,7 @@ def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampio
     :param path_to_code: Path to Directory or File of Code.
     :param path_to_config: Path to Configuration to read in.
     :param output_prefix: Prefix to put before the output, will be created if not existing.
+    :param print_sample_diff: Whether or not to output one CST to Log. Default is true.
     :return: None
     """
     log.info(f'Welcome to the Lampion-Python-Transformer')
@@ -28,12 +30,26 @@ def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampio
     config = read_config_file(path_to_config)
 
     # Set seed a-new if one was found in config.
-    if config["seed"] and isinstance(config["seed"],int):
+    if "seed" in config.keys() and config["seed"] and isinstance(config["seed"],int):
         random.seed(config["seed"])
 
     engine = Engine(config, output_prefix)
 
-    engine.run(csts)[0]
+    altered_csts = engine.run(csts)
+
+    if print_sample_diff:
+        initial_tuple = random.choice(csts)
+        altered_tuple = [x for x in altered_csts if x[0] == initial_tuple[0]][0]
+
+        initial_cst_code = str((initial_tuple[1]).code)
+        altered_cst_code = str((altered_tuple[1]).code)
+
+        print("Before:\n")
+        print(initial_cst_code)
+        print("\n")
+        print("After:\n")
+        print(altered_cst_code)
+        print("\n")
 
     log.info("Python Transformer finished - exiting")
 
@@ -175,15 +191,46 @@ def main() -> None:
     Separated from run() for testability, as this main needs sys-args and run() is "clean".
     :return: None, exit 0 on success.
     """
-    # TODO: Check ARGnum
-    # TODO: Test for missing args
-    path = sys.argv[1]
 
-    random.seed(69)
+    parser = argparse.ArgumentParser(
+        description='Applies metamorphic transformations to Python Coe in Order to make it verbose & different but functionally identical'
+    )
+    parser.add_argument('config', metavar='config', type=str, nargs=1,
+                        help='The config file to use with the transformer')
+    parser.add_argument('input', metavar='input', type=str, nargs=1,
+                        help='A path to either a folder containing .py files or a path to a .py file')
+    parser.add_argument('output',metavar='output', type=str, nargs=1, default="lampion_output",
+                        help="Prefix for the folder to place output in. Within this new folder, the initial structure will be replicated. Any files will be overwritten.")
 
-    log.basicConfig(filename='lampion.log', encoding='utf-8', level=log.DEBUG)
+    parser.add_argument('loglevel',metavar="log", type=str, nargs="?", default="info",
+                        help="The loglevel for printing logs. Default \'info\'. supported: \'warn\',\'info\',\'debug\'" )
+
+    parser.add_argument('example', metavar="exp", type=bool, nargs="?", default=True,
+                        help="Whether or not to print an example of a changed file. ")
+
+    args = parser.parse_args()
+
+    path = args.input[0]
+    config = args.config[0]
+    output = args.output[0]
+    example = args.example
+
+    loglevel = log.INFO
+    if args.loglevel[0].lower() == "debug":
+        loglevel = log.DEBUG
+    elif args.loglevel[0].lower() == "info":
+        loglevel = log.INFO
+    elif args.loglevel[0].lower() == "warn":
+        loglevel = log.WARNING
+    else:
+        print("Received unknown/unsupported format for loglevel - defaulting to info")
+
+
+    random.seed(19961106)
+
+    log.basicConfig(filename='lampion.log', level=loglevel)
     log.getLogger().addHandler(log.StreamHandler(sys.stdout))
 
-    run(path)
+    run(path_to_code=path,path_to_config=config,output_prefix=output,print_sample_diff=example)
 
-    os.system.exit(0)
+    sys.exit(0)

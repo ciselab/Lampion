@@ -50,9 +50,9 @@ class AddVariableTransformer(BaseTransformer):
         altered_cst = cst
 
         tries: int = 0
-        max_tries : int = 100
+        max_tries: int = 100
 
-        while (not self._worked) and  tries <= max_tries:
+        while (not self._worked) and tries <= max_tries:
             altered_cst = cst.visit(visitor)
             self._worked = visitor.finished
             tries = tries + 1
@@ -60,7 +60,7 @@ class AddVariableTransformer(BaseTransformer):
         if tries == max_tries:
             log.warning(f"Add Variable Visitor failed after {max_tries} attempt")
 
-        #TODO: add Post-Processing Values here
+        # TODO: add Post-Processing Values here
 
         return altered_cst
 
@@ -71,15 +71,14 @@ class AddVariableTransformer(BaseTransformer):
         return self._worked
 
     def categories(self) -> [str]:
-        return ["Naming","Smell"]
+        return ["Naming", "Smell"]
 
     def postprocessing(self) -> None:
         self.reset()
 
-
     class __AddVarVisitor(cst.CSTTransformer):
 
-        def __init__(self,string_randomness:str = "pseudo"):
+        def __init__(self, string_randomness: str = "pseudo"):
             log.debug("AddVariableVisitor Created")
             self.finished = False
             self.__string_randomness = string_randomness
@@ -97,7 +96,7 @@ class AddVariableTransformer(BaseTransformer):
             if self.finished:
                 return updated_node
 
-            added_stmt = self._makeSnippet(self.__string_randomness)
+            added_stmt = self._make_snippet(self.__string_randomness)
 
             # Case 2: We did not alter yet, at the current (random) statement apply it in 1 of 20 cases.
             # TODO: this has a slight bias towards early nodes if the file is long?
@@ -112,17 +111,17 @@ class AddVariableTransformer(BaseTransformer):
             else:
                 return updated_node
 
-
         _supported_types = ["int", "float", "str"]
         _add_types = True
 
-        def _makeSnippet(self,string_randomness: str = "pseudo") -> CSTNode:
+        def _make_snippet(self, string_randomness: str = "pseudo") -> CSTNode:
             if string_randomness == "pseudo":
                 name = get_pseudo_random_string()
             elif string_randomness == "full":
                 name = get_random_string(5)
             else:
-                raise ValueError("Something changed the StringRandomness in AddVariableTransformer to an invalid value.")
+                raise ValueError(
+                    "Something changed the StringRandomness in AddVariableTransformer to an invalid value.")
 
             type = random.choice(self._supported_types)
 
@@ -131,11 +130,10 @@ class AddVariableTransformer(BaseTransformer):
 
             value = ""
             if type == "str":
-                value = f"\"{get_random_string(random.randint(3,30))}\""
+                value = f"\"{get_random_string(random.randint(3, 30))}\""
             if type == "int":
                 value = random.randint(2, 1000)
             if type == "float":
                 value = random.random()
 
             return libcst.parse_statement(f"{name} = {value}")
-

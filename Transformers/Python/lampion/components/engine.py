@@ -9,11 +9,13 @@ import random
 from libcst import CSTNode
 
 from lampion.transformers.addcomment import AddCommentTransformer
+from lampion.transformers.addneutral import AddNeutralElementTransformer
 from lampion.transformers.addvar import AddVariableTransformer
 from lampion.transformers.basetransformer import BaseTransformer
 
 import logging as log
 
+from lampion.transformers.lambdaidentity import LambdaIdentityTransformer
 from lampion.transformers.renameparam import RenameParameterTransformer
 from lampion.transformers.renamevar import RenameVariableTransformer
 
@@ -73,7 +75,7 @@ class Engine:
     config = {}
     transformers: [BaseTransformer] = []
 
-    def run(self, csts: [(str,CSTNode)]) -> [(str,CSTNode)]:
+    def run(self, csts: [(str, CSTNode)]) -> [(str, CSTNode)]:
         """
         Primary Method of the Engine.
         Does the following in order:
@@ -102,7 +104,7 @@ class Engine:
         """
         log.info("Starting Engine")
         # This deep clone helps to make a copy of the CSTs, so that the input does not change by accident.
-        altered_csts = [(path,node.deep_clone()) for (path,node) in csts]
+        altered_csts = [(path, node.deep_clone()) for (path, node) in csts]
 
         random.seed(self.config["seed"])
 
@@ -111,7 +113,7 @@ class Engine:
         while self.successful_transformations < max_transformations:
             # 1.1 pick a cst
             cst_index = random.randint(0, len(altered_csts) - 1)
-            (running_path,running_cst) = altered_csts[cst_index]
+            (running_path, running_cst) = altered_csts[cst_index]
             del altered_csts[cst_index]
             # 1.2 pick a transformer
             transformer = random.choice(self.transformers)
@@ -123,13 +125,13 @@ class Engine:
                 log.debug("Transformer worked")
                 self.successful_transformations = self.successful_transformations + 1
                 transformer.postprocessing()
-                altered_csts.append((running_path,changed_cst))
+                altered_csts.append((running_path, changed_cst))
             else:
                 log.debug("Transformer failed - retrying with another one")
                 self.failed_transformations = self.failed_transformations + 1
                 transformer.reset()
                 # If the Transformer failed, re-add the unaltered CST
-                altered_csts.append((running_path,running_cst))
+                altered_csts.append((running_path, running_cst))
 
         if self.config["writeManifest"]:
             log.warning("Manifest is currently not enabled!")
@@ -143,7 +145,7 @@ class Engine:
 
         return altered_csts
 
-    def _output_to_files(self,csts: []) -> None:
+    def _output_to_files(self, csts: []) -> None:
         for (p, cst) in csts:
             pp = os.path.join("./", self.output_dir, p)
             log.debug(f"Writing {p} to {pp}")
@@ -151,7 +153,7 @@ class Engine:
             # Create the (all) folders before trying to make the file
             os.makedirs(os.path.dirname(pp), exist_ok=True)
             # Open the File as write, with overwriting existing content
-            with open(pp,"w") as output_file:
+            with open(pp, "w") as output_file:
                 output_file.write(cst.code)
                 output_file.close()
 
@@ -183,7 +185,11 @@ def _create_transformers(config: dict) -> [BaseTransformer]:
     if config["RenameParameterTransformer"]:
         transformers.append(RenameParameterTransformer(string_randomness=config["RenameVariableStringRandomness"]))
 
-    # TODO: Add many more Transformers!
+    if config["LambdaIdentityTransformer"]:
+        transformers.append(LambdaIdentityTransformer())
+
+    if config["AddNeutralElementTransformer"]:
+        transformers.append(AddNeutralElementTransformer())
 
     return transformers
 
@@ -217,4 +223,6 @@ def _default_config() -> dict:
     default_config["RenameVariableTransformer"] = True
     default_config["RenameVariableStringRandomness"] = "full"
 
-    return default_config
+    default_config["AddNeutralElementTransformer"] = True
+
+    default_config["LambdaIdentityTransformer"] = True
