@@ -65,15 +65,43 @@ class AddVariableTransformer(BaseTransformer):
         return altered_cst
 
     def reset(self) -> None:
+        """Resets the Transformer to be applied again.
+
+           after the reset all local state is deleted, the transformer is fully reset.
+
+           It holds:
+           > a = SomeTransformer()
+           > b = SomeTransformer()
+           > someTree.visit(a)
+           > a.reset()
+           > assert a == b
+        """
         self._worked = False
 
     def worked(self) -> bool:
+        """
+        Returns whether the transformer was successfully applied since the last reset.
+        If the transformer cannot be applied for logical reasons it will return false without attempts.
+
+        :returns bool
+            True if the Transformer was successfully applied.
+            False otherwise.
+
+        """
         return self._worked
 
     def categories(self) -> [str]:
+        """
+        Hardcoded return of the categories that this transformer satisfies.
+        Can be used to e.g. filter transformers for certain categories.
+        :return: The categories of change that this transformer matches.
+        """
         return ["Naming", "Smell"]
 
     def postprocessing(self) -> None:
+        """
+        Manages all behavior after application, in case it worked(). Also calls reset().
+        """
         self.reset()
 
     class __AddVarVisitor(cst.CSTTransformer):

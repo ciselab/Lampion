@@ -47,6 +47,17 @@ class AddNeutralElementTransformer(BaseTransformer):
         self._worked = False
 
     def apply(self, cst: CSTNode) -> CSTNode:
+        """
+        Apply the transformer to the given CST.
+        Returns the original CST on failure or error.
+
+        Check the function "worked()" whether the transformer was applied.
+
+        :param cst: The CST to alter.
+        :return: The altered CST or the original CST on failure.
+
+        Also, see the BaseTransformers notes if you want to implement your own.
+        """
         visitor = self.__LiteralCollector()
 
         altered_cst = cst
@@ -83,15 +94,43 @@ class AddNeutralElementTransformer(BaseTransformer):
         return altered_cst
 
     def reset(self) -> None:
+        """Resets the Transformer to be applied again.
+
+           after the reset all local state is deleted, the transformer is fully reset.
+
+           It holds:
+           > a = SomeTransformer()
+           > b = SomeTransformer()
+           > someTree.visit(a)
+           > a.reset()
+           > assert a == b
+        """
         self._worked = False
 
     def worked(self) -> bool:
+        """
+        Returns whether the transformer was successfully applied since the last reset.
+        If the transformer cannot be applied for logical reasons it will return false without attempts.
+
+        :returns bool
+            True if the Transformer was successfully applied.
+            False otherwise.
+
+        """
         return self._worked
 
     def categories(self) -> [str]:
+        """
+        Gives the categories specified for this transformer.
+        Used only for information and maybe later for filter purposes.
+        :return: The categories what this transformer can be summarized with.
+        """
         return ["Smell", "Operators"]
 
     def postprocessing(self) -> None:
+        """
+        Manages all behavior after application, in case it worked(). Also calls reset().
+        """
         self.reset()
 
     class __LiteralCollector(cst.CSTVisitor):
