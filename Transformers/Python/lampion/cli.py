@@ -23,7 +23,7 @@ from lampion.components.engine import Engine
 def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampion_output", print_sample_diff: bool = True) -> None:
     """
     Primary function to read the files, read the configuration, and run the engine.
-    Separated from main for testability, as main() needs sys-args.
+    Separated from main for testability, as main() needs sys.args .
 
     :param path_to_code: Path to Directory or File of Code.
     :param path_to_config: Path to Configuration to read in.
