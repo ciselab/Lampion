@@ -30,6 +30,7 @@ def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampio
     :param output_prefix: Prefix to put before the output, will be created if not existing.
     :param print_sample_diff: Whether or not to output one CST to Log. Default is true.
     :return: None
+    :raises: FileNotFoundError or ValueError for bad paths
     """
     log.info('Welcome to the Lampion-Python-Transformer')
     log.info("Reading File(s) from %s",path_to_code)
