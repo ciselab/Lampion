@@ -25,7 +25,6 @@ def test_read_input_files_on_empty_dir_should_not_give_value_error():
     assert len(csts) == 0
 
 
-
 def test_read_input_files_on_bad_path_should_raise_value_error():
     with pytest.raises(ValueError):
         lampion.cli.read_input_dir("./made_up_folder")
