@@ -1,16 +1,8 @@
-name: Python CI on PR - Python Transformer
+name: Scheduled Python CI - Python Transformer
 
-on:
-  pull_request:
-    paths:
-      - 'Transformers/Python/*'
-    branches:
-      - main 
-  push:
-    paths:
-      - 'Transformers/Python/*'
-    branches:
-      - main
+on: 
+  schedule:
+    - cron: "0 0 * * *"
 
 jobs:
 

@@ -1,39 +1,21 @@
-name: Python CI on PR - Python Transformer
+name: Scheduled Java CI - Java Transformer
 
-on:
-  pull_request:
-    paths:
-      - 'Transformers/Python/*'
-    branches:
-      - main 
-  push:
-    paths:
-      - 'Transformers/Python/*'
-    branches:
-      - main
+on: 
+  schedule:
+    - cron: "0 0 * * *"
 
 jobs:
-
-  buildWithPythonWheel:
+  buildWithMaven:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2.4.0
-    - name: Set up Python
-      uses: actions/setup-python@v2
+    - name: Set up JDK 17
+      uses: actions/setup-java@v2.4.0
       with:
-        python-version: '3.9'
-    - name: Install Python deps
-      working-directory: ./Transformers/Python
-      run: |
-        pip install pytest libcst build 
-    - name: Build Python Transformer
-      working-directory: ./Transformers/Python
-      run: |
-        python3 -m build --wheel
-    - name: Test Python Transformer
-      working-directory: ./Transformers/Python
-      run: |
-        python3 -m pytest ./tests
+        java-version: 17
+    - name: Build Java Transformer
+      run: mvn package verify --file Transformers/Java/pom.xml
+
 
   buildWithDocker: 
     runs-on: ubuntu-latest
@@ -48,8 +30,8 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            ghcr.io/ciselab/lampion/python
-            lampion/python
+            ghcr.io/ciselab/lampion/java
+            lampion/java
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
@@ -74,10 +56,9 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v2
         with:
-          context: ./Transformers/Python
+          context: ./Transformers/Java
           build-args: |
-            "PYTHON_VERSION=3.9.7"
-            "LAMPION_VERSION=0.0.1"
+            "TRANSFORMER_VERSION=1.3-SNAPSHOT"
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
