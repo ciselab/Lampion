@@ -1,9 +1,16 @@
 Java:
-- JavaObfuscator/src/*
-- ./.github/workflows/BuildObfuscator.yml
+- ./Transformers/Java/src/**
+- ./.github/workflows/BuildJavaTransformer.yml
+- ./.github/workflows/BuildJavaTransformer_OnSchedule.yml
+
+Python:
+- ./Transformers/Python/lampion/**
+- ./.github/workflows/BuildPythonTransformer.yml
+- ./.github/workflows/BuildPythonTransformer_onSchedule.yml
 
 Test:
-- JavaObfuscator/src/test/*
+- ./Transformers/Java/src/test/**
+- ./Transformers/Python/tests/**
 
 Documentation:
 - ./**/*.md
@@ -21,7 +28,7 @@ Configuration:
 - .github/**/*.yml
 - .github/**/*.yaml
 - .github/workflow/*
-- JavaObfuscator/pom.xml
+- -/**/pom.xml
 - ./**/*.yml
 - ./**/*.yaml
 - ./**/*.json
