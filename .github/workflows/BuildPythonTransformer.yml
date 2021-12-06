@@ -1,4 +1,4 @@
-name: Java CI on PR - Java Transformer
+name: Python CI on PR - Python Transformer
 
 on: 
   schedule:
@@ -20,12 +20,12 @@ jobs:
   buildWithPythonWheel:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2.4.0
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.9'
-      - name: Install Python deps
+    - name: Install Python deps
       working-directory: ./Transformers/Python
       run: |
         pip install pytest libcst build 
@@ -43,7 +43,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.4.0
       -
         name: Docker meta
         id: meta
@@ -76,9 +76,8 @@ jobs:
       -
         name: Build and push
         uses: docker/build-push-action@v2
-        working-directory: ./Transformers/Python
         with:
-          context: .
+          context: ./Transformers/Python
           build-args: |
             "PYTHON_VERSION=3.9.7"
             "LAMPION_VERSION=0.0.1"
