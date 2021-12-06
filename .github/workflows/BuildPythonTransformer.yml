@@ -4,13 +4,9 @@ on:
   pull_request:
     paths:
       - 'Transformers/Python/*'
-    branches:
-      - main 
   push:
     paths:
       - 'Transformers/Python/*'
-    branches:
-      - main
 
 jobs:
 
