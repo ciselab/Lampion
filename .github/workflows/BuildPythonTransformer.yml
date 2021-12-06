@@ -2,11 +2,15 @@ name: Python CI on PR - Python Transformer
 
 on:
   pull_request:
+    branches:
+      - main
     paths:
-      - 'Transformers/Python/*'
+      - 'Transformers/Python/**'
   push:
+    branches:
+      - main
     paths:
-      - 'Transformers/Python/*'
+      - 'Transformers/Python/**'
 
 jobs:
 

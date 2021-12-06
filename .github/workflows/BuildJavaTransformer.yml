@@ -2,11 +2,15 @@ name: Java CI on PR - Java Transformer
 
 on:
   pull_request:
+    branches:
+      - main
     paths:
-      - 'Transformers/Java/*'
+      - 'Transformers/Java/**'
   push:
+    branches:
+      - main
     paths:
-      - 'Transformers/Java/*'
+      - 'Transformers/Java/**'
 
 jobs:
   buildWithMaven:
