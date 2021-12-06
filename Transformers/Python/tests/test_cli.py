@@ -32,7 +32,7 @@ def test_read_input_files_on_bad_path_should_raise_value_error():
 
 
 def test_read_input_files_on_bad_path_should_raise_FileNotFoundError():
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(ValueError):
         lampion.cli.read_input_dir("./made_up_file.py")
 
 
@@ -50,7 +50,7 @@ def test_main_with_bad_folder_should_fail():
 
 
 def test_main_with_bad_file_should_fail():
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(ValueError):
         lampion.cli.run("./made_up_file.py")
 
 

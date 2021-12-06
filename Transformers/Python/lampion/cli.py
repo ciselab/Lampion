@@ -92,7 +92,7 @@ def read_input_dir(path: str) -> [(str, CSTNode)]:
                     results.append((os.path.join(dirpath, f), found_cst))
         return results
     # Case 2: Path is a file
-    else:
+    elif os.path.isfile(path):
         log.debug("Received Path points to a File")
         # ErrorCase: File is not .py
         if not path.endswith(".py"):
@@ -101,7 +101,8 @@ def read_input_dir(path: str) -> [(str, CSTNode)]:
         found_cst = cst.parse_module(f)
         return [(path, found_cst)]
     # ErrorCase: Weird Path
-    raise ValueError("Your path seemed to be neither a directory nor a file!")
+    else:
+        raise ValueError("Your path seemed to be neither a directory nor a file!")
 
 
 def read_config_file(path: str) -> dict:
