@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
  * - Transformer-Registry
  * - An default seed
  * See their comments for further information. They are intended for read-only purpose.
+ * The primary functions are in "Engine",purposefully separated for better testability.
  */
 public class App {
 
