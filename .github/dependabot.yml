@@ -5,3 +5,24 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+
+  # Maintain dependencies for the Java Transformer
+  - package-ecosystem: "maven"
+    directory: "/Transformers/Java/"
+    schedule:
+      interval: "weekly"
+
+  # Maintain dependencies for the Python Transformer
+  - package-ecosystem: "pip"
+    directory: "/Transformers/Python"
+    schedule:
+      interval: "weekly"
+
+  # Maintain the Docker images for Transformers (Transformers only, not experiments)
+  - package-ecosystem: "docker"
+    directory: "/Transformers"
+    schedule:
+      interval: "weekly"
+
+# Note: The requirements for the preprocessing / Experiments are INTENTIONALLY not checked here
+# They are thought to be a finite, not changing artifact. 
