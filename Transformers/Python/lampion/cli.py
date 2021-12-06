@@ -186,9 +186,15 @@ def __str2int(value) -> str | int:
     return value
 
 def _file_to_string(path: str) -> str:
+    """
+    Reads in a whole file under path, returns it's content.
+    File is treated as read-only.
+    :param path: the path where to look for the file
+    :return: the file's content
+    :raises: FileNotFoundError if file does not exist
+    """
     with open(path, 'r') as file:
         return file.read()
-
 
 def main() -> None:
     """

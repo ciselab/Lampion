@@ -31,8 +31,8 @@ def test_read_input_files_on_bad_path_should_raise_value_error():
         lampion.cli.read_input_dir("./made_up_folder")
 
 
-def test_read_input_files_on_bad_path_should_raise_value_error():
-    with pytest.raises(ValueError):
+def test_read_input_files_on_bad_path_should_raise_FileNotFoundError():
+    with pytest.raises(FileNotFoundError):
         lampion.cli.read_input_dir("./made_up_file.py")
 
 
@@ -50,7 +50,7 @@ def test_main_with_bad_folder_should_fail():
 
 
 def test_main_with_bad_file_should_fail():
-    with pytest.raises(ValueError):
+    with pytest.raises(FileNotFoundError):
         lampion.cli.run("./made_up_file.py")
 
 
