@@ -23,7 +23,7 @@ from lampion.components.engine import Engine
 def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampion_output", print_sample_diff: bool = True) -> None:
     """
     Primary function to read the files, read the configuration, and run the engine.
-    Separated from main for testability, as main() needs sys-args.
+    Separated from main for testability, as main() needs sys.args .
 
     :param path_to_code: Path to Directory or File of Code.
     :param path_to_config: Path to Configuration to read in.
@@ -186,9 +186,15 @@ def __str2int(value) -> str | int:
     return value
 
 def _file_to_string(path: str) -> str:
+    """
+    Reads in a whole file under path, returns it's content.
+    File is treated as read-only.
+    :param path: the path where to look for the file
+    :return: the file's content
+    :raises: FileNotFoundError if file does not exist
+    """
     with open(path, 'r') as file:
         return file.read()
-
 
 def main() -> None:
     """
