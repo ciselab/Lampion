@@ -1,4 +1,4 @@
-name: Automatic Housekeeping
+name: Automatic Dependabot Merge
 
 on:
   check_suite:
@@ -16,24 +16,15 @@ on:
       - unlocked
 
 jobs:
-
-  label:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/labeler@v3.0.2
-      with:
-        repo-token: "${{ secrets.GITHUB_TOKEN }}"
         
   merge-me:
     name: Dependabot merge
     runs-on: ubuntu-latest
-    needs:
-          - label
     steps:
       - name: Sleep for 180 seconds
         uses: jakejarvis/wait-action@master
         with:
-          time: '180s'
+          time: '210s'
 
       - name: Dependabot merge
         uses: ridedott/merge-me-action@master
