@@ -1,5 +1,5 @@
 atomicwrites==1.4.0
-attrs==21.2.0
+attrs==21.4.0
 build==0.7.0
 colorama==0.4.4
 iniconfig==1.1.1
