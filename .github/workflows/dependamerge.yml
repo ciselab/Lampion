@@ -1,32 +1,14 @@
-name: Automatic Dependabot Merge
+name: dependabot-auto-merge
 
 on:
-  check_suite:
-    types:
-      - completed
   pull_request:
-    types:
-      - edited
-      - labeled
-      - opened
-      - ready_for_review
-      - reopened
-      - synchronize
-      - unlabeled
-      - unlocked
 
 jobs:
-        
-  merge-me:
-    name: Dependabot merge
+  auto-merge:
     runs-on: ubuntu-latest
     steps:
-      - name: Sleep for 180 seconds
-        uses: jakejarvis/wait-action@master
+      - uses: actions/checkout@v2
+      - uses: ahmadnassri/action-dependabot-auto-merge@v2
         with:
-          time: '210s'
-
-      - name: Dependabot merge
-        uses: ridedott/merge-me-action@master
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          target: minor
+          github-token: ${{ secrets.GITHUB_TOKEN }}      
