@@ -10,8 +10,6 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.Properties;
 
-import com.github.ciselab.lampion.manifest.ManifestWriter;
-import com.github.ciselab.lampion.manifest.SqliteManifestWriter;
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
 import com.github.ciselab.lampion.transformations.transformers.*;
 import org.apache.logging.log4j.LogManager;
@@ -85,22 +83,9 @@ public class App {
             throw new UnsupportedOperationException("There was no output-directory specified in the properties - not running undo");
         }
 
-        String manifestDir="./manifest";
-        if(configuration.get("databaseDirectory") != null){
-            manifestDir = (String) configuration.get("databaseDirectory");
-        } else {
-            throw new UnsupportedOperationException("There was no Directory specified to write manifest in the configuration - not running undo");
-        }
-
         // Run over the Output folders and delete all files
         if(Files.exists(Paths.get(outputDir))) {
             Files.walk(Paths.get(outputDir))
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
-        }
-        if(Files.exists(Paths.get(manifestDir))) {
-            Files.walk(Paths.get(manifestDir))
                     .sorted(Comparator.reverseOrder())
                     .map(Path::toFile)
                     .forEach(File::delete);
@@ -183,50 +168,6 @@ public class App {
         }
         engine.setNumberOfTransformationsPerScope(transformations,transformationScope);
 
-        // Read Items for SQLite
-        // First check for skipping Manifest-Write
-        if (properties.get("writeManifest")!=null && !Boolean.parseBoolean((String) properties.get("writeManifest"))){
-            // The writeManifest was set to false
-            logger.info("Writing manifest of changes has been disables - you will not be able to find the exact changes");
-        } else {
-            // Else Read attributes,check them and create writer
-            String databaseName = "TransformationManifest.db";
-            String databaseDirectory = "./manifest";
-            String pathToSchema = "./createSQLiteManifest";
-            if (properties.get("databaseName") != null) {
-                databaseName = (String) properties.get("databaseName");
-            } else {
-                logger.debug("There was no DatabaseName specified in the configuration - defaulting to " + databaseName);
-            }
-            if (properties.get("databaseDirectory") != null) {
-                databaseDirectory = (String) properties.get("databaseDirectory");
-            } else {
-                logger.debug("There was no Directory specified to write manifest in the configuration - defaulting to " + databaseDirectory);
-            }
-            // Write the database directory if there was none - otherwise the database is not written
-            if (!Files.exists(Path.of(databaseDirectory))) {
-                logger.debug("Did not find database directory - trying to create it.");
-                try {
-                    Files.createDirectory(Path.of(databaseDirectory));
-                } catch (IOException ioException) {
-                    logger.error("Error creating database directory - proceeding but database will not be written.", ioException);
-                }
-            }
-            if (properties.get("pathToSchema") != null) {
-                pathToSchema = (String) properties.get("pathToSchema");
-            } else {
-                // The check for Schema validity and existance is done in the constructor of SQLite Writer
-                logger.warn("There was no SchemaPath specified in the configuration - defaulting to " + pathToSchema);
-            }
-            String fullDatabasePath = databaseDirectory.endsWith("/") ? databaseDirectory+databaseName : databaseDirectory+"/"+databaseName;
-            logger.debug("Full SQLite-Database Path: " + fullDatabasePath);
-
-            // Build SQLite Writer Schema
-            ManifestWriter writer = new SqliteManifestWriter(pathToSchema,fullDatabasePath);
-
-            // Socket Writer into Base Engine
-            engine.setManifestWriter(writer);
-        }
         if(properties.get("writeJavaOutput") != null) {
             boolean writeJavaOutput = Boolean.parseBoolean((String) properties.get("writeJavaOutput"));
             engine.setWriteJavaOutput(writeJavaOutput);
