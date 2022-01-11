@@ -52,87 +52,6 @@ This experiment-package is used in Lampions-repository's Experiment folder, with
 The combination of configuration + reproduction-package-version should yield a definite and clean result, as well as (the for now) best architecture.
 It should also help to accomodate different configrations and the switch to different/later versions of the transformers.
 
-## Alternation Manifest
-
-### Logging / Structure with SQL and not .log 
-
-Initially I just wanted to drop everything into a plain text file: 
-"This Transformation applied" "This changed from here to here" "Finished ..." etc.
-But the expected output, especially in terms of changes to the files, is huge. 
-The intended use is to apply hundreds of changes of code on your dataset, after all. 
-
-In General, I decided to separate the transformation-log from the application-log. 
-The application prints some information such as "starting" "finishing" "Found x files in ...", 
-while the transformation-log keeps track of the detailed changes done to the code. 
-
-SQL has some benefits: Redundant elements can be stored as pointers, the database does a lot of optimization by itself etc.
-The bigger benefit is to search the changes, e.g. group by transformationtype and check for successes, 
-which already requires (big) scripts compared to single sql-statements.
-
-At this point, the transformation manifest is admittedly a bit overengineered. However, it also does not hurt (yet). 
-I hope that there will be another transformer implementation that utilizes the same schema and can then feed into a shared evaluation.
-For example, I want to find the time to write a transformer for Python. Then I can re-do some of the experiments with CodeBERT but for Python, 
-which can then be compared against the java ones.
-
-**Small remark:** In a different project where I participated, we had similiarly grained information and on VERBOSE loglevel just writing it to textfiles, the logfiles reached a few megabytes. 
-This is all fun and games, and works on toy examples, but when running the experiments on a bigger scale we created gigabytes of data, leading to aborted runs due to memsize and other jokes.
-Hence, I think it is maybe good to care for log-size from the beginning of such experiments and tools, which somewhat helps arguing that this concept is not over-engineered.
-
-### Representation on Disk
-
-For the alternation manifest, it should have a list of entries where each entry should have:
-
-- A (fully qualified) methodname
-- A (fully qualified) classname
-- A list of Transformations
-
-Where each Transformation should have:
-
-- A name / type
-- A set of categories it belongs to
-- A scope
-- A "Before <-> After" of the code, at least for debugging purposes.
-
-The initial idea for a recording the transformations was a (simple) file in either CSV or JSON.
-However, the categories which are of variable length break CSVs (in a nice way).
-And JSON, while human readable, has an explosion in size and as big-data amounts are to be expected, storing millions of records as JSON is a bad idea.
-The same reasoning applies to (plain) xml.
-
-Hence, the data needs to be compressible and support variable length inputs.
-Candidates would be binary-serialized xml or Binary-JSON in a compressed format.
-Another more exotic candidate would be Java-Serialization of the objects, however then the visualisation is also bound to Java.
-As I do not want to poke around in binary data with python, a different idea has been chosen:
-
-**SQL & SQLite.**
-
-SQLLite is fast, everywhere and supports the required schema in a good way.
-SQLLite comes with a build in compression.
-
-There are two further benefits:
-
-- When only using standard SQL and ODBC, the transformers can store the manifest in a remote library
-- Some queries can be performed on the database, saving time in python
-
-The negative point in using SQL is that it is compared to a file a lot of additional work for both sides, visualisation and writing.
-
-### Enum vs. Strings for Categories
-
-When implementing the Categories in Java, I decided to go for an enumeration instead of a `Set<String>` to implement the categories for the results. 
-This was done to have documentation on the categories in a single place (the enum file) as well as to miss out typos. 
-Hence, it seems like a good approach. 
-
-For the SQL file, it could be possible to store the categories as enums as well. 
-The issue with this is, that whenever there is a transformation implemented with a new category, the database will need to change as well. 
-And, furthermore, older databases will be unusable with the current version. 
-
-After the data is in the SQL Database, it will be used "read only" anyway, so the additional safety provided by enums is not necessary. 
-
-Therefore, the transformer instantiates the categories table of the database with all categories found in its enumeration and linking the entries to the categories table instead of using an database-enumeration.
-This approach helps to be a bit more flexible in terms of the database and also helps to re-use the schema for more and different transformers. (Let's say you write another transformer in Python with different Categories, then you'd have to sync the enum over java, python and sql)
-
-*See:*
-
-- [TransformationCategory.java](../Transformers/Java/src/main/java/com/github/ciselab/lampion/transformations/TransformationCategory.java)
 
 ## On Metaprogramming vs. per-Language-Transformers
 
@@ -300,3 +219,95 @@ To fix this, add the following in the Mavens Shading pluggin:
     </transformers>
 </configuration>
 ```
+
+# Deprecated 
+
+The following Notes have been deprecated / discarded, but I found the thoughts to be important enough to keep. 
+
+## Alternation Manifest
+
+**Deprecation-Note**: The Alternation Manifest does not exist anymore. 
+It was unused for over a year, and with the Python Transformer added it turned out to be a burden to add to python. 
+Hence, I made a tag when it was removed and went on with my life without the manifest. 
+The results from the Java Transformer are now gathered in the Engine. 
+
+
+### Logging / Structure with SQL and not .log 
+
+Initially I just wanted to drop everything into a plain text file: 
+"This Transformation applied" "This changed from here to here" "Finished ..." etc.
+But the expected output, especially in terms of changes to the files, is huge. 
+The intended use is to apply hundreds of changes of code on your dataset, after all. 
+
+In General, I decided to separate the transformation-log from the application-log. 
+The application prints some information such as "starting" "finishing" "Found x files in ...", 
+while the transformation-log keeps track of the detailed changes done to the code. 
+
+SQL has some benefits: Redundant elements can be stored as pointers, the database does a lot of optimization by itself etc.
+The bigger benefit is to search the changes, e.g. group by transformationtype and check for successes, 
+which already requires (big) scripts compared to single sql-statements.
+
+At this point, the transformation manifest is admittedly a bit overengineered. However, it also does not hurt (yet). 
+I hope that there will be another transformer implementation that utilizes the same schema and can then feed into a shared evaluation.
+For example, I want to find the time to write a transformer for Python. Then I can re-do some of the experiments with CodeBERT but for Python, 
+which can then be compared against the java ones.
+
+**Small remark:** In a different project where I participated, we had similiarly grained information and on VERBOSE loglevel just writing it to textfiles, the logfiles reached a few megabytes. 
+This is all fun and games, and works on toy examples, but when running the experiments on a bigger scale we created gigabytes of data, leading to aborted runs due to memsize and other jokes.
+Hence, I think it is maybe good to care for log-size from the beginning of such experiments and tools, which somewhat helps arguing that this concept is not over-engineered.
+
+### Representation on Disk
+
+For the alternation manifest, it should have a list of entries where each entry should have:
+
+- A (fully qualified) methodname
+- A (fully qualified) classname
+- A list of Transformations
+
+Where each Transformation should have:
+
+- A name / type
+- A set of categories it belongs to
+- A scope
+- A "Before <-> After" of the code, at least for debugging purposes.
+
+The initial idea for a recording the transformations was a (simple) file in either CSV or JSON.
+However, the categories which are of variable length break CSVs (in a nice way).
+And JSON, while human readable, has an explosion in size and as big-data amounts are to be expected, storing millions of records as JSON is a bad idea.
+The same reasoning applies to (plain) xml.
+
+Hence, the data needs to be compressible and support variable length inputs.
+Candidates would be binary-serialized xml or Binary-JSON in a compressed format.
+Another more exotic candidate would be Java-Serialization of the objects, however then the visualisation is also bound to Java.
+As I do not want to poke around in binary data with python, a different idea has been chosen:
+
+**SQL & SQLite.**
+
+SQLLite is fast, everywhere and supports the required schema in a good way.
+SQLLite comes with a build in compression.
+
+There are two further benefits:
+
+- When only using standard SQL and ODBC, the transformers can store the manifest in a remote library
+- Some queries can be performed on the database, saving time in python
+
+The negative point in using SQL is that it is compared to a file a lot of additional work for both sides, visualisation and writing.
+
+### Enum vs. Strings for Categories
+
+When implementing the Categories in Java, I decided to go for an enumeration instead of a `Set<String>` to implement the categories for the results. 
+This was done to have documentation on the categories in a single place (the enum file) as well as to miss out typos. 
+Hence, it seems like a good approach. 
+
+For the SQL file, it could be possible to store the categories as enums as well. 
+The issue with this is, that whenever there is a transformation implemented with a new category, the database will need to change as well. 
+And, furthermore, older databases will be unusable with the current version. 
+
+After the data is in the SQL Database, it will be used "read only" anyway, so the additional safety provided by enums is not necessary. 
+
+Therefore, the transformer instantiates the categories table of the database with all categories found in its enumeration and linking the entries to the categories table instead of using an database-enumeration.
+This approach helps to be a bit more flexible in terms of the database and also helps to re-use the schema for more and different transformers. (Let's say you write another transformer in Python with different Categories, then you'd have to sync the enum over java, python and sql)
+
+*See:*
+
+- [TransformationCategory.java](../Transformers/Java/src/main/java/com/github/ciselab/lampion/transformations/TransformationCategory.java)

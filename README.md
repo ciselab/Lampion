@@ -6,7 +6,7 @@ When applied to bytecode, this is often called *Obfuscation*, and examples are c
 
 The provided Java-Transformer is configurable to provide a number of metamorphic transformations on SourceCode. 
 We aim to be highly configurable and extendable for further research. 
-A Transformer for Python is currently in the making.
+A Transformer for Python is currently in [early development](./Transformers/Python).
 
 ![Overview](./Resources/Overview.PNG)
 
@@ -15,8 +15,6 @@ A Transformer for Python is currently in the making.
 Further information as well as instructions on the components can be in their sub-folders. 
 Any experiment-reproduction code is placed in a seperate repository, to which the items in *Experiments* will guide you.
 An overview and reasoning on the structure can be found in the [Design-Notes](./Resources/DesignNotes.md).
-
-The folder *Manifest-Schema* holds sql-files to generate a valid schema required for visualisation. (Currently not used, sorry I sometimes overengineer)
 
 General information on design decisions can be found in the [Design-Notes](./Resources/DesignNotes.md).
 

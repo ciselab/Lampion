@@ -35,17 +35,15 @@ class Engine:
             Where to write the AST after transformations, using the same structure as input_dir
 
 
+        It takes a list of transformers and applies them to a given AST.
+        In the end the altered programs are written to files.
 
-    It takes a list of transformers and applies them to a given AST.
-    In the end, if wished the results are written to an SQL database (currently pending)
-    and the altered programs are written to files.
+        The default behaviour is to apply all available transformations evenly distributed.
+        If others are wanted, provide a distribution-function.
 
-    The default behaviour is to apply all available transformations evenly distributed.
-    If others are wanted, provide a distribution-function.
+        The primary method is "run" and has similar comments laying out what's happening.
 
-    The primary method is "run" and has similar comments laying out what's happening.
-
-    This Engine is intentionally separated from any CLI / call to be better testable.
+        This Engine is intentionally separated from any CLI / call to be better testable.
     """
 
     def __init__(self, config: dict = None, output_dir: str = "./lampion_output"):
@@ -105,7 +103,6 @@ class Engine:
 
         random.seed(self.__config["seed"])
 
-        # TODO: Read this from config
         max_transformations = self.__config["transformations"]
         while self.__successful_transformations < max_transformations:
             # 1.1 pick a cst

@@ -12,7 +12,7 @@ FROM azul/zulu-openjdk-alpine:17
 
 ARG TRANSFORMER_VERSION="1.3-SNAPSHOT"
 
-LABEL maintainer="L.H.Applis@tu-delft.nl"
+LABEL maintainer="L.H.Applis@tudelft.nl"
 LABEL name="lampion/java-transformer"
 LABEL description="A metamorphic transformer for Java code"
 LABEL org.opencontainers.image.source="https://github.com/ciselab/Lampion"
@@ -29,7 +29,6 @@ Run mkdir -p /config
 
 COPY --from=builder /app/target/Lampion-JavaTransformer-$TRANSFORMER_VERSION.jar $dir
 COPY --from=builder /app/src/main/resources/Docker/entrypoint.sh $dir
-COPY --from=builder /app/src/main/resources/createManifestTables.sql $dir/schema.sql
 COPY --from=builder /app/src/main/resources/Docker/config.properties /config/
 
 WORKDIR $dir

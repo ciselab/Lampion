@@ -1,7 +1,7 @@
 # Python Transformer
 
 This part of the Lampion Project alters Python Files using metamorphic transformations 
-and returns/writes the altered files as well as a manifest (*Manifest still pending*).
+and returns/writes the altered files.
 
 It is currently in early development, I implemented every feature for the first trials, 
 but I expect bugs popping up when you use them on actual data.

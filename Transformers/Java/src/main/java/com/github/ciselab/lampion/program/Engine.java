@@ -1,6 +1,5 @@
 package com.github.ciselab.lampion.program;
 
-import com.github.ciselab.lampion.manifest.ManifestWriter;
 import com.github.ciselab.lampion.transformations.*;
 import com.github.ciselab.lampion.transformations.transformers.RemoveAllCommentsTransformer;
 import org.apache.logging.log4j.LogManager;
@@ -15,6 +14,7 @@ import spoon.reflect.declaration.CtMethod;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class runs the primary parts of the Program.
@@ -22,8 +22,6 @@ import java.util.*;
  *
  * It takes a registry equipped with all relevant
  * Transformers, and applies them quantified in a certain configuration to a given AST.
- * In the end, if wished the TransformationResults are written to an SQL database
- * and the altered programs are written to files.
  *
  * The default behaviour is to apply all available transformations evenly distributed.
  * If others are wanted, a distribution transformation is required, see "setDistribution".
@@ -36,7 +34,6 @@ public class Engine {
     String codeDirectory;
     String outputDirectory;
     TransformerRegistry registry;
-    Optional<ManifestWriter> writer = Optional.empty();
 
     Random random = new Random(App.globalRandomSeed);
 
@@ -67,6 +64,7 @@ public class Engine {
 
     private boolean writeJavaOutput = true; // This switch enables/disables pretty printing of altered java files
 
+    private List<TransformationResult> finishedResults = new ArrayList<>();
 
     public Engine(String codeDirectory, String outputDirectory, TransformerRegistry registry){
         // Sanity Checks
@@ -160,6 +158,12 @@ public class Engine {
 
                 TransformationResult result = transformer.applyAtRandom(toAlter);
                 results.add(result);
+
+                if (result != null && ! result.equals(new EmptyTransformationResult())){
+                    // As we removed the Manifest (for now?) we just log a debug statement of what was done
+                    logger.debug("Successfully applied " + result.getTransformationName() +
+                            " to Element(Hash):" + result.getTransformedElement().toString().hashCode());
+                }
             } catch (SpoonException spoonException){
                 //TODO: Redo-Logic
                 transformationFailures++;
@@ -187,6 +191,7 @@ public class Engine {
                 for (var c : classes){
                     TransformationResult removeCommentResult = commentRemover.applyAtRandom(c);
                     results.add(removeCommentResult);
+                    logger.info("Removed all Comments from the Java Output files");
                 }
             } catch (SpoonException spoonException) {
                 logger.error("Received a SpoonException while removing comments",spoonException);
@@ -204,16 +209,13 @@ public class Engine {
             logger.info("Writing the java files has been disabled for this run.");
         }
 
-        // Step 4:
-        // Create Transformation Manifest
-        if(writer.isPresent()){
-            writer.get().writeManifest(results);
-        } else {
-            logger.debug("There was no ManifestWriter specified - skipping writing the Manifest.");
-        }
+        finishedResults = results.stream()
+                // Filter out Empty Results
+                .filter(l -> ! l.equals(new EmptyTransformationResult()))
+                .collect(Collectors.toList());
 
         Instant endOfWriting = Instant.now();
-        logger.info("Writing files and Manifest took " + Duration.between(endOfTransformations,endOfWriting).getSeconds() + " seconds");
+        logger.info("Writing files took " + Duration.between(endOfTransformations,endOfWriting).getSeconds() + " seconds");
         logger.info("Engine ran successfully");
     }
 
@@ -247,6 +249,20 @@ public class Engine {
             default: logger.error("Found unknown/unhandled Scope in Engine");
         }
         return toAlter;
+    }
+
+    /**
+     * Returns all non-empty results produced by the engines "run".
+     * In case of multiple runs, the results of the last run are returned.
+     * They are overwritten with every-run.
+     * For a not-yet-run (or fully failing) Engine it returns an empty list.
+     *
+     * This method is particularly useful for testing,
+     * after I removed the Writer I did not have a Mockwriter to check on Results.
+     * @return The Transformation-Results produced by "run".
+     */
+    public List<TransformationResult> getFinishedResults(){
+        return this.finishedResults;
     }
 
     /**
@@ -324,21 +340,6 @@ public class Engine {
         // TODO: Fill me
         // TODO: Decide whether the total amount of transformers is twice as much as the others
         return new HashMap<>();
-    }
-
-    /**
-     * Sets a writer for this engine.
-     * Overwrites existing writers if there are any.
-     *
-     * @param writer
-     * @throws UnsupportedOperationException when an null-writer is entered
-     */
-    public void setManifestWriter(ManifestWriter writer){
-        if(writer == null){
-            throw new UnsupportedOperationException("Received null for writer");
-        } else {
-            this.writer = Optional.of(writer);
-        }
     }
 
     /**
