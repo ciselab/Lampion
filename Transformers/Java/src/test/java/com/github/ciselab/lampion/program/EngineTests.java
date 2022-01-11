@@ -1,6 +1,5 @@
 package com.github.ciselab.lampion.program;
 
-import com.github.ciselab.lampion.manifest.MockWriter;
 import com.github.ciselab.lampion.transformations.TransformationResult;
 import com.github.ciselab.lampion.transformations.Transformer;
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
@@ -115,34 +114,6 @@ public class EngineTests {
     @Tag("System")
     @Tag("File")
     @Test
-    void testRun_WithMockManifest_MockManifestIsTouchedAndHasResults() throws IOException {
-        //Short check whether there was proper cleanup
-        assertFalse(Files.exists(Path.of(outputTestFolder,expectedJavaFile)));
-
-        int transformations = 5;
-
-        TransformerRegistry registry = new TransformerRegistry("Test");
-        registry.registerTransformer(new IfTrueTransformer());
-
-        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
-
-        testObject.setNumberOfTransformationsPerScope(transformations, Engine.TransformationScope.global);
-
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
-
-        testObject.run();
-
-        assertTrue(mock.wasTouched);
-        assertEquals(transformations,mock.receivedResults.size());
-        // CleanUp
-
-        Files.delete(Path.of(outputTestFolder,expectedJavaFile));
-    }
-
-    @Tag("System")
-    @Tag("File")
-    @Test
     void testRun_WithNonCompilingTransformer_worksNormally() throws IOException {
         //Short check whether there was proper cleanup
         assertFalse(Files.exists(Path.of(outputTestFolder,expectedJavaFile)));
@@ -159,13 +130,8 @@ public class EngineTests {
 
         testObject.setNumberOfTransformationsPerScope(transformations, Engine.TransformationScope.global);
 
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
-
         testObject.run();
 
-        assertTrue(mock.wasTouched);
-        assertEquals(transformations,mock.receivedResults.size());
         // CleanUp
 
         Files.delete(Path.of(outputTestFolder,expectedJavaFile));
@@ -190,13 +156,7 @@ public class EngineTests {
 
         testObject.setNumberOfTransformationsPerScope(transformations, Engine.TransformationScope.global);
 
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
-
         testObject.run();
-
-        assertTrue(mock.wasTouched);
-        assertEquals(transformations,mock.receivedResults.size());
 
         assertTrue(Files.exists(Paths.get("./src/test/resources/bad_javafiles_output/lampion/tests/examples/Misser.java")));
 
@@ -207,65 +167,6 @@ public class EngineTests {
                     .map(Path::toFile)
                     .forEach(File::delete);
         }
-    }
-
-    @Tag("System")
-    @Tag("File")
-    @Tag("Regression")
-    @Test
-    void testRun_WithMockManifest_MockManifestResultsHaveParents() throws IOException {
-        //Short check whether there was proper cleanup
-        assertFalse(Files.exists(Path.of(outputTestFolder,expectedJavaFile,"Error in cleanup")));
-
-        int transformations = 5;
-
-        TransformerRegistry registry = new TransformerRegistry("Test");
-        registry.registerTransformer(new IfTrueTransformer());
-        registry.registerTransformer(new RandomInlineCommentTransformer());
-
-        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
-
-        testObject.setNumberOfTransformationsPerScope(transformations, Engine.TransformationScope.global);
-
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
-
-        testObject.run();
-
-        for(var result : mock.receivedResults) {
-            assertNotNull(result.getTransformedElement().getParent());
-        }
-        // CleanUp
-
-        Files.delete(Path.of(outputTestFolder,expectedJavaFile));
-
-    }
-
-    @Tag("System")
-    @Tag("File")
-    @Test
-    void testRun_WithMockManifest_ManifestSetAfterRun_MockManifestIsNotTouched() throws IOException {
-        //Short check whether there was proper cleanup
-        assertFalse(Files.exists(Path.of(outputTestFolder,expectedJavaFile)));
-
-        int transformations = 5;
-
-        TransformerRegistry registry = new TransformerRegistry("Test");
-        registry.registerTransformer(new IfTrueTransformer());
-
-        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
-
-        testObject.setNumberOfTransformationsPerScope(transformations, Engine.TransformationScope.global);
-
-        testObject.run();
-
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
-
-        assertFalse(mock.wasTouched);
-
-        // CleanUp
-        Files.delete(Path.of(outputTestFolder,expectedJavaFile));
     }
 
     @Test
@@ -339,24 +240,31 @@ public class EngineTests {
     }
 
     @Test
-    void testSetWriter_nullWriter_shouldThrowException(){
+    void testGetFinishedResults_NotRunEngine_ShouldGiveEmptyList(){
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_perMethodEach";
         TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfFalseElseTransformer());
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
 
-        assertThrows(UnsupportedOperationException.class, () -> testObject.setManifestWriter(null));
+        assertTrue(testObject.getFinishedResults().isEmpty());
     }
 
     @Test
-    void testSetWriter_MockWriter_shouldWork(){
+    void testGetFinishedResults_RunEngine_ShouldNotGiveEmptyList(){
+        String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_perMethodEach";
         TransformerRegistry registry = new TransformerRegistry("Test");
+        registry.registerTransformer(new IfFalseElseTransformer());
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
 
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
+        testObject.setWriteJavaOutput(false);
 
-        return;
+        testObject.setNumberOfTransformationsPerScope(5, Engine.TransformationScope.perClassEach);
+
+        testObject.run();
+
+        assertFalse(testObject.getFinishedResults().isEmpty());
     }
 
     @Tag("System")
@@ -369,8 +277,6 @@ public class EngineTests {
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
 
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
         testObject.setWriteJavaOutput(false);
 
         testObject.setNumberOfTransformationsPerScope(5, Engine.TransformationScope.perClassEach);
@@ -378,14 +284,14 @@ public class EngineTests {
         testObject.run();
 
         // Easy Check on Size
-        assertEquals(10,mock.receivedResults.size());
+        assertEquals(10,testObject.getFinishedResults().size());
 
         // Distribution Checks
-        mock.receivedResults.stream()
+        testObject.getFinishedResults().stream()
                 .collect(Collectors.groupingBy(t -> ((CtClass)t.getTransformedElement().getParent(p -> p instanceof CtClass)).getSimpleName()))
                 .values().stream().mapToLong(u -> u.size())
                 .forEach(f -> assertEquals(5,f));
-        assertEquals(2,mock.receivedResults.stream()
+        assertEquals(2,testObject.getFinishedResults().stream()
                 .collect(Collectors.groupingBy(t -> ((CtClass)t.getTransformedElement().getParent(p -> p instanceof CtClass)).getSimpleName())).entrySet().size());
     }
 
@@ -400,8 +306,6 @@ public class EngineTests {
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
 
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
         testObject.setWriteJavaOutput(false);
 
         testObject.setNumberOfTransformationsPerScope(5, Engine.TransformationScope.perClass);
@@ -409,7 +313,7 @@ public class EngineTests {
         testObject.run();
 
         // Easy Check on Size
-        assertEquals(10,mock.receivedResults.size());
+        assertEquals(10,testObject.getFinishedResults().size());
     }
 
     @Tag("System")
@@ -422,8 +326,6 @@ public class EngineTests {
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
 
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
         testObject.setWriteJavaOutput(false);
 
         testObject.setNumberOfTransformationsPerScope(3, Engine.TransformationScope.perMethodEach);
@@ -431,13 +333,13 @@ public class EngineTests {
         testObject.run();
 
         // Easy Check on Size
-        assertEquals(12,mock.receivedResults.size());
+        assertEquals(12,testObject.getFinishedResults().size());
         // Distribution Checks
-        mock.receivedResults.stream()
+        testObject.getFinishedResults().stream()
                 .collect(Collectors.groupingBy(t -> ((CtMethod)t.getTransformedElement()).getSimpleName()))
                 .values().stream().mapToLong(u -> u.size())
                 .forEach(f -> assertEquals(3,f));
-        assertEquals(4,mock.receivedResults.stream()
+        assertEquals(4,testObject.getFinishedResults().stream()
                 .collect(Collectors.groupingBy(t -> ((CtMethod)t.getTransformedElement()).getSimpleName())).entrySet().size());
     }
 
@@ -452,8 +354,6 @@ public class EngineTests {
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
 
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
         testObject.setWriteJavaOutput(false);
 
         testObject.setNumberOfTransformationsPerScope(3, Engine.TransformationScope.perMethod);
@@ -461,7 +361,7 @@ public class EngineTests {
         testObject.run();
 
         // Easy Check on Size
-        assertEquals(12,mock.receivedResults.size());
+        assertEquals(12,testObject.getFinishedResults().size());
     }
 
     @Tag("System")
@@ -473,8 +373,6 @@ public class EngineTests {
         registry.registerTransformer(new IfFalseElseTransformer());
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
 
         // Do just little transformations to be faster
         testObject.setNumberOfTransformationsPerScope(3, Engine.TransformationScope.perClassEach);
@@ -483,7 +381,7 @@ public class EngineTests {
 
         testObject.run();
 
-        mock.receivedResults.forEach(
+        testObject.getFinishedResults().forEach(
                 p -> assertFalse(p.getTransformedElement().toString().contains("Comment") ||p.getTransformedElement().toString().contains("JavaDoc"))
         );
     }
@@ -497,8 +395,6 @@ public class EngineTests {
         registry.registerTransformer(new IfFalseElseTransformer());
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
 
         // Do just little transformations to be faster
         testObject.setNumberOfTransformationsPerScope(3, Engine.TransformationScope.perClassEach);
@@ -507,7 +403,7 @@ public class EngineTests {
 
         testObject.run();
 
-        mock.receivedResults.forEach(
+        testObject.getFinishedResults().forEach(
                 p -> assertFalse(p.getTransformedElement().toString().contains("Comment") ||p.getTransformedElement().toString().contains("JavaDoc"))
         );
     }
@@ -521,9 +417,6 @@ public class EngineTests {
         registry.registerTransformer(new IfFalseElseTransformer());
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
-
         // Do just little transformations to be faster
         testObject.setNumberOfTransformationsPerScope(3, Engine.TransformationScope.perClassEach);
 
@@ -531,7 +424,7 @@ public class EngineTests {
 
         testObject.run();
 
-        for(TransformationResult p : mock.receivedResults){
+        for(TransformationResult p : testObject.getFinishedResults()){
             assertFalse(p.getTransformedElement().toString().contains("Comment") ||p.getTransformedElement().toString().contains("JavaDoc"));
         }
     }
@@ -545,8 +438,6 @@ public class EngineTests {
         registry.registerTransformer(new IfFalseElseTransformer());
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
 
         // Do just little transformations to be faster
         testObject.setNumberOfTransformationsPerScope(1, Engine.TransformationScope.global);
@@ -555,7 +446,7 @@ public class EngineTests {
 
         testObject.run();
 
-        for(TransformationResult p : mock.receivedResults){
+        for(TransformationResult p : testObject.getFinishedResults()){
             assertFalse(p.getTransformedElement().toString().contains("Comment") ||p.getTransformedElement().toString().contains("JavaDoc"));
         }
     }
@@ -573,9 +464,6 @@ public class EngineTests {
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
 
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
-
         // Do just little transformations to be faster
         testObject.setNumberOfTransformationsPerScope(4, Engine.TransformationScope.global);
 
@@ -583,7 +471,7 @@ public class EngineTests {
 
         testObject.run();
 
-        for(TransformationResult p : mock.receivedResults){
+        for(TransformationResult p : testObject.getFinishedResults()){
             assertTrue(p.getTransformedElement().toString().contains("Comment") ||p.getTransformedElement().toString().contains("JavaDoc"));
         }
     }
@@ -597,8 +485,6 @@ public class EngineTests {
         registry.registerTransformer(new IfFalseElseTransformer());
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
 
         // Do just little transformations to be faster
         testObject.setNumberOfTransformationsPerScope(0, Engine.TransformationScope.global);
@@ -607,7 +493,7 @@ public class EngineTests {
 
         testObject.run();
 
-        for(TransformationResult p : mock.receivedResults){
+        for(TransformationResult p : testObject.getFinishedResults()){
             assertFalse(p.getTransformedElement().toString().contains("Comment"));
         }
     }
@@ -626,8 +512,6 @@ public class EngineTests {
         registry.registerTransformer(new IfFalseElseTransformer());
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
 
         testObject.setNumberOfTransformationsPerScope(5, Engine.TransformationScope.global);
 
@@ -636,7 +520,7 @@ public class EngineTests {
         testObject.run();
 
         boolean haveSeenRemoveComments = false;
-        for(TransformationResult p : mock.receivedResults){
+        for(TransformationResult p : testObject.getFinishedResults()){
             haveSeenRemoveComments = haveSeenRemoveComments || p.getTransformationName().equals("RemoveAllComments");
         }
         assertTrue(haveSeenRemoveComments);
@@ -657,8 +541,6 @@ public class EngineTests {
         registry.registerTransformer(new IfFalseElseTransformer());
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
 
         testObject.setNumberOfTransformationsPerScope(0, Engine.TransformationScope.global);
 
@@ -667,7 +549,7 @@ public class EngineTests {
         testObject.run();
 
         boolean haveSeenRemoveComments = false;
-        for(TransformationResult p : mock.receivedResults){
+        for(TransformationResult p : testObject.getFinishedResults()){
             haveSeenRemoveComments = haveSeenRemoveComments || p.getTransformationName().equals("RemoveAllComments");
         }
         assertTrue(haveSeenRemoveComments);
@@ -686,8 +568,6 @@ public class EngineTests {
         registry.registerTransformer(new IfFalseElseTransformer());
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
-        MockWriter mock = new MockWriter();
-        testObject.setManifestWriter(mock);
 
         testObject.setNumberOfTransformationsPerScope(5, Engine.TransformationScope.global);
 
@@ -696,7 +576,7 @@ public class EngineTests {
         testObject.run();
 
         boolean haveSeenRemoveComments = false;
-        for(TransformationResult p : mock.receivedResults){
+        for(TransformationResult p : testObject.getFinishedResults()){
             haveSeenRemoveComments = haveSeenRemoveComments || p.getTransformationName().equals("RemoveAllComments");
         }
         assertFalse(haveSeenRemoveComments);

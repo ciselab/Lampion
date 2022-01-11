@@ -14,6 +14,7 @@ import spoon.reflect.declaration.CtMethod;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class runs the primary parts of the Program.
@@ -63,6 +64,7 @@ public class Engine {
 
     private boolean writeJavaOutput = true; // This switch enables/disables pretty printing of altered java files
 
+    private List<TransformationResult> finishedResults = new ArrayList<>();
 
     public Engine(String codeDirectory, String outputDirectory, TransformerRegistry registry){
         // Sanity Checks
@@ -159,7 +161,7 @@ public class Engine {
 
                 if (! results.equals(new EmptyTransformationResult())){
                     // As we removed the Manifest (for now?) we just log a debug statement of what was done
-                    logger.debug("Successfully applied " + result.getTransformationName() + " to Element-Hash: " + result.getTransformedElement().hashCode());
+                    logger.debug("Successfully applied " + result.getTransformationName() + " to Element(Hash):" + result.getTransformedElement().toString().hashCode());
                 }
             } catch (SpoonException spoonException){
                 //TODO: Redo-Logic
@@ -206,6 +208,10 @@ public class Engine {
             logger.info("Writing the java files has been disabled for this run.");
         }
 
+        finishedResults = results.stream()
+                // Filter out Empty Results
+                .filter(l -> ! l.equals(new EmptyTransformationResult()))
+                .collect(Collectors.toList());
 
         Instant endOfWriting = Instant.now();
         logger.info("Writing files took " + Duration.between(endOfTransformations,endOfWriting).getSeconds() + " seconds");
@@ -242,6 +248,20 @@ public class Engine {
             default: logger.error("Found unknown/unhandled Scope in Engine");
         }
         return toAlter;
+    }
+
+    /**
+     * Returns all non-empty results produced by the engines "run".
+     * In case of multiple runs, the results of the last run are returned.
+     * They are overwritten with every-run.
+     * For a not-yet-run (or fully failing) Engine it returns an empty list.
+     *
+     * This method is particularly useful for testing,
+     * after I removed the Writer I did not have a Mockwriter to check on Results.
+     * @return The Transformation-Results produced by "run".
+     */
+    public List<TransformationResult> getFinishedResults(){
+        return this.finishedResults;
     }
 
     /**
