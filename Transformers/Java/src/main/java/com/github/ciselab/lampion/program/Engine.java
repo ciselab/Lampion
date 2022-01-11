@@ -159,9 +159,10 @@ public class Engine {
                 TransformationResult result = transformer.applyAtRandom(toAlter);
                 results.add(result);
 
-                if (! results.equals(new EmptyTransformationResult())){
+                if (result != null && ! result.equals(new EmptyTransformationResult())){
                     // As we removed the Manifest (for now?) we just log a debug statement of what was done
-                    logger.debug("Successfully applied " + result.getTransformationName() + " to Element(Hash):" + result.getTransformedElement().toString().hashCode());
+                    logger.debug("Successfully applied " + result.getTransformationName() +
+                            " to Element(Hash):" + result.getTransformedElement().toString().hashCode());
                 }
             } catch (SpoonException spoonException){
                 //TODO: Redo-Logic
