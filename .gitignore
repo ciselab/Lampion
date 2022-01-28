@@ -1,3 +1,8 @@
 .idea
 
 .txt
+
+*.py_enc
+prep_output
+prep
+*.txt
