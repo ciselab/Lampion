@@ -2,6 +2,7 @@ import argparse
 import os
 import shutil
 import logging
+import sys
 
 
 def encode_files(path_to_raw:str,path_to_encoding:str,output_folder:str,file_ending:str="py_enc") -> None:
@@ -92,11 +93,70 @@ def merge_encoded_files(path_to_encoded_files:str,output_file:str,file_ending:st
     logging.info(f"Finished merging of files, {counter} files in total merged.")
 
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO,format='%(asctime)s %(levelname)s:%(message)s')
+def main() -> None:
+    '''
+    Main Method of the preparation.
+    Orchestrates:
+    1. Setup & ArgParsing
+    2. Runs Encoding of Files
+    3. Runs merging of files
+
+    The input files remain untouched, altered copies and artifacts will be created where specified.
+    As this file is intended to be run in docker, the default parameters point to rootlevel folders (/data,/output).
+    Be careful if you run this on your real machine outside of docker.
+
+    For information on required arguments, please run 'python prep.py -h'.
+    :return: None.
+    '''
+    parser = argparse.ArgumentParser(
+        description='Applies metamorphic transformations to Python Code '
+                    'in Order to make it verbose & different but functionally identical'
+    )
+    parser.add_argument('input_folder', metavar='input_folder', type=str, nargs=1, default="/data",
+                        help='A path to folder containing .py files to be encoded')
+
+    parser.add_argument('output_folder',metavar='output_folder', type=str, nargs=1, default="/output",
+                        help="Prefix for the folder to place output in. "
+                             "Within this new folder, the initial structure will be replicated. "
+                             "Any files will be overwritten.")
+
+    parser.add_argument('encoding_path',metavar='encoding_path', type=str, nargs=1, default="/encodings/python_encoding.enc_bpe_10000",
+                        help="The path at which to find the encoding file. Be careful as different languages need different encodings!")
+
+    parser.add_argument('merged_filename',metavar='merged_filename', type=str, nargs=1, default="selfmade_pre_enc_10000",
+                        help="The name of the merged encoding file usable for the OpenVocabCodeNLM Experiments. Will be placed in 'output_folder'.")
+
+    parser.add_argument('loglevel',metavar="log", type=str, nargs="?", default="info",
+                        help="The loglevel for printing logs. Default \'info\'. supported: \'warn\',\'info\',\'debug\'" )
+
+    args = parser.parse_args()
+
+    input_folder = args.input_folder[0]
+    output_folder = args.output_folder[0]
+    encoding_path = args.encoding_path[0]
+    merged_filename = args.merged_filename[0]
+    merged_filepath = os.path.join(output_folder,merged_filename)
+
+    loglevel = logging.INFO
+    if args.loglevel[0].lower() == "debug":
+        loglevel = logging.DEBUG
+    elif args.loglevel[0].lower() == "info":
+        loglevel = logging.INFO
+    elif args.loglevel[0].lower() == "warn":
+        loglevel = logging.WARNING
+    else:
+        print("Received unknown/unsupported format for loglevel - defaulting to info")
+
+    logging.basicConfig(filename='openvocab_preparation.log', level=loglevel,format='%(asctime)s %(levelname)s:%(message)s')
+    logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
     logging.info("Starting File-Preparation")
-    # TODO: Arguments!
-    encode_files("./my_sample_files","./python_encodings/python_encoding.enc_bpe_10000","prep_output")
-    merge_encoded_files("./prep_output","./prep_output/merged_output.txt")
+
+    encode_files(input_folder,encoding_path,output_folder)
+    merge_encoded_files(output_folder,merged_filepath)
+
     logging.info("Finished File-Preparation - exiting successfully")
+    sys.exit(0)
+
+if __name__ == '__main__':
+    main()
