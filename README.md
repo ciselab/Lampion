@@ -1,4 +1,4 @@
-# Subword NMT Test
+# OpenVocabCodeNLM Preprocessing
 
 This repository helps me to figure the pre-processing for the [OpenVocabCodeNLM](https://github.com/mast-group/OpenVocabCodeNLM) out and streamline it.
 
