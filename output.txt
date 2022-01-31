@@ -1,5 +1,0 @@
-if __name__ == '__main@@ __@@ '@@ :
-    s@@ ome = "@@ Le@@ on@@ har@@ d"
-    print@@ (@@ "@@ Th@@ e main@@ tain@@ er her@@ e is ",@@ s@@ ome@@ )
-    print@@ (@@ "@@ An@@ y issu@@ es c@@ an be forwar@@ ded to@@ :@@ "@@ )
-    print@@ (@@ "--@@ - n@@ ob@@ o@@ dy --@@ -@@ "@@ )

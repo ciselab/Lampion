@@ -17,5 +17,5 @@ services:
       input_folder: "/data"
       output_folder: "/output"
       encoding_path: "/encodings/python_encoding.enc_bpe_10000"
-      loglevel: "info"
+      loglevel: "debug"
       merged_filename: "selfmade_pre_enc_10000"

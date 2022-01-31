@@ -32,16 +32,22 @@ def encode_files(path_to_raw:str,path_to_encoding:str,output_folder:str,file_end
     if not os.path.exists(output_folder):
         os.makedirs(output_folder,exist_ok=False)
     else:
-        shutil.rmtree(output_folder)
+        logging.debug("Found existing output folder")
+        try:
+            shutil.rmtree(output_folder)
+        except IOError:
+            logging.warning("Could not wipe %s ! Files will be overwritten, but if data changed you will create 'Phantoms'!",output_folder)
 
     for dirpath, dnames, fnames in os.walk(path_to_raw):
         for f in fnames:
             if f.endswith(".py"):
-                #print(dirpath,f)
                 full_path = os.path.join(dirpath,f)
-                # Remove the last 3 characters, exactly ".py", then add our postfix
+                # Remove the last 3 characters, exactly ".py", then add our (custom) postfix
                 encoded_f = f[:-3] + "." + file_ending
-                encoded_file_dir = os.path.join(output_folder,dirpath)
+                # If both paths to join are absolute, there are issues joining them.
+                # This was the case within docker, as /data and /output are both absolute.
+                adjusted_dirpath = dirpath[1:] if dirpath.startswith("/") else dirpath
+                encoded_file_dir = os.path.join(output_folder,adjusted_dirpath)
                 encoded_file_path = os.path.join(encoded_file_dir,encoded_f)
                 # Make necessary folders
                 os.makedirs(encoded_file_dir,exist_ok=True)
@@ -126,8 +132,8 @@ def main() -> None:
     parser.add_argument('merged_filename',metavar='merged_filename', type=str, nargs=1, default="selfmade_pre_enc_10000",
                         help="The name of the merged encoding file usable for the OpenVocabCodeNLM Experiments. Will be placed in 'output_folder'.")
 
-    parser.add_argument('loglevel',metavar="log", type=str, nargs="?", default="info",
-                        help="The loglevel for printing logs. Default \'info\'. supported: \'warn\',\'info\',\'debug\'" )
+    parser.add_argument('loglevel',metavar="loglevel", type=str, nargs="?", default="info",
+                        help="The loglevel for printing logs. Default \'info\'. supported: \'warn\',\'info\',\'debug\'")
 
     args = parser.parse_args()
 
@@ -136,24 +142,34 @@ def main() -> None:
     encoding_path = args.encoding_path[0]
     merged_filename = args.merged_filename[0]
     merged_filepath = os.path.join(output_folder,merged_filename)
+    log_level_arg = args.loglevel.lower()
 
     loglevel = logging.INFO
-    if args.loglevel[0].lower() == "debug":
+    if  log_level_arg== "debug":
         loglevel = logging.DEBUG
-    elif args.loglevel[0].lower() == "info":
+    elif log_level_arg == "info":
         loglevel = logging.INFO
-    elif args.loglevel[0].lower() == "warn":
+    elif log_level_arg == "warn":
         loglevel = logging.WARNING
     else:
-        print("Received unknown/unsupported format for loglevel - defaulting to info")
-
+        print(f"Received unknown/unsupported format for loglevel (\"{log_level_arg}\") - defaulting to info")
+    formatter = logging.Formatter("%(asctime)s %(levelname)s:%(message)s")
     logging.basicConfig(filename='openvocab_preparation.log', level=loglevel,format='%(asctime)s %(levelname)s:%(message)s')
-    logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
+    # The Console Handler does add print to console, otherwise it would be quiet.
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG)
+    console_handler.setFormatter(formatter)
+    logging.getLogger().addHandler(console_handler)
 
     logging.info("Starting File-Preparation")
+    logging.debug("Received args:")
+    logging.debug("\t input_folder: %s",input_folder)
+    logging.debug("\t output_folder: %s",output_folder)
+    logging.debug("\t encoding_path: %s",encoding_path)
+    logging.debug("\t merged_filename: %s",merged_filename)
 
-    encode_files(input_folder,encoding_path,output_folder)
-    merge_encoded_files(output_folder,merged_filepath)
+    encode_files(path_to_raw=input_folder,path_to_encoding=encoding_path,output_folder=output_folder)
+    merge_encoded_files(path_to_encoded_files=output_folder,output_file=merged_filepath)
 
     logging.info("Finished File-Preparation - exiting successfully")
     sys.exit(0)
