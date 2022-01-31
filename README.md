@@ -3,7 +3,7 @@
 This repository helps me to figure the pre-processing for the [OpenVocabCodeNLM](https://github.com/mast-group/OpenVocabCodeNLM) out and streamline it.
 
 This is focussed on `.py`-files and uses the [subword-nmt-library](https://github.com/rsennrich/subword-nmt).
-It should be easily adapted for other file-encodings, but at the moment it is hardcoded for .py files.
+I put in everything necessary to run other file-types, but I have only run it with python at the moment.
 
 The repository encodings were drawn from [Zenodo](https://zenodo.org/record/3628636).
 I do intend to keep the original encodings and do not provide / create my own.

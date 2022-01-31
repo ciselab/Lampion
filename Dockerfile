@@ -16,6 +16,8 @@ ENV output_folder="/output"
 ENV encoding_path="/encodings/python_encoding.enc_bpe_10000"
 ENV loglevel="info"
 ENV merged_filename="selfmade_pre_enc_10000"
+ENV file_ending=".py"
+ENV encoded_file_ending=".py_enc"
 
 WORKDIR /OpenVocab_DataPreparation
 

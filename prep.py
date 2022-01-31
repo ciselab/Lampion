@@ -5,7 +5,7 @@ import logging
 import sys
 
 
-def encode_files(path_to_raw:str,path_to_encoding:str,output_folder:str,file_ending:str="py_enc") -> None:
+def encode_files(path_to_raw:str,path_to_encoding:str,output_folder:str,initial_file_ending:str=".py",file_ending:str="py_enc") -> None:
     '''
     This method applies the subword-nmt to any file in a directory.
     A copy of the directory with the encoded files will be build under output_folder.
@@ -18,6 +18,7 @@ def encode_files(path_to_raw:str,path_to_encoding:str,output_folder:str,file_end
     :param path_to_raw: where to find the .py files to be encoded.
     :param path_to_encoding: where to find the encoding file.
     :param output_folder: The folder where to write the encoded files to. Will be created if not existent.
+    :param initial_file_ending: the postfix which files should be encoded. Default: ".py".
     :param file_ending: the new postfix for the encoded files. Usually the filename will be kept, e.g. `A.py` -> `A.py_enc`
     :return: None, as side-effect the new encoded items will be created.
     '''
@@ -40,7 +41,7 @@ def encode_files(path_to_raw:str,path_to_encoding:str,output_folder:str,file_end
 
     for dirpath, dnames, fnames in os.walk(path_to_raw):
         for f in fnames:
-            if f.endswith(".py"):
+            if f.endswith(initial_file_ending):
                 full_path = os.path.join(dirpath,f)
                 # Remove the last 3 characters, exactly ".py", then add our (custom) postfix
                 encoded_f = f[:-3] + "." + file_ending
@@ -132,6 +133,12 @@ def main() -> None:
     parser.add_argument('merged_filename',metavar='merged_filename', type=str, nargs=1, default="selfmade_pre_enc_10000",
                         help="The name of the merged encoding file usable for the OpenVocabCodeNLM Experiments. Will be placed in 'output_folder'.")
 
+    parser.add_argument('file_ending',metavar='file_ending',type=str,nargs=1,default=".py",
+                        help="Which files in 'input_folder' should be encoded? Based on string.endswith(file_ending). Default: '.py'")
+
+    parser.add_argument('encoded_file_ending',metavar='encoded_file_ending',type=str,nargs=1,default=".py_enc",
+                        help="Specifies the filetype of the created encoded files. Default: '.py_enc'")
+
     parser.add_argument('loglevel',metavar="loglevel", type=str, nargs="?", default="info",
                         help="The loglevel for printing logs. Default \'info\'. supported: \'warn\',\'info\',\'debug\'")
 
@@ -142,6 +149,8 @@ def main() -> None:
     encoding_path = args.encoding_path[0]
     merged_filename = args.merged_filename[0]
     merged_filepath = os.path.join(output_folder,merged_filename)
+    file_ending = args.file_ending[0]
+    encoded_file_ending = args.encoded_file_ending[0]
     log_level_arg = args.loglevel.lower()
 
     loglevel = logging.INFO
@@ -167,9 +176,12 @@ def main() -> None:
     logging.debug("\t output_folder: %s",output_folder)
     logging.debug("\t encoding_path: %s",encoding_path)
     logging.debug("\t merged_filename: %s",merged_filename)
+    logging.debug("\t file_ending: %s",file_ending)
+    logging.debug("\t encoded_file_ending: %s",encoded_file_ending)
 
-    encode_files(path_to_raw=input_folder,path_to_encoding=encoding_path,output_folder=output_folder)
-    merge_encoded_files(path_to_encoded_files=output_folder,output_file=merged_filepath)
+    encode_files(path_to_raw=input_folder,path_to_encoding=encoding_path,output_folder=output_folder,
+                 initial_file_ending=file_ending,file_ending=encoded_file_ending)
+    merge_encoded_files(path_to_encoded_files=output_folder,output_file=merged_filepath,file_ending=encoded_file_ending)
 
     logging.info("Finished File-Preparation - exiting successfully")
     sys.exit(0)
