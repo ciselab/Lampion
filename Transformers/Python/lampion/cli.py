@@ -51,7 +51,8 @@ def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampio
 
         initial_cst_code = str((initial_tuple[1]).code)
         altered_cst_code = str((altered_tuple[1]).code)
-
+        
+        # This is intentionally print and not logging 
         print("Before:\n")
         print(initial_cst_code)
         print("\n")
@@ -81,15 +82,36 @@ def read_input_dir(path: str) -> [(str, CSTNode)]:
 
     # Case 1: Path is a directory
     if os.path.isdir(path):
-        log.debug("Received Path is a Directory - Looking for multiple files")
+        log.info("Received Path is a Directory - Looking for multiple files")
+        log.info("This might take a while ... (run in debug to see process)")
         results = []
+        fails = []
+        file_counter = 0
         for dirpath, _, fnames in os.walk(path):
             # TODO: Exclude __init__.py files? But keep it in Lookup?
             for f in fnames:
                 if f.endswith(".py"):
-                    ff = _file_to_string(os.path.join(dirpath, f))
-                    found_cst = cst.parse_module(ff)
-                    results.append((os.path.join(dirpath, f), found_cst))
+                    file_counter += 1
+                    file_path:str = os.path.join(dirpath, f)
+                    log.debug("Parsing ... %s",file_path)
+                    try:
+                        file_content:str = _file_to_string(file_path)
+                        found_cst = cst.parse_module(file_content)
+                        log.debug("Parsed %s",file_path)
+                        results.append(file_path, found_cst)
+                    except:
+                        # Known (common) possible Errors: 
+                        # UTF8-Error when reading files with strange encodings
+                        # ParserSyntaxError when reading old python (v2)
+                        # Type-Error for rare cases
+                        fails = fails.append(file_path) if fails else [file_path]
+                        log.debug("Failure in Parsing %s",file_path)
+        
+        if len(fails)>0 :
+            log.info("Failed Paths (%d) to parse:",len(fails))
+            for e in fails:
+                log.info("\t %s",e)
+        log.info("Found and (successfully) parsed %d of %d files",len(results),file_counter)
         return results
     # Case 2: Path is a file
     elif os.path.isfile(path):
@@ -233,14 +255,14 @@ def main() -> None:
     example = args.example
 
     loglevel = log.INFO
-    if args.loglevel[0].lower() == "debug":
+    if args.loglevel.lower() == "debug":
         loglevel = log.DEBUG
-    elif args.loglevel[0].lower() == "info":
+    elif args.loglevel.lower() == "info":
         loglevel = log.INFO
-    elif args.loglevel[0].lower() == "warn":
+    elif args.loglevel.lower() == "warn":
         loglevel = log.WARNING
     else:
-        print("Received unknown/unsupported format for loglevel - defaulting to info")
+        print("Received unknown/unsupported format for loglevel - defaulting to info (%s)",args.loglevel.lower())
 
 
     random.seed(19961106)
