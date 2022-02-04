@@ -263,12 +263,10 @@ def main() -> None:
         loglevel = log.WARNING
     else:
         print("Received unknown/unsupported format for loglevel - defaulting to info (%s)",args.loglevel.lower())
-
-
+    
+    log.basicConfig(level=loglevel,format='%(asctime)s [%(levelname)s] %(message)s')
+   
     random.seed(19961106)
-
-    log.basicConfig(filename='lampion.log', level=loglevel)
-    log.getLogger().addHandler(log.StreamHandler(sys.stdout))
 
     run(path_to_code=path,path_to_config=config,output_prefix=output,print_sample_diff=example)
 
