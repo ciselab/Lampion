@@ -98,7 +98,7 @@ def read_input_dir(path: str) -> [(str, CSTNode)]:
                         file_content:str = _file_to_string(file_path)
                         found_cst = cst.parse_module(file_content)
                         log.debug("Parsed %s",file_path)
-                        results.append(file_path, found_cst)
+                        results.append((file_path, found_cst))
                     except:
                         # Known (common) possible Errors: 
                         # UTF8-Error when reading files with strange encodings

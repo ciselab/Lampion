@@ -1,3 +1,5 @@
+import os
+
 import lampion.cli
 
 import pytest
@@ -12,7 +14,6 @@ def test_read_input_files_on_folder_should_give_two_csts():
     csts = lampion.cli.read_input_dir(f"{path_prefix}/test_inputs/multiple_files")
 
     assert len(csts) == 2
-
 
 def test_read_input_files_on_file_should_give_one_cst():
     csts = lampion.cli.read_input_dir(f"{path_prefix}/test_inputs/hello_world.py")
