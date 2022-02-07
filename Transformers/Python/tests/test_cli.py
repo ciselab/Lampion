@@ -1,5 +1,7 @@
 import os
 
+import libcst
+
 import lampion.cli
 
 import pytest
@@ -14,6 +16,33 @@ def test_read_input_files_on_folder_should_give_two_csts():
     csts = lampion.cli.read_input_dir(f"{path_prefix}/test_inputs/multiple_files")
 
     assert len(csts) == 2
+
+
+def test_read_input_files_on_buggy_folder_should_give_no_csts():
+    # The read_input should not find valid files, but should also not fail.
+    # A "graceful" empty dir is expected
+    csts = lampion.cli.read_input_dir(f"{path_prefix}/test_inputs/buggy_files")
+
+    assert len(csts) == 0
+
+
+def test_read_input_files_on_buggy_and_ok_folder_should_give_two_csts():
+    # The buggy files should be ignored, while the ok files should be read in.
+    # This means 2 buggy, 2 ok.
+    csts = lampion.cli.read_input_dir(f"{path_prefix}/test_inputs/buggy_and_ok_files")
+
+    assert len(csts) == 2
+
+
+def test_read_input_file_on_buggy_file_should_throw_error():
+    with pytest.raises(libcst._exceptions.ParserSyntaxError):
+        lampion.cli.read_input_dir(f"{path_prefix}/test_inputs/buggy_files/faulty_py3.py")
+
+
+def test_read_input_file_on_python2_file_should_throw_error():
+    with pytest.raises(libcst._exceptions.ParserSyntaxError):
+        lampion.cli.read_input_dir(f"{path_prefix}/test_inputs/buggy_files/python2.py")
+
 
 def test_read_input_files_on_file_should_give_one_cst():
     csts = lampion.cli.read_input_dir(f"{path_prefix}/test_inputs/hello_world.py")
