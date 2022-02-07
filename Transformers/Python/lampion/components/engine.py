@@ -127,12 +127,6 @@ class Engine:
                 # If the Transformer failed, re-add the unaltered CST
                 altered_csts.append((running_path, running_cst))
 
-        if self.__config["writeManifest"]:
-            log.warning("Manifest is currently not enabled!")
-            raise NotImplementedError()
-        else:
-            log.info("Manifest Writing was turned off in Configuration.")
-
         if self.__output_dir:
             log.info("Writing to Output to %s",self.__output_dir)
             self._output_to_files(altered_csts)
@@ -151,12 +145,17 @@ class Engine:
         """
         return self.__transformers
 
-    def _output_to_files(self, csts: ["CSTNode"]) -> None:
+    def _output_to_files(self, csts: [(str,"CSTNode")]) -> None:
+        log.info("Starting to write %d files to %s",len(csts),self.__output_dir)
         for (p, cst) in csts:
-            pp = os.path.join("./", self.__output_dir, p)
+            # if the path starts absolute, os.path.join doesn't like it. Cut the leading /
+            inp_p = p if not p.startswith("/") else p[1:]
+            pp = os.path.join(self.__output_dir, inp_p)
+            if not (pp.startswith("/") or pp.startswith("./")):
+                pp = os.path.join("./",pp)
             log.debug("Writing %s to %s",p,pp)
 
-            # Create the (all) folders before trying to make the file
+            # Create the (required) folders before trying to make the file
             os.makedirs(os.path.dirname(pp), exist_ok=True)
             # Open the File as write, with overwriting existing content
             with open(pp, "w") as output_file:
@@ -212,9 +211,6 @@ def _default_config() -> dict:
     default_config["seed"] = 11
     default_config["transformations"] = 50
     default_config["transformationscope"] = "global"
-
-    # Manifest Attributes (Currently Disabled)
-    default_config["writeManifest"] = False
 
     # Transformer Related Attributes
     default_config["AddUnusedVariableTransformer"] = True
