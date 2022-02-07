@@ -107,7 +107,7 @@ def read_input_dir(path: str) -> [(str, CSTNode)]:
                         fails = fails.append(file_path) if fails else [file_path]
                         log.debug("Failure in Parsing %s",file_path)
         # Log Stats of failures and explicitly which files
-        if len(fails)>0 :
+        if fails and len(fails)>0 :
             log.info("Failed Paths (%d) to parse:",len(fails))
             for e in fails:
                 log.info("\t %s",e)
