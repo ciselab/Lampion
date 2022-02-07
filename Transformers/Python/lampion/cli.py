@@ -106,7 +106,7 @@ def read_input_dir(path: str) -> [(str, CSTNode)]:
                         # Type-Error for rare cases
                         fails = fails.append(file_path) if fails else [file_path]
                         log.debug("Failure in Parsing %s",file_path)
-        
+        # Log Stats of failures and explicitly which files
         if len(fails)>0 :
             log.info("Failed Paths (%d) to parse:",len(fails))
             for e in fails:
@@ -264,7 +264,7 @@ def main() -> None:
     else:
         print("Received unknown/unsupported format for loglevel - defaulting to info (%s)",args.loglevel.lower())
     
-    log.basicConfig(level=loglevel,format='%(asctime)s [%(levelname)s] %(message)s')
+    log.basicConfig(level=loglevel,format='%(asctime)s [%(levelname)s]\t%(message)s')
    
     random.seed(19961106)
 

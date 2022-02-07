@@ -3,6 +3,8 @@
 This part of the Lampion Project alters Python Files using metamorphic transformations 
 and returns/writes the altered files.
 
+**Important: Due to the used parser, only Python 3 files are supported!**
+
 It is currently in early development, I implemented every feature for the first trials, 
 but I expect bugs popping up when you use them on actual data.
 
