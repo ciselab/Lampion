@@ -1,0 +1,51 @@
+version: '3.8'
+
+# This script filters the OpenVocabCodeNLM Small-dataset to 
+# remove Python 2 Files.
+
+# This is the second script to be run for dataset preparation.
+# The python-corpus is not required anymore. 
+# But the "open-vocab-small" directory needs to be filled already. 
+
+services:
+  python-test-filter:
+    image: lampion/python-transformer:0.0.1
+    environment:
+      target: "/input_data/Python_Test_Set"
+      configfile: "/config/filter.properties"
+      output: "/lampion_output/"
+      loglevel: "info"
+      print_example: "false"
+
+    volumes:
+      - ./filter_output/test:/lampion_output
+      - ./properties:/config
+      - ./open-vocab-small/:/input_data
+
+  python-valid-filter:
+    image: lampion/python-transformer:0.0.1    
+    environment:
+      target: "/input_data/Python_Validation_Set"
+      configfile: "/config/filter.properties"
+      output: "/lampion_output/"
+      loglevel: "info"
+      print_example: "false"
+
+    volumes:
+      - ./filter_output/validation:/lampion_output
+      - ./properties:/config
+      - ./open-vocab-small/:/input_data
+
+  python-training-filter:
+    image: lampion/python-transformer:0.0.1    
+    environment:
+      target: "/input_data/Python_Small_Training_Set"
+      configfile: "/config/filter.properties"
+      output: "/lampion_output/"
+      loglevel: "info"
+      print_example: "false"
+
+    volumes:
+      - ./filter_output/training:/lampion_output
+      - ./properties:/config
+      - ./open-vocab-small/:/input_data

@@ -9,7 +9,7 @@ Due to the File-Size // number of files, this can take a bit of time.
 ## Covered Steps 
 
 1. Reduce total corpus to "Small Corpus" as per authors ([reduce.sh](./reduce.sh))
-2. Filter small corpus for Python 3 files ([filter.sh](./filter.sh))
+2. Filter small corpus for Python 3 files only ([filter.sh](./filter.sh))
 3. Provide an example for applying docker-compose to filtered small corpus 
 
 ## Requirements 
