@@ -46,7 +46,7 @@ class Engine:
         This Engine is intentionally separated from any CLI / call to be better testable.
     """
 
-    def __init__(self, config: dict = None, output_dir: str = "./lampion_output"):
+    def __init__(self, config: dict = None, output_dir: str = "./lampion_output", store_only_changed: bool = False):
         log.debug("Creating Engine ...")
         self.__config = _default_config()
 
@@ -60,15 +60,20 @@ class Engine:
 
         self.__output_dir = output_dir
         self.__transformers = _create_transformers(self.__config)
+        self.__store_only_changed = store_only_changed
 
-        log.info("Initiated Engine "
-                 "writing output to %s with %i Transformers",self.__output_dir,len(self.__transformers))
+        self.__touched_files: {str} = set()
+
+        log.info("Initiated Engine; "
+                 "writing output to %s with %d Transformers",self.__output_dir,len(self.__transformers))
 
     __output_dir: str = "./lampion_output"
     __successful_transformations: int = 0
     __failed_transformations: int = 0
     __config = {}
     __transformers: [BaseTransformer] = []
+    __store_only_changed: bool = False
+    __touched_files: {str} = set()
 
     def run(self, csts: [(str, CSTNode)]) -> [(str, CSTNode)]:
         """
@@ -79,16 +84,15 @@ class Engine:
         - 1.1 Pick a cst
         - 1.2 Pick a transformer
         - 1.3 Apply the Transformer
-        - 1.4 Iff Transformer worked, inc transformations
+        - 1.4 Iff Transformer worked, inc transformations, store file touched
         - 1.5 repeat 1
-        - 2. Write SQL Statement (Currently Pending)
-        - 3. If Outputdir!=None: Write Files
-        - 4. Return changed Nodes
+        - 2. If Outputdir!=None: Write Files
+        - 3. Return changed Nodes
 
-        The initial CSTs should remain unchanged.
+        The initial CSTs should remain unchanged, as copies are made.
 
         :param csts:Either A Single LibCST Module (if Input was a single file)
-                    wrapped in a list or a list of such Modules (if Input was a folder).
+                    wrapped in a list *or* a list of such Modules (if Input was a folder).
         :return: The changed CST(s)
 
         The Nodes could be read in here too, but I wanted to separate it for better testability.
@@ -120,6 +124,7 @@ class Engine:
                 self.__successful_transformations = self.__successful_transformations + 1
                 transformer.postprocessing()
                 altered_csts.append((running_path, changed_cst))
+                self.__touched_files.add(running_path)
             else:
                 log.debug("Transformer failed - retrying with another one")
                 self.__failed_transformations = self.__failed_transformations + 1
@@ -145,22 +150,36 @@ class Engine:
         """
         return self.__transformers
 
+    def get_touched_paths(self) -> {str}:
+        """
+        :return: the touched files, empty if the engine did not run yet.
+        """
+        return self.__touched_files
+
     def _output_to_files(self, csts: [(str,"CSTNode")]) -> None:
         log.info("Starting to write %d files to %s",len(csts),self.__output_dir)
+        if self.__store_only_changed:
+            log.info("Only writing files that were touched (%d files) ! ",len(self.__touched_files))
+        else:
+            log.info("Writing all files, even those unchanged. %d files changed", len(self.__touched_files))
         for (p, cst) in csts:
-            # if the path starts absolute, os.path.join doesn't like it. Cut the leading /
-            inp_p = p if not p.startswith("/") else p[1:]
-            pp = os.path.join(self.__output_dir, inp_p)
-            if not (pp.startswith("/") or pp.startswith("./")):
-                pp = os.path.join("./",pp)
-            log.debug("Writing %s to %s",p,pp)
+            # Check for condition:
+            # Either We "just write stored" and the path must be touched
+            # Or: Write all
+            if not self.__store_only_changed or p in self.__touched_files:
+                # if the path starts absolute, os.path.join doesn't like it. Cut the leading /
+                inp_p = p if not p.startswith("/") else p[1:]
+                pp = os.path.join(self.__output_dir, inp_p)
+                if not (pp.startswith("/") or pp.startswith("./")):
+                    pp = os.path.join("./",pp)
+                log.debug("Writing %s to %s",p,pp)
 
-            # Create the (required) folders before trying to make the file
-            os.makedirs(os.path.dirname(pp), exist_ok=True)
-            # Open the File as write, with overwriting existing content
-            with open(pp, "w") as output_file:
-                output_file.write(cst.code)
-                output_file.close()
+                # Create the (required) folders before trying to make the file
+                os.makedirs(os.path.dirname(pp), exist_ok=True)
+                # Open the File as write, with overwriting existing content
+                with open(pp, "w") as output_file:
+                    output_file.write(cst.code)
+                    output_file.close()
 
 
 def _create_transformers(config: dict) -> [BaseTransformer]:

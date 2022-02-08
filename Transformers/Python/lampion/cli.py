@@ -21,7 +21,7 @@ from lampion.components.engine import Engine
 
 
 def run(path_to_code: str, path_to_config: str = None, output_prefix: str = "lampion_output",
-        print_sample_diff: bool = True) -> None:
+        store_only_changed:bool = False, print_sample_diff: bool = True) -> None:
     """
     Primary function to read the files, read the configuration, and run the engine.
     Separated from main for testability, as main() needs sys.args .
@@ -29,7 +29,8 @@ def run(path_to_code: str, path_to_config: str = None, output_prefix: str = "lam
     :param path_to_code: Path to Directory or File of Code.
     :param path_to_config: Path to Configuration to read in.
     :param output_prefix: Prefix to put before the output, will be created if not existing.
-    :param print_sample_diff: Whether or not to output one CST to Log. Default is true.
+    :param store_only_changed: Whether to print only changed CSTs. Default: False
+    :param print_sample_diff: Whether to output one CST to Log. Default is true.
     :return: None
     """
     log.info('Welcome to the Lampion-Python-Transformer')
@@ -42,7 +43,7 @@ def run(path_to_code: str, path_to_config: str = None, output_prefix: str = "lam
     if "seed" in config.keys() and config["seed"] and isinstance(config["seed"], int):
         random.seed(config["seed"])
 
-    engine = Engine(config, output_prefix)
+    engine = Engine(config=config, output_dir=output_prefix,store_only_changed = store_only_changed)
 
     altered_csts = engine.run(csts)
 
@@ -264,18 +265,23 @@ def main() -> None:
                              "Within this new folder, the initial structure will be replicated. "
                              "Any files will be overwritten.")
 
-    parser.add_argument('loglevel', metavar="log", type=str, nargs="?", default="info",
+    parser.add_argument("--output-only-changed",dest='store_only_changed',actions="store_true",
+                        help="Whether or not to print only files that changed. Default:False (Print all, even untouched)")
+
+    parser.add_argument('--loglevel', metavar="log", type=str, nargs="?", default="info",
                         help="The loglevel for printing logs. Default \'info\'. supported: \'warn\',\'info\',\'debug\'")
 
-    parser.add_argument('example', metavar="exp", type=bool, nargs="?", default=True,
+    parser.add_argument('--example', metavar="exp", dest='print_example',actions='store_true',
                         help="Whether or not to print an example of a changed file. ")
+    parser.add_defaults(print_example=False,store_only_changed=False)
 
     args = parser.parse_args()
 
     path = args.input[0]
     config = args.config[0]
     output = args.output[0]
-    example = args.example
+    example = args.print_example
+    store_only_changed = args.store_only_changed
 
     loglevel = log.INFO
     if args.loglevel.lower() == "debug":

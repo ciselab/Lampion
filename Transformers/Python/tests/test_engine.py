@@ -182,6 +182,51 @@ def test_run_with_two_csts_first_method_is_kept():
     assert len(altered_cst_A) == 1
 
 
+def test_run_with_two_csts_check_only_one_transformation_one_touched():
+    testobject = Engine(config={"transformations": 1, "transformationscope": "global"})
+
+    example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
+    example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
+
+    csts = [("PLACEHOLDER_A", example_cst_A), ("PLACEHOLDER_B", example_cst_B)]
+
+    testobject.run(csts)
+
+    assert len(testobject.get_touched_paths()) == 1
+
+
+def test_run_with_two_csts_check_many_transformations_both_touched():
+    testobject = Engine(config={"transformations": 20, "transformationscope": "global"})
+
+    example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
+    example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
+
+    csts = [("PLACEHOLDER_A", example_cst_A), ("PLACEHOLDER_B", example_cst_B)]
+
+    testobject.run(csts)
+
+    assert len(testobject.get_touched_paths()) == 2
+
+
+def test_run_with_two_csts_no_transformations_none_touched():
+    testobject = Engine(config={"transformations": 0, "transformationscope": "global"})
+
+    example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
+    example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
+
+    csts = [("PLACEHOLDER_A", example_cst_A), ("PLACEHOLDER_B", example_cst_B)]
+
+    testobject.run(csts)
+
+    assert len(testobject.get_touched_paths()) == 0
+
+
+def test_touched_engine_not_run_none_touched():
+    testobject = Engine(config={"transformations": 0, "transformationscope": "global"})
+
+    assert len(testobject.get_touched_paths()) == 0
+
+
 def test_config_default_config_is_not_none_and_not_empty():
     testobject = Engine()
 
