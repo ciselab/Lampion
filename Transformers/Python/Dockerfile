@@ -17,6 +17,7 @@ ENV configfile="./tests/test_configs/empty.properties"
 ENV output="/lampion_output/"
 ENV loglevel="info"
 ENV print_example="true"
+ENV only_store_touched="false"
 
 WORKDIR /lampion
 
