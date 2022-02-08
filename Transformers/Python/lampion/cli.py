@@ -265,15 +265,15 @@ def main() -> None:
                              "Within this new folder, the initial structure will be replicated. "
                              "Any files will be overwritten.")
 
-    parser.add_argument("--output-only-changed",dest='store_only_changed',actions="store_true",
+    parser.add_argument("--output-only-changed",dest='store_only_changed',action="store_true",
                         help="Whether or not to print only files that changed. Default:False (Print all, even untouched)")
 
-    parser.add_argument('--loglevel', metavar="log", type=str, nargs="?", default="info",
+    parser.add_argument('--loglevel', dest="loglevel", type=str, nargs="?", default="info",
                         help="The loglevel for printing logs. Default \'info\'. supported: \'warn\',\'info\',\'debug\'")
 
-    parser.add_argument('--example', metavar="exp", dest='print_example',actions='store_true',
+    parser.add_argument('--example', dest='print_example',action='store_true',
                         help="Whether or not to print an example of a changed file. ")
-    parser.add_defaults(print_example=False,store_only_changed=False)
+    parser.set_defaults(print_example=False,store_only_changed=False)
 
     args = parser.parse_args()
 

@@ -8,10 +8,10 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      target: "/input_data/Python_Test_Set"
+      target: "/input_data"
       configfile: "/config/sample.properties"
       output: "/lampion_output/"
-      loglevel: "debug"
+      loglevel: "info"
       print_example: "true"
       only_store_touched: "true"
 

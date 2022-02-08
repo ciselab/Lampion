@@ -9,6 +9,17 @@ Buggy Python 3 files, as well as Python 2 files are ignored for transformation.
 It is currently in early development, I implemented every feature for the first trials, 
 but I expect bugs popping up when you use them on actual data.
 
+## Instant Build & Run 
+
+The easiest way is to use the [docker-compose](./docker-compose.yaml):
+
+```
+docker-compose up --build
+```
+
+This will test & build everything and run it on examples from the tests.
+
+This is the recommended way to use the transformer - adjust the properties and compose for your project.
 
 ## Build & Run
 ```bash
