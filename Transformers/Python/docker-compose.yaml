@@ -1,0 +1,21 @@
+version: '3.8'
+
+# This is an example docker compose to show the usage.
+services:
+  python-lampion-transformer-examples:
+    image: lampion/python-transformer:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      target: "/input_data/Python_Test_Set"
+      configfile: "/config/sample.properties"
+      output: "/lampion_output/"
+      loglevel: "debug"
+      print_example: "true"
+      only_store_touched: "true"
+
+    volumes:
+      - ./compose_output:/lampion_output
+      - ./tests/test_configs:/config
+      - ./tests/test_inputs/buggy_and_ok_files/:/input_data
