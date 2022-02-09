@@ -104,8 +104,6 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
         if tries == max_tries:
             log.warning("Lambda Identity Transformer failed after %i attempt",max_tries)
 
-        # TODO: add Post-Processing Values here
-
         return altered_cst
 
     def reset(self) -> None:

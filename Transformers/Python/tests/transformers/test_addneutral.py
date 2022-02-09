@@ -1,4 +1,5 @@
 import random
+import regex as re
 
 import libcst
 
@@ -365,7 +366,7 @@ def test_addneutral_apply_to_method_with_two_identical_ints_should_work():
 def test_addneutral_apply_twice_for_int_should_work():
     example_cst = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
 
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=150)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -425,6 +426,44 @@ def test_addneutral_for_int_should_have_worked():
 
     assert transformer.worked()
 
+def test_addneutral_for_int_apply_many_times_should_have_worked():
+    example_cst = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
+
+    transformer = AddNeutralElementTransformer(max_tries=3)
+    altered_cst = example_cst
+    counter = 0
+    many_times = 20
+
+    for i in range(0,many_times):
+        altered_cst = transformer.apply(altered_cst)
+        counter = counter + 1 if transformer.worked() else counter
+        transformer.reset()
+
+    print(counter)
+
+    altered_code = altered_cst.code
+    print(altered_code)
+    assert altered_code.count("0") == many_times
+
+def test_addneutral_for_string_apply_many_times_should_have_worked():
+    example_cst = libcst.parse_module("def some(): \n\ta = \"hello\" \n\treturn a")
+
+    transformer = AddNeutralElementTransformer(max_tries=3)
+    altered_cst = example_cst
+    counter = 0
+    many_times = 20
+
+
+    for i in range(1,many_times):
+        altered_cst = transformer.apply(altered_cst)
+        counter = counter + 1 if transformer.worked() else counter
+        transformer.reset()
+
+    print(counter)
+
+    altered_code = altered_cst.code
+    print(altered_code)
+    assert altered_code.count("\"\"") == many_times
 
 # Empty Methods // No Literals
 
@@ -451,3 +490,58 @@ def test_addneutral_method_has_no_literals_code_did_not_change():
     altered_code = str(altered_cst.code)
 
     assert initial_code == altered_code
+
+"""
+These are for testing out libcst and were used to create an error
+def test_libcst_behaviour_parsing_concatenated_parenthesized_strings():
+    sample_string = "(((\"A\") + ((\"B\") + (\"C\")) (\"D\")))"
+    parsed = libcst.parse_expression(sample_string)
+
+
+def test_libcst_behaviour_parsing_concatenated_parenthesized_strings_2():
+    sample_string = "(((1) + ((0) + ((0)+0) + ((0 + 0)))))"
+    parsed = libcst.parse_expression(sample_string)
+
+
+def test_libcst_behaviour_parsing_concatenated_parenthesized_strings_3():
+    sample_string = "(((1 + 0) + ((0 + 0) + 0)) + 0 )"
+    parsed = libcst.parse_expression(sample_string)
+
+
+
+def test_libcst_behaviour_parsing_concatenated_parenthesized_strings_noisy_var():
+    sample_string =  'a = (("hello"+((((""+"")+"")+"")+""))+(((((((((((""+"")+"")+"")+"")+"")+"")+"")+"")+"")+"")+""))'
+
+    parsed = libcst.parse_expression(sample_string)
+
+def test_libcst_behaviour_parsing_concatenated_parenthesized_strings_noisy_method():
+    sample_string =  'def some(): \n\ta = (("hello"+((((""+"")+"")+"")+""))+(((((((((((""+"")+"")+"")+"")+"")+"")+"")+"")+"")+"")+"")) \n\treturn a'
+
+    parsed = libcst.parse_expression(sample_string)
+"""
+
+def test_replacing_brackets():
+    sample = "((\"X\" + \"\") + \"\")"
+    pattern = r'\(\("(.*?)" \+ ""\) \+ ""\)'
+    result_pattern =  r'("\1" + "" + "")'
+
+    print("Matched:",re.search(pattern,sample))
+
+    result = re.sub(pattern,result_pattern, sample)
+    print(result)
+
+    assert result.strip() == "(\"X\" + \"\" + \"\")"
+
+def test_replacing_brackets_stacked():
+    sample = '(("X" + "" + "" + "") + "")'
+    #(.*?) matches any character in a greedy way
+    # Here it means anything
+    pattern = r'\(\("(.*?)" \+ ""\) \+ ""\)'
+    result_pattern =  r'("\1" + "" + "")'
+
+    print("Matched:",re.search(pattern,sample))
+
+    result = re.sub(pattern,result_pattern, sample)
+    print(result)
+
+    assert result.strip() == "(\"X\" + \"\" + \"\" + \"\" + \"\")"

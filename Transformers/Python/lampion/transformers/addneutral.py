@@ -72,33 +72,33 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
         max_tries: int = self.get_max_tries()
 
         while (not self._worked) and tries <= max_tries:
-            try:
-                cst_to_alter.visit(visitor)
 
-                seen_literals = \
-                    [("simple_string", x) for x in visitor.seen_strings] \
-                    + [("float", x) for x in visitor.seen_floats] \
-                    + [("integer", x) for x in visitor.seen_integers]
-                # Exit early: No Literals to work on!
-                if len(seen_literals) == 0:
-                    self._worked = False
-                    return cst_to_alter
+            cst_to_alter.visit(visitor)
 
-                to_replace = random.choice(seen_literals)
+            seen_literals = \
+                [("simple_string", x) for x in visitor.seen_strings] \
+                + [("float", x) for x in visitor.seen_floats] \
+                + [("integer", x) for x in visitor.seen_integers]
+            # Exit early: No Literals to work on!
+            if len(seen_literals) == 0:
+                self._worked = False
+                return cst_to_alter
 
-                replacer = self.__Replacer(to_replace[1], to_replace[0])
+            to_replace = random.choice(seen_literals)
 
-                altered_cst = cst_to_alter.visit(replacer)
+            replacer = self.__Replacer(to_replace[1], to_replace[0])
 
-                tries = tries + 1
-                self._worked = replacer.worked
-            except libcst._nodes.base.CSTValidationError:
+            altered_cst = cst_to_alter.visit(replacer)
+
+            tries = tries + 1
+            self._worked = replacer.worked
+            #except libcst._nodes.base.CSTValidationError:
                 # This can happen if we try to add strings and add too many Parentheses
                 # See https://github.com/Instagram/LibCST/issues/640
-                tries = tries + 1
+            #    tries = tries + 1
 
         if tries == max_tries:
-            log.warning("Add Add Neutral Element Transformer failed after %i attempts",max_tries)
+            log.warning("Add_Neutral_Element Transformer failed after %i attempts",max_tries)
 
         return altered_cst
 
@@ -221,10 +221,13 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
                     and not self.worked:
                 literal = str(original_node.value)
                 replacement = f"({literal}+0)"
-                expr = cst.parse_expression(replacement)
-                updated_node = updated_node.deep_replace(updated_node, expr)
-                self.worked = True
-
+                print(replacement)
+                try:
+                    expr = cst.parse_expression(replacement)
+                    updated_node = updated_node.deep_replace(updated_node, expr)
+                    self.worked = True
+                except:
+                    print("Failed to parse",replacement)
                 return updated_node
             return updated_node
 
@@ -244,9 +247,11 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
                     and not self.worked:
                 literal = str(original_node.value)
                 replacement = f"({literal}+\"\")"
-                expr = cst.parse_expression(replacement)
-                updated_node = updated_node.deep_replace(updated_node, expr)
-                self.worked = True
-
+                try:
+                    expr = cst.parse_expression(replacement)
+                    updated_node = updated_node.deep_replace(updated_node, expr)
+                    self.worked = True
+                except:
+                    print("Failed to parse: ",replacement)
                 return updated_node
             return updated_node
