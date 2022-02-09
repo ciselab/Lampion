@@ -10,6 +10,7 @@ import logging as log
 import libcst._nodes.base
 from libcst import CSTNode
 import libcst as cst
+import regex as re
 
 from lampion.transformers.basetransformer import BaseTransformer
 
@@ -47,10 +48,10 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
     LibCST does not support finding this kind of behaviour afaik.
     """
 
-    def __init__(self, max_tries:int = 75):
+    def __init__(self, max_tries: int = 75):
         self._worked = False
         self.set_max_tries(max_tries)
-        log.info("AddNeutralElementTransformer created (%d Re-Tries)",self.get_max_tries())
+        log.info("AddNeutralElementTransformer created (%d Re-Tries)", self.get_max_tries())
 
     def apply(self, cst_to_alter: CSTNode) -> CSTNode:
         """
@@ -92,13 +93,13 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
 
             tries = tries + 1
             self._worked = replacer.worked
-            #except libcst._nodes.base.CSTValidationError:
-                # This can happen if we try to add strings and add too many Parentheses
-                # See https://github.com/Instagram/LibCST/issues/640
+            # except libcst._nodes.base.CSTValidationError:
+            # This can happen if we try to add strings and add too many Parentheses
+            # See https://github.com/Instagram/LibCST/issues/640
             #    tries = tries + 1
 
         if tries == max_tries:
-            log.warning("Add_Neutral_Element Transformer failed after %i attempts",max_tries)
+            log.warning("Add_Neutral_Element Transformer failed after %i attempts", max_tries)
 
         return altered_cst
 
@@ -221,13 +222,9 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
                     and not self.worked:
                 literal = str(original_node.value)
                 replacement = f"({literal}+0)"
-                print(replacement)
-                try:
-                    expr = cst.parse_expression(replacement)
-                    updated_node = updated_node.deep_replace(updated_node, expr)
-                    self.worked = True
-                except:
-                    print("Failed to parse",replacement)
+                expr = cst.parse_expression(replacement)
+                updated_node = updated_node.deep_replace(updated_node, expr)
+                self.worked = True
                 return updated_node
             return updated_node
 
@@ -247,11 +244,52 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
                     and not self.worked:
                 literal = str(original_node.value)
                 replacement = f"({literal}+\"\")"
-                try:
-                    expr = cst.parse_expression(replacement)
-                    updated_node = updated_node.deep_replace(updated_node, expr)
-                    self.worked = True
-                except:
-                    print("Failed to parse: ",replacement)
+                expr = cst.parse_expression(replacement)
+                updated_node = updated_node.deep_replace(updated_node, expr)
+                self.worked = True
                 return updated_node
             return updated_node
+
+
+def _reduce_brackets(to_reduce: str) -> str:
+    """
+    Reduces redundant brackets within code.
+    As matching parentheses is something regex cannot do (or cannot do well),
+    the patterns are hardcoded to the alternations done in the visitors.
+    That is, it only changes found patterns for empty strings, + 0 and + 0.0.
+
+    Examples:
+    >>> _reduce_brackets("((\"X\" + \"\") + \"\")")
+    >>> "(\"X\" + \"\" + \"\")"
+    or:
+    >>> _reduce_brackets('(("X" + "" + "" + "") + "")')
+    >>> "(\"X\" + \"\" + \"\" + \"\" + \"\")"
+    For more tests, see the class-level tests.
+
+    This method is intented to be used AFTER the alternation, so that the code never "grows" to big.
+    I.E. this should be called once the AST has been changed and not before changing the AST.
+
+    :param to_reduce str: the string to be reduced
+    :returns str: the string with less brackets, if no match then the unchanged string
+    This method was necessary as there is an issue with LibCST once it reaches too many opening brackets.
+    See Issue: https://github.com/Instagram/LibCST/issues/640
+    """
+    # (.*?) matches any character in a greedy way
+    # What I would like more is "any Character, a Space, a Plus and Quote-Mark" but I was not able to express it
+    # TODO: sharpen regex match
+    string_pattern = r'\(\("(.*?)" \+ ""\) \+ ""\)'
+    string_result_pattern = r'("\1" + "" + "")'
+
+    int_pattern = r'\(\((.*?) \+ 0\) \+ 0\)'
+    int_result_pattern = r'(\1 + 0 + 0)'
+
+    float_pattern = r'\(\((.*?) \+ 0.0\) \+ 0.0\)'
+    float_result_pattern = r'(\1 + 0.0 + 0.0)'
+
+    result = to_reduce
+
+    result = re.sub(string_pattern, string_result_pattern, result)
+    result = re.sub(int_pattern, int_result_pattern, result)
+    result = re.sub(float_pattern, float_result_pattern, result)
+
+    return result

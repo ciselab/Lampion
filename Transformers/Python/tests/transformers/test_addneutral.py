@@ -3,7 +3,7 @@ import regex as re
 
 import libcst
 
-from lampion.transformers.addneutral import AddNeutralElementTransformer
+from lampion.transformers.addneutral import AddNeutralElementTransformer, _reduce_brackets
 
 
 # Floats
@@ -491,57 +491,79 @@ def test_addneutral_method_has_no_literals_code_did_not_change():
 
     assert initial_code == altered_code
 
-"""
-These are for testing out libcst and were used to create an error
-def test_libcst_behaviour_parsing_concatenated_parenthesized_strings():
-    sample_string = "(((\"A\") + ((\"B\") + (\"C\")) (\"D\")))"
-    parsed = libcst.parse_expression(sample_string)
 
+# Testing Bracket reduction
 
-def test_libcst_behaviour_parsing_concatenated_parenthesized_strings_2():
-    sample_string = "(((1) + ((0) + ((0)+0) + ((0 + 0)))))"
-    parsed = libcst.parse_expression(sample_string)
+def test_reduce_brackets_for_strings():
+    input = "((\"X\" + \"\") + \"\")"
+    expected_output = "(\"X\" + \"\" + \"\")"
+    result = _reduce_brackets(input)
 
+    assert result == expected_output
 
-def test_libcst_behaviour_parsing_concatenated_parenthesized_strings_3():
-    sample_string = "(((1 + 0) + ((0 + 0) + 0)) + 0 )"
-    parsed = libcst.parse_expression(sample_string)
+def test_reduce_brackets_for_strings_stacked_string():
+    input = '(("X" + "" + "" + "") + "")'
+    expected_output = "(\"X\" + \"\" + \"\" + \"\" + \"\")"
+    result = _reduce_brackets(input)
 
+    assert result == expected_output
 
+def test_reduce_brackets_for_strings_nothing_to_reduce_remains_unchanged():
+    input = '("X" + "" + "" + "")'
 
-def test_libcst_behaviour_parsing_concatenated_parenthesized_strings_noisy_var():
-    sample_string =  'a = (("hello"+((((""+"")+"")+"")+""))+(((((((((((""+"")+"")+"")+"")+"")+"")+"")+"")+"")+"")+""))'
+    result = _reduce_brackets(input)
 
-    parsed = libcst.parse_expression(sample_string)
+    assert result == input
 
-def test_libcst_behaviour_parsing_concatenated_parenthesized_strings_noisy_method():
-    sample_string =  'def some(): \n\ta = (("hello"+((((""+"")+"")+"")+""))+(((((((((((""+"")+"")+"")+"")+"")+"")+"")+"")+"")+"")+"")) \n\treturn a'
+def test_reduce_brackets_for_ints():
+    input = "((5 + 0) + 0)"
+    expected_output = "(5 + 0 + 0)"
+    result = _reduce_brackets(input)
 
-    parsed = libcst.parse_expression(sample_string)
-"""
+    assert result == expected_output
+
+def test_reduce_brackets_for_ints_stacked_ints():
+    input = '((5 + 0 + 0 + 0) + 0)'
+    expected_output = "(5 + 0 + 0 + 0 + 0)"
+    result = _reduce_brackets(input)
+
+    assert result == expected_output
+
+def test_reduce_brackets_for_ints_nothing_to_reduce_remains_unchanged():
+    input = '(5 + 0 + 0 + 0)'
+
+    result = _reduce_brackets(input)
+
+    assert result == input
+
+def test_reduce_brackets_mixed_elements_remains_unchanged():
+    input = '((("5" + 0.0) + "") + 0)'
+
+    result = _reduce_brackets(input)
+
+    assert result == input
+
+# Learning Regex
+# (You always have to re-learn when you need it)
 
 def test_replacing_brackets():
+    # This test was useful to find the right Regex,
+    # and is kept for documentation reasons
     sample = "((\"X\" + \"\") + \"\")"
     pattern = r'\(\("(.*?)" \+ ""\) \+ ""\)'
     result_pattern =  r'("\1" + "" + "")'
 
-    print("Matched:",re.search(pattern,sample))
-
     result = re.sub(pattern,result_pattern, sample)
-    print(result)
 
     assert result.strip() == "(\"X\" + \"\" + \"\")"
 
 def test_replacing_brackets_stacked():
+    # This test was useful to find the right Regex,
+    # and is kept for documentation reasons
     sample = '(("X" + "" + "" + "") + "")'
-    #(.*?) matches any character in a greedy way
-    # Here it means anything
     pattern = r'\(\("(.*?)" \+ ""\) \+ ""\)'
     result_pattern =  r'("\1" + "" + "")'
 
-    print("Matched:",re.search(pattern,sample))
-
     result = re.sub(pattern,result_pattern, sample)
-    print(result)
 
     assert result.strip() == "(\"X\" + \"\" + \"\" + \"\" + \"\")"
