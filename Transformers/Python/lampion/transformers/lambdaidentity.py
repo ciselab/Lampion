@@ -47,9 +47,10 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
     LibCST does not support finding this kind of behaviour afaik.
     """
 
-    def __init__(self):
-        log.info("LambdaIdentityTransformer Created")
+    def __init__(self, max_tries:int = 50):
         self._worked = False
+        self.set_max_tries(max_tries)
+        log.info("LambdaIdentityTransformer created (%d Re-Tries)",self.get_max_tries())
 
     def apply(self, cst_to_alter: CSTNode) -> CSTNode:
         """
@@ -68,7 +69,7 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
         altered_cst = cst_to_alter
 
         tries: int = 0
-        max_tries: int = 100
+        max_tries: int = self.get_max_tries()
 
         while (not self._worked) and tries <= max_tries:
             try:

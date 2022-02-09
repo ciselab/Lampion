@@ -23,6 +23,9 @@ def test_lambdaidentity_apply_twice_for_float_should_use_identity_lambda():
     example_cst = libcst.parse_module("def some(): \n\ta = 0.5 \n\treturn a")
 
     transformer = LambdaIdentityTransformer()
+    # This test needs a bigger re-try value due to (strange) LibCST Behavior
+    transformer.set_max_tries(150)
+
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -37,6 +40,8 @@ def test_lambdaidentity_apply_to_method_with_two_floats_should_be_applied_once_o
     example_cst = libcst.parse_module("def some(): \n\ta = 0.5\n\tb=0.3 \n\treturn a+b")
 
     transformer = LambdaIdentityTransformer()
+    # This test needs a bigger re-try value due to (strange) LibCST Behavior
+    transformer.set_max_tries(200)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -50,6 +55,8 @@ def test_lambdaidentity_apply_to_method_with_two_identical_floats_should_be_appl
     example_cst = libcst.parse_module("def some(): \n\ta = 0.5\n\tb=0.5 \n\treturn a+b")
 
     transformer = LambdaIdentityTransformer()
+    # This test needs a bigger re-try value due to (strange) LibCST Behavior
+    transformer.set_max_tries(200)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -62,6 +69,8 @@ def test_lambdaidentity_apply_twice_for_float_should_work():
     example_cst = libcst.parse_module("def some(): \n\ta = 0.5 \n\treturn a")
 
     transformer = LambdaIdentityTransformer()
+    # This test needs a bigger re-try value due to (strange) LibCST Behavior
+    transformer.set_max_tries(150)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -141,7 +150,7 @@ def test_lambdaidentity_for_string_should_add_lambda_variant_a():
 def test_lambdaidentity_for_string_should_add_lambda_variant_b():
     example_cst = libcst.parse_module("def some(): \n\ta = \"test\" \n\treturn a")
 
-    transformer = LambdaIdentityTransformer()
+    transformer = LambdaIdentityTransformer(max_tries=120)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -194,7 +203,7 @@ def test_lambdaidentity_apply_to_method_with_two_different_strings_should_be_app
 def test_lambdaidentity_apply_to_method_with_two_identical_string_should_be_applied_is_applied_at_first_instance():
     example_cst = libcst.parse_module("def some(): \n\ta = \"hello\"\n\tb=\"hello\" \n\treturn a+b")
 
-    transformer = LambdaIdentityTransformer()
+    transformer = LambdaIdentityTransformer(max_tries=150)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -203,10 +212,20 @@ def test_lambdaidentity_apply_to_method_with_two_identical_string_should_be_appl
     assert "lambda" in altered_code
     assert altered_code.count("lambda") == 1
 
+def test_lambdaidentity_apply_to_method_with_two_identical_string_transformer_worked():
+    example_cst = libcst.parse_module("def some(): \n\ta = \"hello\"\n\tb=\"hello\" \n\treturn a+b")
+
+    transformer = LambdaIdentityTransformer(max_tries=150)
+    transformer.reset()
+
+    altered_cst = transformer.apply(example_cst)
+
+    assert transformer.worked()
+
 def test_lambdaidentity_apply_twice_for_string_should_work():
     example_cst = libcst.parse_module("def some(): \n\ta = \"hello\" \n\treturn a")
 
-    transformer = LambdaIdentityTransformer()
+    transformer = LambdaIdentityTransformer(max_tries=125)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -233,7 +252,7 @@ def test_lambdaidentity_for_string_in_return_should_add_lambda_variant_a():
 def test_lambdaidentity_for_string_in_return_should_add_lambda_variant_b():
     example_cst = libcst.parse_module("def some():\n\treturn \"world\"")
 
-    transformer = LambdaIdentityTransformer()
+    transformer = LambdaIdentityTransformer(max_tries=150)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -294,7 +313,7 @@ def test_lambdaidentity_for_int_should_use_identity_lambda():
 def test_lambdaidentity_apply_twice_for_int_should_use_identity_lambda():
     example_cst = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
 
-    transformer = LambdaIdentityTransformer()
+    transformer = LambdaIdentityTransformer(max_tries=125)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -324,7 +343,7 @@ def test_lambdaidentity_apply_to_method_with_two_identical_ints_should_be_applie
     # This Fails for some seeds???
     random.seed(50)
 
-    transformer = LambdaIdentityTransformer()
+    transformer = LambdaIdentityTransformer(max_tries=125)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -348,7 +367,7 @@ def test_lambdaidentity_apply_to_method_with_two_identical_ints_should_work():
 def test_lambdaidentity_apply_twice_for_int_should_work():
     example_cst = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
 
-    transformer = LambdaIdentityTransformer()
+    transformer = LambdaIdentityTransformer(max_tries=125)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)

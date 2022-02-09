@@ -261,7 +261,7 @@ def test_addneutral_add_a_lot_of_strings_should_fail_gracefully():
 def test_addneutral_for_int_should_add_plus_0_variant_a():
     example_cst_a = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
 
-    transformer_a = AddNeutralElementTransformer()
+    transformer_a = AddNeutralElementTransformer(max_tries=160)
     transformer_a.reset()
 
     altered_cst_a = transformer_a.apply(example_cst_a)
@@ -380,7 +380,7 @@ def test_addneutral_apply_twice_for_int_should_work():
 def test_addneutral_for_int_in_return_should_add_plus_0():
     example_cst = libcst.parse_module("def some():\n\treturn 5")
 
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=150)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -392,7 +392,7 @@ def test_addneutral_for_int_in_return_should_add_plus_0():
 def test_addneutral_for_int_in_default_parameters_should_add_plus_0():
     example_cst = libcst.parse_module("def some(a: int = 5):\n\treturn a")
 
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=120)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -405,7 +405,7 @@ def test_addneutral_for_int_in_default_parameters_should_add_plus_0():
 def test_addneutral_for_int_in_default_parameters_should_work():
     example_cst = libcst.parse_module("def some(a: int = 5):\n\treturn a")
 
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=120)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)

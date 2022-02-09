@@ -47,9 +47,10 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
     LibCST does not support finding this kind of behaviour afaik.
     """
 
-    def __init__(self):
-        log.info("AddNeutralElementTransformer Created")
+    def __init__(self, max_tries:int = 75):
         self._worked = False
+        self.set_max_tries(max_tries)
+        log.info("AddNeutralElementTransformer created (%d Re-Tries)",self.get_max_tries())
 
     def apply(self, cst_to_alter: CSTNode) -> CSTNode:
         """
@@ -68,7 +69,7 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
         altered_cst = cst_to_alter
 
         tries: int = 0
-        max_tries: int = 150
+        max_tries: int = self.get_max_tries()
 
         while (not self._worked) and tries <= max_tries:
             try:
@@ -97,7 +98,7 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
                 tries = tries + 1
 
         if tries == max_tries:
-            log.warning("Add Add Neutral Element Transformer failed after %i attempt",max_tries)
+            log.warning("Add Add Neutral Element Transformer failed after %i attempts",max_tries)
 
         return altered_cst
 

@@ -41,14 +41,15 @@ class RenameVariableTransformer(BaseTransformer, ABC):
     __string_randomness: str
     _worked: bool
 
-    def __init__(self, string_randomness: str = "pseudo"):
+    def __init__(self, string_randomness: str = "pseudo", max_tries:int = 75):
         if string_randomness in ["pseudo", "full"]:
             self.__string_randomness = string_randomness
         else:
             raise ValueError("Unrecognized Value for String Randomness, supported are pseudo and full")
 
-        log.info("RenameVariableTransformer Created")
         _worked = False
+        self.set_max_tries(max_tries)
+        log.info("RenameVariableTransformer created (%d Re-Tries)",self.get_max_tries())
 
     def apply(self, cst_to_alter: CSTNode) -> CSTNode:
         """
@@ -67,7 +68,7 @@ class RenameVariableTransformer(BaseTransformer, ABC):
         altered_cst = cst_to_alter
 
         tries: int = 0
-        max_tries: int = 10
+        max_tries: int = self.get_max_tries()
 
         while (not self._worked) and tries <= max_tries:
             try:
