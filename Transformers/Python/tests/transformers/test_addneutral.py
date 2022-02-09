@@ -242,47 +242,60 @@ def test_addneutral_for_string_should_have_worked():
 
     assert transformer.worked()
 
+def test_addneutral_add_a_lot_of_strings_should_fail_gracefully():
+    # There is an issue with adding too many brackets to strings
+    # This is not a python error, but from the LibCST Library
+    # This test just shows / looks that there is no error thrown
+    # I opened an issue with LibCST https://github.com/Instagram/LibCST/issues/640
+    example_cst = libcst.parse_module("def some(): \n\ta = \"hello\" \n\treturn a")
+
+    transformer = AddNeutralElementTransformer()
+    altered_cst = example_cst
+    for i in range(1,90):
+        transformer.reset()
+        altered_cst = transformer.apply(altered_cst)
+
+    assert True
 
 # Integers
 def test_addneutral_for_int_should_add_plus_0_variant_a():
-    example_cst = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
+    example_cst_a = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
 
-    transformer = AddNeutralElementTransformer()
-    transformer.reset()
+    transformer_a = AddNeutralElementTransformer()
+    transformer_a.reset()
 
-    altered_cst = transformer.apply(example_cst)
-    transformer.reset()
+    altered_cst_a = transformer_a.apply(example_cst_a)
 
-    altered_code = altered_cst.code
-    #print(altered_code)
-    #assert "(5+0)" in altered_code
+    altered_code_a = altered_cst_a.code
+
+    assert transformer_a.worked()
+    assert "(5+0)" in altered_code_a
     #TODO: Investigate why this is flaky!
     #The first integer test fails, the others pass
 
 def test_addneutral_for_int_should_add_plus_0_variant_b():
     # Something was odd with adding 0 to 5, so I do a second test
-    example_cst = libcst.parse_module("def some(): \n\ta = 33 \n\treturn a")
+    example_cst_b = libcst.parse_module("def some(): \n\ta = 33 \n\treturn a")
 
-    transformer = AddNeutralElementTransformer()
-    transformer.reset()
+    transformer_b = AddNeutralElementTransformer()
 
-    altered_cst = transformer.apply(example_cst)
-    transformer.reset()
+    altered_cst_b = transformer_b.apply(example_cst_b)
 
-    altered_code = altered_cst.code
+    altered_code = altered_cst_b.code
+    assert transformer_b.worked()
     assert "(33+0)" in altered_code
 
 def test_addneutral_for_int_should_add_plus_0_variant_c():
     # Something was odd with adding 0 to 5, so I do a third test
-    example_cst = libcst.parse_module("def some(): \n\ta = 1 \n\treturn a")
+    example_cst_c = libcst.parse_module("def some(): \n\ta = 1 \n\treturn a")
 
-    transformer = AddNeutralElementTransformer()
-    transformer.reset()
+    transformer_c = AddNeutralElementTransformer()
+    transformer_c.reset()
 
-    altered_cst = transformer.apply(example_cst)
-    transformer.reset()
+    altered_cst_c = transformer_c.apply(example_cst_c)
+    altered_code = altered_cst_c.code
 
-    altered_code = altered_cst.code
+    assert transformer_c.worked()
     assert "(1+0)" in altered_code
 
 def test_addneutral_apply_twice_for_int_should_add_plus_0():
@@ -295,8 +308,10 @@ def test_addneutral_apply_twice_for_int_should_add_plus_0():
     transformer.reset()
 
     altered_cst = transformer.apply(altered_cst)
+    transformer.reset()
     altered_code = altered_cst.code
 
+    print(altered_code)
     assert altered_code.count("0") == 2
 
 

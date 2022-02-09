@@ -85,7 +85,7 @@ def read_input_dir(path: str) -> [(str, CSTNode)]:
     # Case 1: Path is a directory
     if os.path.isdir(path):
         log.info("Received Path is a Directory - Looking for multiple files")
-        log.info("This might take a while ... (run in debug to see process)")
+        log.info("This might take a while ... (run in debug to see progress)")
         results = []
         fails = []
         file_counter = 0
@@ -94,6 +94,8 @@ def read_input_dir(path: str) -> [(str, CSTNode)]:
             for f in fnames:
                 if f.endswith(".py"):
                     file_counter += 1
+                    if (file_counter % 1000) == 0:
+                        log.info("Parsed %d Files (still running)",file_counter)
                     file_path: str = os.path.join(dirpath, f)
                     log.debug("Parsing %s", file_path)
                     try:

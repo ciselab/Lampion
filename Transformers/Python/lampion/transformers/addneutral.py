@@ -7,6 +7,7 @@ from typing import Optional
 
 import logging as log
 
+import libcst._nodes.base
 from libcst import CSTNode
 import libcst as cst
 
@@ -67,33 +68,36 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
         altered_cst = cst_to_alter
 
         tries: int = 0
-        max_tries: int = 100
+        max_tries: int = 150
 
         while (not self._worked) and tries <= max_tries:
-            cst_to_alter.visit(visitor)
+            try:
+                cst_to_alter.visit(visitor)
 
-            seen_literals = \
-                [("simple_string", x) for x in visitor.seen_strings] \
-                + [("float", x) for x in visitor.seen_floats] \
-                + [("integer", x) for x in visitor.seen_integers]
-            # Exit early: No Literals to work on!
-            if len(seen_literals) == 0:
-                self._worked = False
-                return cst_to_alter
+                seen_literals = \
+                    [("simple_string", x) for x in visitor.seen_strings] \
+                    + [("float", x) for x in visitor.seen_floats] \
+                    + [("integer", x) for x in visitor.seen_integers]
+                # Exit early: No Literals to work on!
+                if len(seen_literals) == 0:
+                    self._worked = False
+                    return cst_to_alter
 
-            to_replace = random.choice(seen_literals)
+                to_replace = random.choice(seen_literals)
 
-            replacer = self.__Replacer(to_replace[1], to_replace[0])
+                replacer = self.__Replacer(to_replace[1], to_replace[0])
 
-            altered_cst = cst_to_alter.visit(replacer)
+                altered_cst = cst_to_alter.visit(replacer)
 
-            tries = tries + 1
-            self._worked = replacer.worked
+                tries = tries + 1
+                self._worked = replacer.worked
+            except libcst._nodes.base.CSTValidationError:
+                # This can happen if we try to add strings and add too many Parentheses
+                # See https://github.com/Instagram/LibCST/issues/640
+                tries = tries + 1
 
         if tries == max_tries:
             log.warning("Add Add Neutral Element Transformer failed after %i attempt",max_tries)
-
-        # TODO: add Post-Processing Values here
 
         return altered_cst
 

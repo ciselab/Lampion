@@ -67,30 +67,35 @@ class RenameParameterTransformer(BaseTransformer, ABC):
         max_tries: int = 10
 
         while (not self._worked) and tries <= max_tries:
-            cst_to_alter.visit(visitor)
-            self._worked = visitor.finished
+            try:
+                cst_to_alter.visit(visitor)
+                self._worked = visitor.finished
 
-            seen_names = list({x.value for x in visitor.seen_params})
-            # Exit early: No local Variables!
-            if len(seen_names) == 0:
-                self._worked = False
-                return cst_to_alter
+                seen_names = list({x.value for x in visitor.seen_params})
+                # Exit early: No local Variables!
+                if len(seen_names) == 0:
+                    self._worked = False
+                    return cst_to_alter
 
-            to_replace = random.choice(seen_names)
+                to_replace = random.choice(seen_names)
 
-            if self.__string_randomness == "pseudo":
-                replacement = get_pseudo_random_string()
-            elif self.__string_randomness == "full":
-                replacement = get_random_string(5)
-            else:
-                raise ValueError(
-                    "Something changed the StringRandomness in RenameParamTransformer to an invalid value.")
+                if self.__string_randomness == "pseudo":
+                    replacement = get_pseudo_random_string()
+                elif self.__string_randomness == "full":
+                    replacement = get_random_string(5)
+                else:
+                    raise ValueError(
+                        "Something changed the StringRandomness in RenameParamTransformer to an invalid value.")
 
-            renamer = self.__Renamer(to_replace, replacement)
+                renamer = self.__Renamer(to_replace, replacement)
 
-            altered_cst = cst_to_alter.visit(renamer)
+                altered_cst = cst_to_alter.visit(renamer)
+                tries = tries + 1
 
-            tries = tries + 1
+            except AttributeError:
+                # This case happened when the seen variables were tuples
+                # Seen in OpenVocabCodeNLM Test Data
+                tries = tries + 1
 
         if tries == max_tries:
             log.warning("Rename Variable Transformer failed after %i attempt",max_tries)

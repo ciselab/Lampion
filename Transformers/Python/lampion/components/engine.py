@@ -131,6 +131,10 @@ class Engine:
                 transformer.reset()
                 # If the Transformer failed, re-add the unaltered CST
                 altered_csts.append((running_path, running_cst))
+            # Print some progress over the
+            if self.__successful_transformations % 1000 == 0 and self.__successful_transformations > 0:
+                log.info("Finished %d Transformations", self.__successful_transformations)
+                log.debug("Currently failed Transformations: %d", self.__failed_transformations)
 
         if self.__output_dir:
             log.info("Writing to Output to %s",self.__output_dir)
