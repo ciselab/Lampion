@@ -16,6 +16,7 @@ services:
       output: "/lampion_output/"
       loglevel: "info"
       print_example: "false"
+      only_store_touched: "false"
 
     volumes:
       - ./filter_output/test:/lampion_output
@@ -30,6 +31,7 @@ services:
       output: "/lampion_output/"
       loglevel: "info"
       print_example: "false"
+      only_store_touched: "false"
 
     volumes:
       - ./filter_output/validation:/lampion_output
@@ -44,6 +46,7 @@ services:
       output: "/lampion_output/"
       loglevel: "info"
       print_example: "false"
+      only_store_touched: "false"
 
     volumes:
       - ./filter_output/training:/lampion_output
