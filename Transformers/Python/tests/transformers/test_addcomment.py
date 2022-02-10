@@ -1,10 +1,12 @@
 import libcst
+import random
 
 from lampion.transformers.addcomment import AddCommentTransformer
 
 
 def test_addcomment_working_example_should_add_line():
     example_cst = example()
+    random.seed(1996)
 
     transformer = AddCommentTransformer()
     transformer.reset()
@@ -17,6 +19,7 @@ def test_addcomment_working_example_should_add_line():
 
 def test_addcomment_apply_twice_should_add_two_lines():
     example_cst = example()
+    random.seed(1996)
 
     transformer = AddCommentTransformer()
     transformer.reset()
@@ -31,6 +34,7 @@ def test_addcomment_apply_twice_should_add_two_lines():
 
 def test_addcomment_apply_twice_without_reset_should_only_add_one_line():
     example_cst = example()
+    random.seed(1996)
 
     transformer = AddCommentTransformer()
     transformer.reset()
@@ -45,6 +49,7 @@ def test_addcomment_apply_twice_without_reset_should_only_add_one_line():
 
 def test_addcomment_empty_module_should_not_add_line():
     example_cst = libcst.parse_module("")
+    random.seed(1996)
 
     transformer = AddCommentTransformer()
     transformer.reset()
@@ -59,6 +64,7 @@ def test_addcomment_empty_module_should_not_add_line():
 
 def test_addcomment_empty_module_should_not_work():
     example_cst = libcst.parse_module("")
+    random.seed(1996)
 
     transformer = AddCommentTransformer()
     transformer.reset()
@@ -70,6 +76,7 @@ def test_addcomment_empty_module_should_not_work():
 
 def test_addcomment_working_example_should_set_transformer_to_worked():
     example_cst = example()
+    random.seed(1996)
 
     transformer = AddCommentTransformer()
     transformer.reset()

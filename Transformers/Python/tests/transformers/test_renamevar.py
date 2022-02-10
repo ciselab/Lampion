@@ -1,6 +1,6 @@
 #RenameVariableTransformer
 import libcst
-import pytest
+import random
 
 from lampion.transformers.renamevar import RenameVariableTransformer
 
@@ -8,6 +8,7 @@ from lampion.transformers.renamevar import RenameVariableTransformer
 
 def test_add_var_method_has_one_variable_should_change():
     example_cst = libcst.parse_module("def hi(): \n\ta = 1\n\tprint(\"Hello World\")\n\treturn a")
+    random.seed(1996)
 
     transformer = RenameVariableTransformer()
     transformer.reset()
@@ -21,6 +22,7 @@ def test_add_var_method_has_one_variable_should_change():
 
 def test_add_var_method_has_one_variable_transformer_worked():
     example_cst = libcst.parse_module("def hi(): \n\ta = 1\n\tprint(\"Hello World\")\n\treturn a")
+    random.seed(1996)
 
     transformer = RenameVariableTransformer()
     transformer.reset()
@@ -32,6 +34,7 @@ def test_add_var_method_has_one_variable_transformer_worked():
 
 def test_add_var_method_has_one_variable_that_exists_in_str_should_be_kept_in_str():
     example_cst = libcst.parse_module("def hi(): \n\tname = 1\n\tprint(f\"name is {name}\")")
+    random.seed(1996)
 
     transformer = RenameVariableTransformer()
     transformer.reset()
@@ -44,6 +47,7 @@ def test_add_var_method_has_one_variable_that_exists_in_str_should_be_kept_in_st
 
 def test_add_var_method_has_one_variable_should_change_at_all_places():
     example_cst = libcst.parse_module("def hi(): \n\tyyy = 1\n\tyyy = yyy + 1\n\treturn yyy")
+    random.seed(1996)
 
     transformer = RenameVariableTransformer()
     transformer.reset()
@@ -55,6 +59,7 @@ def test_add_var_method_has_one_variable_should_change_at_all_places():
 
 def test_add_var_method_has_one_variable_should_keep_assigned_value():
     example_cst = libcst.parse_module("def hi(): \n\ta = 1\n\tprint(\"Hello World\")")
+    random.seed(1996)
 
     transformer = RenameVariableTransformer()
     transformer.reset()
@@ -66,6 +71,7 @@ def test_add_var_method_has_one_variable_should_keep_assigned_value():
 
 def test_add_var_method_has_one_variable_should_keep_method_name():
     example_cst = libcst.parse_module("def hi(): \n\ta = 1\n\tprint(\"Hello World\")")
+    random.seed(1996)
 
     transformer = RenameVariableTransformer()
     transformer.reset()
@@ -78,6 +84,7 @@ def test_add_var_method_has_one_variable_should_keep_method_name():
 
 def test_add_var_method_has_two_variables_should_keep_assigned_values():
     example_cst = libcst.parse_module("def hi(): \n\ta = 1\n\tb = 2\n\tprint(\"Hello World\")")
+    random.seed(1996)
 
     transformer = RenameVariableTransformer()
     transformer.reset()
@@ -90,6 +97,7 @@ def test_add_var_method_has_two_variables_should_keep_assigned_values():
 
 def test_add_var_method_has_one_typed_variable_should_change():
     example_cst = libcst.parse_module("def hi(): \n\ta: int = 1\n\tprint(\"Hello World\")")
+    random.seed(1996)
 
     transformer = RenameVariableTransformer()
     transformer.reset()
@@ -102,6 +110,7 @@ def test_add_var_method_has_one_typed_variable_should_change():
 
 def test_add_var_method_has_one_typed_variable_should_keep_type():
     example_cst = libcst.parse_module("def hi(): \n\ta: int = 1\n\tprint(\"Hello World\")")
+    random.seed(1996)
 
     transformer = RenameVariableTransformer()
     transformer.reset()
@@ -113,6 +122,7 @@ def test_add_var_method_has_one_typed_variable_should_keep_type():
 
 def test_add_var_method_has_two_variables_should_change():
     example_cst = libcst.parse_module("def hi(): \n\ta = 1\n\tb = 2\n\tprint(\"Hello World\")")
+    random.seed(1996)
 
     transformer = RenameVariableTransformer()
     transformer.reset()
@@ -124,6 +134,7 @@ def test_add_var_method_has_two_variables_should_change():
 
 def test_add_var_method_has_no_variables_should_stay_unchanged():
     example_cst = libcst.parse_module("def hi(): \n\tprint(\"Hello World\")")
+    random.seed(1996)
 
     transformer = RenameVariableTransformer()
     transformer.reset()
@@ -135,6 +146,7 @@ def test_add_var_method_has_no_variables_should_stay_unchanged():
 
 def test_add_var_method_has_no_variables_transformer_did_not_work():
     example_cst = libcst.parse_module("def hi(): \n\tprint(\"Hello World\")")
+    random.seed(1996)
 
     transformer = RenameVariableTransformer()
     transformer.reset()
@@ -146,6 +158,7 @@ def test_add_var_method_has_no_variables_transformer_did_not_work():
 
 def test_rename_var_method_is_in_class_class_should_stay_unchanged():
     example_cst = libcst.parse_module("class some:\n\tdef hi():  \n\t\ta = 1\n\t\tprint(\"Hello World\")")
+    random.seed(1996)
 
     transformer = RenameVariableTransformer()
     transformer.reset()
@@ -157,6 +170,7 @@ def test_rename_var_method_is_in_class_class_should_stay_unchanged():
 
 def test_rename_var_method_is_in_class_attribute_can_change():
     example_cst = libcst.parse_module("class some:\n\tbbb = 3\n\tdef hi():  \n\t\tprint(\"Hello World\")")
+    random.seed(1996)
 
     transformer = RenameVariableTransformer()
     i = 0
@@ -171,6 +185,7 @@ def test_rename_var_method_is_in_class_attribute_can_change():
 
 def test_rename_var_method_is_in_class_should_change():
     example_cst = libcst.parse_module("class some:\n\tdef hi():  \n\t\ta: int = 1\n\t\tprint(\"Hello World\")")
+    random.seed(1996)
 
     transformer = RenameVariableTransformer()
     transformer.reset()

@@ -1,11 +1,12 @@
 import libcst
-import pytest
+import random
 
 from lampion.transformers.addvar import AddVariableTransformer
 
 
 def test_addvar_working_example_should_add_line():
     example_cst = example()
+    random.seed(1996)
 
     transformer = AddVariableTransformer(max_tries=100)
     transformer.reset()
@@ -20,6 +21,7 @@ def test_addvar_working_example_should_add_line():
 
 def test_addvar_empty_module_should_not_add_line():
     example_cst = libcst.parse_module("")
+    random.seed(1996)
 
     transformer = AddVariableTransformer()
     transformer.reset()
@@ -34,6 +36,7 @@ def test_addvar_empty_module_should_not_add_line():
 
 def test_addvar_empty_module_should_not_work():
     example_cst = libcst.parse_module("")
+    random.seed(1996)
 
     transformer = AddVariableTransformer()
     transformer.reset()
@@ -45,6 +48,7 @@ def test_addvar_empty_module_should_not_work():
 
 def test_addvar_working_example_should_set_transformer_to_worked():
     example_cst = example()
+    random.seed(1996)
 
     transformer = AddVariableTransformer()
     transformer.reset()
