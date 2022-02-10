@@ -19,6 +19,17 @@ Which seemed to reduce randomness, but some tests are still flaky.
 I am not certain how to deal with this to be honest, 
 but I hope that once I have configuration properly running it all works out.
 
+## Transformer Max-Tries
+
+Some tests are flaky due to the nature of transformers and re-trying. 
+This is unfortunate, but in general it turned out to be relatively reliable with high-re-try numbers.
+While this must not happen in real code, and the engine has a separate re-try logic, 
+for the tests often a high max-tries is required.
+
+It can also (very unfortunately) happen that changing max-tries somewhere changes the current random state, which will fail other tests. 
+
+I maybe have to be very strict about randomness and reset it very often.
+
 ## CST Code Comparison
 
 Strings are immutable in Python, but the code element of a cst is not. 
