@@ -203,7 +203,7 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
             """
             if self.replace_type == "float" and original_node.deep_equals(self.to_replace) and not self.worked:
                 literal = str(original_node.value)
-                replacement = f"({literal}+0.0)"
+                replacement = f"({literal} + 0.0)"
                 expr = cst.parse_expression(replacement)
                 updated_node = updated_node.deep_replace(updated_node, expr)
                 self.worked = True
@@ -226,7 +226,7 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
                     and original_node.deep_equals(self.to_replace) \
                     and not self.worked:
                 literal = str(original_node.value)
-                replacement = f"({literal}+0)"
+                replacement = f"({literal} + 0)"
                 expr = cst.parse_expression(replacement)
                 updated_node = updated_node.deep_replace(updated_node, expr)
                 self.worked = True
@@ -248,7 +248,7 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
                     and original_node.deep_equals(self.to_replace) \
                     and not self.worked:
                 literal = str(original_node.value)
-                replacement = f"({literal}+\"\")"
+                replacement = f"({literal} + \"\")"
                 expr = cst.parse_expression(replacement)
                 updated_node = updated_node.deep_replace(updated_node, expr)
                 self.worked = True
@@ -264,8 +264,10 @@ def _reduce_brackets(to_reduce: str) -> str:
     That is, it only changes found patterns for empty strings, + 0 and + 0.0.
 
     Examples:
-    >>> _reduce_brackets("((\"X\" + \"\") + \"\")")
-    >>> "(\"X\" + \"\" + \"\")"
+    >>> _reduce_brackets('(("X" + "") + "")')
+    >>> '("X" + "" + "")'
+    >>> _reduce_brackets('("X" + ("" + ""))')
+    >>> '("X" + "" + "")'
     or:
     >>> _reduce_brackets('(("X" + "" + "" + "") + "")')
     >>> "(\"X\" + \"\" + \"\" + \"\" + \"\")"
@@ -283,18 +285,26 @@ def _reduce_brackets(to_reduce: str) -> str:
     # What I would like more is "any Character, a Space, a Plus and Quote-Mark" but I was not able to express it
     # TODO: sharpen regex match
     string_pattern = r'\(\("(.*?)" \+ ""\) \+ ""\)'
+    string_pattern_2 = r'\("(.*?)" \+ \("" \+ ""\)\)'
     string_result_pattern = r'("\1" + "" + "")'
 
     int_pattern = r'\(\((.*?) \+ 0\) \+ 0\)'
+    int_pattern_2 = r'\((.*?) \+ \(0 \+ 0\)\)'
     int_result_pattern = r'(\1 + 0 + 0)'
 
     float_pattern = r'\(\((.*?) \+ 0.0\) \+ 0.0\)'
+    float_pattern_2 = r'\((.*?) \+ \(0.0 \+ 0.0\)\)'
     float_result_pattern = r'(\1 + 0.0 + 0.0)'
 
-    result = to_reduce
+    result:str = to_reduce
 
     result = re.sub(string_pattern, string_result_pattern, result)
+    result = re.sub(string_pattern_2, string_result_pattern, result)
     result = re.sub(int_pattern, int_result_pattern, result)
+    result = re.sub(int_pattern_2, int_result_pattern, result)
     result = re.sub(float_pattern, float_result_pattern, result)
+    result = re.sub(float_pattern_2, float_result_pattern, result)
+
+    result = result.replace("  "," ")
 
     return result

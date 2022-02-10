@@ -18,7 +18,7 @@ def test_addneutral_for_float_should_add_plus_0():
     altered_cst = transformer.apply(example_cst)
     altered_code = altered_cst.code
 
-    assert "(0.5+0.0)" in altered_code
+    assert "(0.5 + 0.0)" in altered_code
 
 
 def test_addneutral_apply_twice_for_float_should_add_plus_0():
@@ -107,7 +107,7 @@ def test_addneutral_for_float_in_return_should_add_plus_0():
     altered_cst = transformer.apply(example_cst)
     altered_code = altered_cst.code
 
-    assert "(0.5+0.0)" in altered_code
+    assert "(0.5 + 0.0)" in altered_code
 
 
 def test_addneutral_for_float_in_default_parameters_should_add_plus_0():
@@ -120,7 +120,7 @@ def test_addneutral_for_float_in_default_parameters_should_add_plus_0():
     altered_cst = transformer.apply(example_cst)
     altered_code = altered_cst.code
 
-    assert "(0.5+0.0)" in altered_code
+    assert "(0.5 + 0.0)" in altered_code
     assert "0.0" in altered_code
 
 
@@ -160,7 +160,7 @@ def test_addneutral_for_string_should_add_plus_empty_string():
     altered_cst = transformer.apply(example_cst)
     altered_code = altered_cst.code
 
-    assert "(\"text\"+\"\")" in altered_code
+    assert "(\"text\" + \"\")" in altered_code
 
 
 def test_addneutral_apply_twice_for_string_should_add_plus_emptystrings():
@@ -247,7 +247,7 @@ def test_addneutral_for_string_in_return_should_add_plus_emptystring():
     altered_cst = transformer.apply(example_cst)
     altered_code = altered_cst.code
 
-    assert "(\"world\"+\"\")" in altered_code
+    assert "(\"world\" + \"\")" in altered_code
 
 
 def test_addneutral_for_string_in_default_parameters_should_add_plus_0():
@@ -260,7 +260,7 @@ def test_addneutral_for_string_in_default_parameters_should_add_plus_0():
     altered_cst = transformer.apply(example_cst)
     altered_code = altered_cst.code
 
-    assert "(\"hello\"+\"\")" in altered_code
+    assert "(\"hello\" + \"\")" in altered_code
     assert "\"\"" in altered_code
 
 
@@ -319,7 +319,7 @@ def test_addneutral_for_int_should_add_plus_0_variant_a():
     altered_code_a = altered_cst_a.code
 
     assert transformer_a.worked()
-    assert "(5+0)" in altered_code_a
+    assert "(5 + 0)" in altered_code_a
 
 
 def test_addneutral_for_int_should_add_plus_0_variant_b():
@@ -333,7 +333,7 @@ def test_addneutral_for_int_should_add_plus_0_variant_b():
 
     altered_code = altered_cst_b.code
     assert transformer_b.worked()
-    assert "(33+0)" in altered_code
+    assert "(33 + 0)" in altered_code
 
 
 def test_addneutral_for_int_should_add_plus_0_variant_c():
@@ -348,7 +348,7 @@ def test_addneutral_for_int_should_add_plus_0_variant_c():
     altered_code = altered_cst_c.code
 
     assert transformer_c.worked()
-    assert "(1+0)" in altered_code
+    assert "(1 + 0)" in altered_code
 
 
 def test_addneutral_apply_twice_for_int_should_add_plus_0():
@@ -451,7 +451,7 @@ def test_addneutral_for_int_in_return_should_add_plus_0():
     altered_cst = transformer.apply(example_cst)
     altered_code = altered_cst.code
 
-    assert "(5+0)" in altered_code
+    assert "(5 + 0)" in altered_code
 
 
 def test_addneutral_for_int_in_default_parameters_should_add_plus_0():
@@ -464,8 +464,7 @@ def test_addneutral_for_int_in_default_parameters_should_add_plus_0():
     altered_cst = transformer.apply(example_cst)
     altered_code = altered_cst.code
 
-    assert "(5+0)" in altered_code
-    assert "0" in altered_code
+    assert "(5 + 0)" in altered_code
 
 
 def test_addneutral_for_int_in_default_parameters_should_work():
@@ -567,6 +566,12 @@ def test_reduce_brackets_for_strings():
 
     assert result == expected_output
 
+def test_reduce_brackets_for_strings_pattern2():
+    input = '("X" + ("" + ""))'
+    expected_output = "(\"X\" + \"\" + \"\")"
+    result = _reduce_brackets(input)
+
+    assert result == expected_output
 
 def test_reduce_brackets_for_strings_stacked_string():
     input = '(("X" + "" + "" + "") + "")'
@@ -591,6 +596,28 @@ def test_reduce_brackets_for_ints():
 
     assert result == expected_output
 
+def test_reduce_brackets_for_ints_pattern2():
+    input = "(5 + (0 + 0))"
+    expected_output = "(5 + 0 + 0)"
+    result = _reduce_brackets(input)
+
+    assert result == expected_output
+
+
+
+def test_reduce_brackets_for_floats():
+    input = "((5.0 + 0.0) + 0.0)"
+    expected_output = "(5.0 + 0.0 + 0.0)"
+    result = _reduce_brackets(input)
+
+    assert result == expected_output
+
+def test_reduce_brackets_for_floats_pattern2():
+    input = "(5.0 + (0.0 + 0.0))"
+    expected_output = "(5.0 + 0.0 + 0.0)"
+    result = _reduce_brackets(input)
+
+    assert result == expected_output
 
 def test_reduce_brackets_for_ints_stacked_ints():
     input = '((5 + 0 + 0 + 0) + 0)'

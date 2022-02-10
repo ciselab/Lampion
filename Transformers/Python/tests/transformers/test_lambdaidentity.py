@@ -1,5 +1,3 @@
-import random
-
 import libcst
 import regex as re
 import random
@@ -88,7 +86,6 @@ def test_lambdaidentity_apply_twice_for_float_should_work():
 
     transformer.reset()
     altered_cst = transformer.apply(altered_cst)
-    altered_code = altered_cst.code
 
     assert transformer.worked()
 
@@ -106,7 +103,7 @@ def test_lambdaidentity_for_float_in_return_should_use_identity_lambda():
     assert "lambda: 0.5" in altered_code
 
 
-def test_lambdaidentity_for_float_in_return_should_use_identity_lambda():
+def test_lambdaidentity_for_float_apply_twice_in_return_should_reduce():
     example_cst = libcst.parse_module("def some():\n\treturn 0.5")
 
     random.seed(1996)
@@ -114,9 +111,13 @@ def test_lambdaidentity_for_float_in_return_should_use_identity_lambda():
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
+    transformer.reset()
+
+    altered_cst = transformer.apply(altered_cst)
+
     altered_code = str(altered_cst.code)
 
-    assert "lambda: 0.5" in altered_code
+    assert altered_code.count("lambda") == 2
     assert '((lambda: lambda: 0.5)()())' in altered_code
 
 def test_lambdaidentity_for_float_in_default_parameters_should_use_identity_lambda():
