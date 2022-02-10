@@ -91,6 +91,11 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
 
             altered_cst = cst_to_alter.visit(replacer)
 
+            altered_code = altered_cst.code
+            reduced_code = _reduce_brackets(altered_code)
+
+            altered_cst = cst.parse_module(reduced_code)
+
             tries = tries + 1
             self._worked = replacer.worked
             # except libcst._nodes.base.CSTValidationError:

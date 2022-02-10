@@ -2,6 +2,7 @@
 Contains the "LambdaIdentityTransformer" that wraps literals into lambda functions and calls them.
 """
 import random
+import regex as re
 from abc import ABC
 from typing import Optional
 
@@ -47,10 +48,10 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
     LibCST does not support finding this kind of behaviour afaik.
     """
 
-    def __init__(self, max_tries:int = 50):
+    def __init__(self, max_tries: int = 50):
         self._worked = False
         self.set_max_tries(max_tries)
-        log.info("LambdaIdentityTransformer created (%d Re-Tries)",self.get_max_tries())
+        log.info("LambdaIdentityTransformer created (%d Re-Tries)", self.get_max_tries())
 
     def apply(self, cst_to_alter: CSTNode) -> CSTNode:
         """
@@ -89,20 +90,21 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
                 replacer = self.__Replacer(to_replace[1], to_replace[0])
 
                 altered_cst = cst_to_alter.visit(replacer)
+                altered_code = str(altered_cst.code)
+                reduced_code = _reduce_brackets(altered_code)
+
+                altered_cst = cst.parse_module(reduced_code)
 
                 tries = tries + 1
                 self._worked = replacer.worked
+                #return altered_cst
             except AttributeError:
                 # This case happened when the seen variables were tuples
                 # Seen in OpenVocabCodeNLM Test Data
                 tries = tries + 1
-            except cst._nodes.base.CSTValidationError:
-                # This can happen if we try to add strings and add too many Parentheses
-                # See https://github.com/Instagram/LibCST/issues/640
-                tries = tries + 1
 
         if tries == max_tries:
-            log.warning("Lambda Identity Transformer failed after %i attempt",max_tries)
+            log.warning("Lambda Identity Transformer failed after %i attempt", max_tries)
 
         return altered_cst
 
@@ -245,3 +247,39 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
 
                 return updated_node
             return updated_node
+
+
+def _reduce_brackets(to_reduce: str) -> str:
+    """
+    Reduces redundant brackets within code.
+    As matching parentheses is something regex cannot do (or cannot do well),
+    the patterns are hardcoded to the alternations done in the visitors.
+    That is, it only changes found patterns for double lambdas and changes bracket-order.
+
+
+    Examples:
+    >>> _reduce_brackets('((lambda: (lambda: "Hello World")())()')
+    >>> '((lambda: lambda: "Hello World")()())'
+    or:
+    >>> _reduce_brackets('((lambda: (lambda: 5.2)())()')
+    >>> '((lambda: lambda: 5.2)()())'
+    For more tests, see the class-level tests.
+
+    This method is intented to be used AFTER the alternation, so that the code never "grows" to big.
+    I.E. this should be called once the AST has been changed and not before changing the AST.
+
+    :param to_reduce str: the string to be reduced
+    :returns str: the string with less brackets, if no match then the unchanged string
+    This method was necessary as there is an issue with LibCST once it reaches too many opening brackets.
+    This does "only" remove one pair of brackets, but there are less "opening" brackets
+    See Issue: https://github.com/Instagram/LibCST/issues/640
+    """
+    # (.*?) matches any character in a greedy way
+    # What I would like more is "any Character, a Space, a Plus and Quote-Mark" but I was not able to express it
+    # TODO: sharpen regex match
+
+    pattern = r'\(\(lambda: \(lambda: (.*?)\)\(\)\)\(\)'
+    output_pattern = r'((lambda: lambda: \1) ()())'
+    result = re.sub(pattern, output_pattern, to_reduce)
+
+    return result
