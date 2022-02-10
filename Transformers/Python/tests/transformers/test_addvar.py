@@ -7,7 +7,7 @@ from lampion.transformers.addvar import AddVariableTransformer
 def test_addvar_working_example_should_add_line():
     example_cst = example()
 
-    transformer = AddVariableTransformer()
+    transformer = AddVariableTransformer(max_tries=100)
     transformer.reset()
 
     altered_cst = visit_until_worked(example_cst, transformer)

@@ -48,7 +48,7 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
     LibCST does not support finding this kind of behaviour afaik.
     """
 
-    def __init__(self, max_tries: int = 50):
+    def __init__(self, max_tries: int = 75):
         self._worked = False
         self.set_max_tries(max_tries)
         log.info("LambdaIdentityTransformer created (%d Re-Tries)", self.get_max_tries())

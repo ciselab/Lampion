@@ -170,7 +170,7 @@ def test_lambdaidentity_for_string_should_add_lambda_variant_b():
 def test_lambdaidentity_for_string_should_add_lambda_variant_c():
     example_cst = libcst.parse_module("def some_other(): \n\ta = \"gold\" \n\treturn a")
 
-    transformer = LambdaIdentityTransformer()
+    transformer = LambdaIdentityTransformer(max_tries=190)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -199,7 +199,7 @@ def test_lambdaidentity_apply_twice_for_string_should_use_identity_lambda():
 def test_lambdaidentity_apply_to_method_with_two_different_strings_should_be_applied_once_only():
     example_cst = libcst.parse_module("def some(): \n\ta =\"hello\"\n\tb=\"world\" \n\treturn a+b")
 
-    transformer = LambdaIdentityTransformer()
+    transformer = LambdaIdentityTransformer(max_tries=100)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -315,7 +315,7 @@ def test_lambdaidentity_for_string_should_have_worked():
 def test_lambdaidentity_for_int_should_use_identity_lambda():
     example_cst = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
 
-    transformer = LambdaIdentityTransformer()
+    transformer = LambdaIdentityTransformer(max_tries=150)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -517,7 +517,7 @@ def test_reduce_brackets_no_lambdas_nothing_changed():
 def test_reduce_brackets_int():
     sample = '((lambda: (lambda: 5)())()'
 
-    pattern = '\(\(lambda: \(lambda: (\w+)\)\(\)\)\(\)'
+    pattern = r'\(\(lambda: \(lambda: (\w+)\)\(\)\)\(\)'
     output_pattern = r'((lambda: lambda: \1) ()())'
     result = re.sub(pattern, output_pattern, sample)
 
@@ -527,7 +527,7 @@ def test_reduce_brackets_int():
 def test_reduce_brackets_float():
     sample = '((lambda: (lambda: 5.2)())()'
 
-    pattern = '\(\(lambda: \(lambda: (.*?)\)\(\)\)\(\)'
+    pattern = r'\(\(lambda: \(lambda: (.*?)\)\(\)\)\(\)'
     output_pattern = r'((lambda: lambda: \1) ()())'
     result = re.sub(pattern, output_pattern, sample)
 
@@ -536,7 +536,7 @@ def test_reduce_brackets_float():
 def test_reduce_brackets_string():
     sample = '((lambda: (lambda: "Hello World")())()'
 
-    pattern = '\(\(lambda: \(lambda: (.*?)\)\(\)\)\(\)'
+    pattern = r'\(\(lambda: \(lambda: (.*?)\)\(\)\)\(\)'
     output_pattern = r'((lambda: lambda: \1) ()())'
     result = re.sub(pattern, output_pattern, sample)
 
