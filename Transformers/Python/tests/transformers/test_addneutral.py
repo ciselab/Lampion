@@ -79,6 +79,23 @@ def test_addneutral_apply_twice_for_float_should_work():
 
     assert transformer.worked()
 
+def test_addneutral_apply_twice_for_float_should_reduce():
+    example_cst = libcst.parse_module("def some(): \n\ta = 0.5 \n\treturn a")
+
+    random.seed(1996)
+    transformer = AddNeutralElementTransformer()
+    transformer.reset()
+
+    altered_cst = transformer.apply(example_cst)
+
+    transformer.reset()
+    altered_cst_2 = transformer.apply(altered_cst)
+
+    altered_code = str(altered_cst_2.code)
+
+    assert altered_code.count("0.0") == 2
+    assert "0.5 + 0.0 + 0.0" in altered_code
+
 
 def test_addneutral_for_float_in_return_should_add_plus_0():
     example_cst = libcst.parse_module("def some():\n\treturn 0.5")
@@ -161,6 +178,21 @@ def test_addneutral_apply_twice_for_string_should_add_plus_emptystrings():
 
     assert altered_code.count("\"\"") == 2
 
+def test_addneutral_apply_twice_for_string_should_reduce():
+    example_cst = libcst.parse_module("def some(): \n\ta = \"text\" \n\treturn a")
+
+    random.seed(1996)
+    transformer = AddNeutralElementTransformer()
+    transformer.reset()
+
+    altered_cst = transformer.apply(example_cst)
+    transformer.reset()
+
+    altered_cst = transformer.apply(altered_cst)
+    altered_code = altered_cst.code
+
+    assert altered_code.count("\"\"") == 2
+    assert '+ "" + ""' in altered_code
 
 def test_addneutral_apply_to_method_with_two_different_strings_should_be_applied_once_only():
     example_cst = libcst.parse_module("def some(): \n\ta =\"hello\"\n\tb=\"world\" \n\treturn a+b")
@@ -323,7 +355,7 @@ def test_addneutral_apply_twice_for_int_should_add_plus_0():
     example_cst = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=100)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -333,15 +365,31 @@ def test_addneutral_apply_twice_for_int_should_add_plus_0():
     transformer.reset()
     altered_code = altered_cst.code
 
-    print(altered_code)
     assert altered_code.count("0") == 2
 
+
+def test_addneutral_apply_twice_for_int_should_reduce():
+    example_cst = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
+
+    random.seed(1996)
+    transformer = AddNeutralElementTransformer(max_tries=150)
+    transformer.reset()
+
+    altered_cst = transformer.apply(example_cst)
+    transformer.reset()
+
+    altered_cst = transformer.apply(altered_cst)
+    transformer.reset()
+    altered_code = altered_cst.code
+
+    assert altered_code.count("0") == 2
+    assert " + 0 + 0" in altered_code
 
 def test_addneutral_apply_to_method_with_two_different_ints_should_be_applied_once_only():
     example_cst = libcst.parse_module("def some(): \n\ta = 5\n\tb=3 \n\treturn a+b")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=100)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)

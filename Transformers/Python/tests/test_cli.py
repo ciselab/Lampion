@@ -162,7 +162,7 @@ def test_read_config_parses_ints_properly():
     assert value_transformations == 10
 
 
-def test_read_config_with_example_file_finds_values():
+def test_read_config_with_example_file_finds_values_variant_b():
     config = lampion.cli.read_config_file(f"{path_prefix}/test_configs/test1.properties")
 
     assert config is not {}

@@ -1,5 +1,6 @@
 import libcst as cst
 from libcst import CSTNode
+import random
 
 from lampion.components.engine import Engine
 
@@ -32,6 +33,7 @@ def test_run_with_default_transformers_gives_output():
 
 def test_run_with_default_transformers_input_remains_unchanged():
     testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
+    random.seed(1996)
 
     example_cst = [example()]
     initial_value = str(example_cst[0][1].code)
@@ -47,6 +49,7 @@ def test_run_with_default_transformers_input_remains_unchanged():
 
 def test_run_with_default_transformers_output_different_to_input():
     testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
+    random.seed(1996)
 
     example_cst = [example()]
     initial_value = str(example_cst[0][1].code)
@@ -59,6 +62,7 @@ def test_run_with_default_transformers_output_different_to_input():
 
 def test_run_with_default_transformers_with_two_CSTs_both_changed():
     testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
+    random.seed(1996)
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
     example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
@@ -80,6 +84,7 @@ def test_run_with_default_transformers_with_two_CSTs_output_has_paths_to_compare
     # This is a regression test, as when I wanted to print some of the changed code
     # It started to explode around my head
     testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
+    random.seed(1996)
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
     example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
@@ -103,6 +108,7 @@ def test_run_with_default_transformers_with_two_CSTs_output_has_paths_to_compare
 
 def test_run_with_default_transformers_with_two_CSTs_both_inputs_stay_unchanged():
     testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
+    random.seed(1996)
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
     example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
@@ -119,6 +125,7 @@ def test_run_with_default_transformers_with_two_CSTs_both_inputs_stay_unchanged(
 
 def test_with_one_file_after_transformation_path_is_the_same():
     testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
+    random.seed(1996)
 
     example_cst = [example()]
     initial_path = str(example_cst[0][0])
@@ -131,6 +138,7 @@ def test_with_one_file_after_transformation_path_is_the_same():
 
 def test_run_with_two_csts_paths_match():
     testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
+    random.seed(1996)
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
     example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
@@ -150,6 +158,7 @@ def test_run_with_two_csts_paths_match():
 
 def test_run_with_two_csts_second_method_is_kept():
     testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
+    random.seed(1996)
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
     example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
@@ -167,6 +176,7 @@ def test_run_with_two_csts_second_method_is_kept():
 
 def test_run_with_two_csts_first_method_is_kept():
     testobject = Engine(None, "PLACEHOLDER_ENGINE_OUTPUT")
+    random.seed(1996)
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
     example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
@@ -184,6 +194,7 @@ def test_run_with_two_csts_first_method_is_kept():
 
 def test_run_with_two_csts_check_only_one_transformation_one_touched():
     testobject = Engine(config={"transformations": 1, "transformationscope": "global"})
+    random.seed(1996)
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
     example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
@@ -197,6 +208,7 @@ def test_run_with_two_csts_check_only_one_transformation_one_touched():
 
 def test_run_with_two_csts_check_many_transformations_both_touched():
     testobject = Engine(config={"transformations": 20, "transformationscope": "global"})
+    random.seed(1996)
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
     example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
@@ -210,6 +222,7 @@ def test_run_with_two_csts_check_many_transformations_both_touched():
 
 def test_run_with_two_csts_no_transformations_none_touched():
     testobject = Engine(config={"transformations": 0, "transformationscope": "global"})
+    random.seed(1996)
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
     example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")

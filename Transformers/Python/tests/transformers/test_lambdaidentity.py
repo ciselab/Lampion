@@ -101,11 +101,23 @@ def test_lambdaidentity_for_float_in_return_should_use_identity_lambda():
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
-    altered_code = altered_cst.code
+    altered_code = str(altered_cst.code)
 
     assert "lambda: 0.5" in altered_code
-    assert "()" in altered_code
 
+
+def test_lambdaidentity_for_float_in_return_should_use_identity_lambda():
+    example_cst = libcst.parse_module("def some():\n\treturn 0.5")
+
+    random.seed(1996)
+    transformer = LambdaIdentityTransformer()
+    transformer.reset()
+
+    altered_cst = transformer.apply(example_cst)
+    altered_code = str(altered_cst.code)
+
+    assert "lambda: 0.5" in altered_code
+    assert '((lambda: lambda: 0.5)()())' in altered_code
 
 def test_lambdaidentity_for_float_in_default_parameters_should_use_identity_lambda():
     example_cst = libcst.parse_module("def some(a: float = 0.5):\n\treturn a")
@@ -208,6 +220,22 @@ def test_lambdaidentity_apply_twice_for_string_should_use_identity_lambda():
     assert altered_code.count("lambda") == 2
 
 
+def test_lambdaidentity_apply_twice_for_string_should_reduce():
+    example_cst = libcst.parse_module("def some(): \n\ta = \"text\" \n\treturn a")
+
+    random.seed(1996)
+    transformer = LambdaIdentityTransformer()
+    transformer.reset()
+
+    altered_cst = transformer.apply(example_cst)
+    transformer.reset()
+
+    altered_cst = transformer.apply(altered_cst)
+    altered_code = str(altered_cst.code)
+
+    assert altered_code.count("lambda") == 2
+    assert '((lambda: lambda: "text")()())' in altered_code
+
 def test_lambdaidentity_apply_to_method_with_two_different_strings_should_be_applied_once_only():
     example_cst = libcst.parse_module("def some(): \n\ta =\"hello\"\n\tb=\"world\" \n\treturn a+b")
 
@@ -273,9 +301,7 @@ def test_lambdaidentity_for_string_in_return_should_add_lambda_variant_a():
 
     altered_cst = transformer.apply(example_cst)
     altered_code = altered_cst.code
-
-    # TODO: Investigate Flakyness!
-    # assert "lambda" in altered_code
+    assert "lambda" in altered_code
 
 
 def test_lambdaidentity_for_string_in_return_should_add_lambda_variant_b():
@@ -361,6 +387,21 @@ def test_lambdaidentity_apply_twice_for_int_should_use_identity_lambda():
 
     assert altered_code.count("lambda") == 2
 
+def test_lambdaidentity_apply_twice_for_int_should_reduce():
+    example_cst = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
+
+    random.seed(1996)
+    transformer = LambdaIdentityTransformer(max_tries=50)
+    transformer.reset()
+
+    altered_cst = transformer.apply(example_cst)
+    transformer.reset()
+
+    altered_cst = transformer.apply(altered_cst)
+    altered_code = str(altered_cst.code)
+
+    assert altered_code.count("lambda") == 2
+    assert "((lambda: lambda: 5)()())" in altered_code
 
 def test_lambdaidentity_apply_to_method_with_two_different_ints_should_be_applied_once_only():
     example_cst = libcst.parse_module("def some(): \n\ta = 5\n\tb=3 \n\treturn a+b")
