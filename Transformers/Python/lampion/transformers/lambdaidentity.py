@@ -258,10 +258,10 @@ def _reduce_brackets(to_reduce: str) -> str:
 
 
     Examples:
-    >>> _reduce_brackets('((lambda: (lambda: "Hello World")())()')
+    >>> _reduce_brackets('((lambda: ((lambda: "Hello World")()))())')
     >>> '((lambda: lambda: "Hello World")()())'
     or:
-    >>> _reduce_brackets('((lambda: (lambda: 5.2)())()')
+    >>> _reduce_brackets('((lambda: (lambda: 5.2)())())')
     >>> '((lambda: lambda: 5.2)()())'
     For more tests, see the class-level tests.
 
@@ -278,8 +278,8 @@ def _reduce_brackets(to_reduce: str) -> str:
     # What I would like more is "any Character, a Space, a Plus and Quote-Mark" but I was not able to express it
     # TODO: sharpen regex match
 
-    pattern = r'\(\(lambda: \(lambda: (.*?)\)\(\)\)\(\)'
-    output_pattern = r'((lambda: lambda: \1) ()())'
+    pattern = r'\(\(lambda: \(\(lambda: (.*?)\)\(\)\)\)\(\)\)'
+    output_pattern = r'((lambda: lambda: \1)()())'
     result = re.sub(pattern, output_pattern, to_reduce)
 
     return result

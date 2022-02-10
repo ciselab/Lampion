@@ -181,7 +181,7 @@ def test_lambdaidentity_for_string_should_add_lambda_variant_b():
     example_cst = libcst.parse_module("def some(): \n\ta = \"test\" \n\treturn a")
 
     random.seed(1996)
-    transformer = LambdaIdentityTransformer(max_tries=60)
+    transformer = LambdaIdentityTransformer(max_tries=100)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -511,7 +511,6 @@ def test_lambdaidentity_for_int_should_have_worked():
 
     assert transformer.worked()
 
-
 # Empty Methods // No Literals
 
 def test_lambdaidentity_method_has_no_literals_transformer_did_not_work():
@@ -542,36 +541,42 @@ def test_lambdaidentity_method_has_no_literals_code_did_not_change():
 
 
 def test_reduce_brackets_with_int_should_work():
-    input = '((lambda: (lambda: 5)())()'
-    expected = '((lambda: lambda: 5) ()())'
+    input = '((lambda: ((lambda: 5)()))())'
+    expected = '((lambda: lambda: 5)()())'
     result = _reduce_brackets(input)
 
     assert result == expected
 
 def test_reduce_brackets_with_float_should_work():
-    input = '((lambda: (lambda: 4.005)())()'
-    expected = '((lambda: lambda: 4.005) ()())'
+    input = '((lambda: ((lambda: 4.005)())())'
+    expected = '((lambda: lambda: 4.005)()())'
     result = _reduce_brackets(input)
 
     assert result == expected
 
 def test_reduce_brackets_with_string_should_work():
-    input = '((lambda: (lambda: "Hello")())()'
-    expected = '((lambda: lambda: "Hello") ()())'
+    input = '((lambda: ((lambda: "Hello")())())'
+    expected = '((lambda: lambda: "Hello")()())'
     result = _reduce_brackets(input)
 
     assert result == expected
 
 def test_reduce_brackets_with_two_ints_should_work():
-    input = '((lambda: (lambda: ("Hello" + ""))())()'
-    expected = '((lambda: lambda: ("Hello" + "")) ()())'
+    input = '((lambda: ((lambda: 1 + 2)())())'
+    expected = '((lambda: lambda: 1 + 2)()())'
     result = _reduce_brackets(input)
 
     assert result == expected
 
+def test_reduce_brackets_with_two_ints_in_brackets_should_work():
+    input = '((lambda: ((lambda: (1 + 2))())())'
+    expected = '((lambda: lambda: (1 + 2))()())'
+    result = _reduce_brackets(input)
+
+    assert result == expected
 
 def test_reduce_brackets_only_one_lambda_nothing_changed():
-    input = '(lambda: 5)()'
+    input = '((lambda: 5)())'
     result = _reduce_brackets(input)
 
     assert result == input
@@ -582,6 +587,38 @@ def test_reduce_brackets_no_lambdas_nothing_changed():
     result = _reduce_brackets(input)
 
     assert result == input
+
+def test_reduce_brackets_sample_from_tests_int():
+    input = 'a = ((lambda: ((lambda: 5)()))())'
+    expected = 'a = ((lambda: lambda: 5)()())'
+
+    result = _reduce_brackets(input)
+
+    assert result == expected
+
+def test_reduce_brackets_sample_from_tests_float():
+    input = 'a = ((lambda: ((lambda: 5.5)()))())'
+    expected = 'a = ((lambda: lambda: 5.5)()())'
+
+    result = _reduce_brackets(input)
+
+    assert result == expected
+
+def test_reduce_brackets_sample_from_tests_string():
+    input = 'a = ((lambda: ((lambda: "abc")()))())'
+    expected = 'a = ((lambda: lambda: "abc")()())'
+
+    result = _reduce_brackets(input)
+
+    assert result == expected
+
+def test_reduce_brackets_sample_from_tests_string_string_in_brackets():
+    input = 'a = ((lambda: ((lambda: ("abc"))()))())'
+    expected = 'a = ((lambda: lambda: ("abc"))()())'
+
+    result = _reduce_brackets(input)
+
+    assert result == expected
 
 # Manual Learning Regex
 # To Find the right pattern and test it
