@@ -120,6 +120,7 @@ def test_lambdaidentity_for_float_apply_twice_in_return_should_reduce():
     assert altered_code.count("lambda") == 2
     assert '((lambda: lambda: 0.5)()())' in altered_code
 
+
 def test_lambdaidentity_for_float_in_default_parameters_should_use_identity_lambda():
     example_cst = libcst.parse_module("def some(a: float = 0.5):\n\treturn a")
 
@@ -236,6 +237,7 @@ def test_lambdaidentity_apply_twice_for_string_should_reduce():
 
     assert altered_code.count("lambda") == 2
     assert '((lambda: lambda: "text")()())' in altered_code
+
 
 def test_lambdaidentity_apply_to_method_with_two_different_strings_should_be_applied_once_only():
     example_cst = libcst.parse_module("def some(): \n\ta =\"hello\"\n\tb=\"world\" \n\treturn a+b")
@@ -388,6 +390,7 @@ def test_lambdaidentity_apply_twice_for_int_should_use_identity_lambda():
 
     assert altered_code.count("lambda") == 2
 
+
 def test_lambdaidentity_apply_twice_for_int_should_reduce():
     example_cst = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
 
@@ -403,6 +406,7 @@ def test_lambdaidentity_apply_twice_for_int_should_reduce():
 
     assert altered_code.count("lambda") == 2
     assert "((lambda: lambda: 5)()())" in altered_code
+
 
 def test_lambdaidentity_apply_to_method_with_two_different_ints_should_be_applied_once_only():
     example_cst = libcst.parse_module("def some(): \n\ta = 5\n\tb=3 \n\treturn a+b")
@@ -511,6 +515,7 @@ def test_lambdaidentity_for_int_should_have_worked():
 
     assert transformer.worked()
 
+
 # Empty Methods // No Literals
 
 def test_lambdaidentity_method_has_no_literals_transformer_did_not_work():
@@ -522,6 +527,18 @@ def test_lambdaidentity_method_has_no_literals_transformer_did_not_work():
 
     altered_cst = transformer.apply(example_cst)
     altered_code = altered_cst.code
+
+    assert not transformer.worked()
+
+
+def test_lambdaidentity_method_has_no_literals_transformer_did_not_work_even_after_many_retries():
+    example_cst = libcst.parse_module("def some(): return Math.Pi")
+
+    random.seed(1996)
+    transformer = LambdaIdentityTransformer(max_tries=150)
+    transformer.reset()
+
+    transformer.apply(example_cst)
 
     assert not transformer.worked()
 
@@ -547,12 +564,14 @@ def test_reduce_brackets_with_int_should_work():
 
     assert result == expected
 
+
 def test_reduce_brackets_with_float_should_work():
     input = '((lambda: ((lambda: 4.005)()))())'
     expected = '((lambda: lambda: 4.005)()())'
     result = _reduce_brackets(input)
 
     assert result == expected
+
 
 def test_reduce_brackets_with_string_should_work():
     input = '((lambda: ((lambda: "Hello")()))())'
@@ -561,6 +580,7 @@ def test_reduce_brackets_with_string_should_work():
 
     assert result == expected
 
+
 def test_reduce_brackets_with_two_ints_should_work():
     input = '((lambda: ((lambda: 1 + 2)()))())'
     expected = '((lambda: lambda: 1 + 2)()())'
@@ -568,12 +588,14 @@ def test_reduce_brackets_with_two_ints_should_work():
 
     assert result == expected
 
+
 def test_reduce_brackets_with_two_ints_in_brackets_should_work():
     input = '((lambda: ((lambda: (1 + 2))()))())'
     expected = '((lambda: lambda: (1 + 2))()())'
     result = _reduce_brackets(input)
 
     assert result == expected
+
 
 def test_reduce_brackets_only_one_lambda_nothing_changed():
     input = '((lambda: 5)())'
@@ -588,6 +610,7 @@ def test_reduce_brackets_no_lambdas_nothing_changed():
 
     assert result == input
 
+
 def test_reduce_brackets_sample_from_tests_int():
     input = 'a = ((lambda: ((lambda: 5)()))())'
     expected = 'a = ((lambda: lambda: 5)()())'
@@ -595,6 +618,7 @@ def test_reduce_brackets_sample_from_tests_int():
     result = _reduce_brackets(input)
 
     assert result == expected
+
 
 def test_reduce_brackets_sample_from_tests_float():
     input = 'a = ((lambda: ((lambda: 5.5)()))())'
@@ -604,6 +628,7 @@ def test_reduce_brackets_sample_from_tests_float():
 
     assert result == expected
 
+
 def test_reduce_brackets_sample_from_tests_string():
     input = 'a = ((lambda: ((lambda: "abc")()))())'
     expected = 'a = ((lambda: lambda: "abc")()())'
@@ -612,6 +637,7 @@ def test_reduce_brackets_sample_from_tests_string():
 
     assert result == expected
 
+
 def test_reduce_brackets_sample_from_tests_string_string_in_brackets():
     input = 'a = ((lambda: ((lambda: ("abc"))()))())'
     expected = 'a = ((lambda: lambda: ("abc"))()())'
@@ -619,6 +645,7 @@ def test_reduce_brackets_sample_from_tests_string_string_in_brackets():
     result = _reduce_brackets(input)
 
     assert result == expected
+
 
 # Manual Learning Regex
 # To Find the right pattern and test it
@@ -643,6 +670,7 @@ def test_reduce_brackets_float():
 
     assert result == '((lambda: lambda: 5.2) ()())'
 
+
 def test_reduce_brackets_string():
     sample = '((lambda: (lambda: "Hello World")())()'
 
@@ -651,14 +679,3 @@ def test_reduce_brackets_string():
     result = re.sub(pattern, output_pattern, sample)
 
     assert result == '((lambda: lambda: "Hello World") ()())'
-
-def test_libcst_behaviour_parsing_concatenated_parenthesized_strings_noisy_var():
-    sample_string =  'a = (("hello"+((((""+"")+"")+"")+""))+(((((((((((""+"")+"")+"")+"")+"")+"")+"")+"")+"")+"")+""))'
-
-    parsed = libcst.parse_statement(sample_string)
-
-
-def test_libcst_behaviour_parsing_concatenated_parenthesized_strings_noisy_var():
-    sample_string =  '(((((((("hello"+((((((""+"")))+"")+"")+""))+(((((((((((""+"")+"")+"")+"")+"")+"")+"")+"")+"")+"")+""))))))))'
-
-    parsed = libcst.parse_expression(sample_string)

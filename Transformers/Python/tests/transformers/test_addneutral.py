@@ -12,7 +12,7 @@ def test_addneutral_for_float_should_add_plus_0():
     example_cst = libcst.parse_module("def some(): \n\ta = 0.5 \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -25,7 +25,7 @@ def test_addneutral_apply_twice_for_float_should_add_plus_0():
     example_cst = libcst.parse_module("def some(): \n\ta = 0.5 \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -41,7 +41,7 @@ def test_addneutral_apply_to_method_with_two_floats_should_be_applied_once_only(
     example_cst = libcst.parse_module("def some(): \n\ta = 0.5\n\tb=0.3 \n\treturn a+b")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -55,7 +55,7 @@ def test_addneutral_apply_to_method_with_two_identical_floats_should_be_applied_
     example_cst = libcst.parse_module("def some(): \n\ta = 0.5\n\tb=0.5 \n\treturn a+b")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -69,7 +69,7 @@ def test_addneutral_apply_twice_for_float_should_work():
     example_cst = libcst.parse_module("def some(): \n\ta = 0.5 \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -83,7 +83,7 @@ def test_addneutral_apply_twice_for_float_should_reduce():
     example_cst = libcst.parse_module("def some(): \n\ta = 0.5 \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -101,7 +101,7 @@ def test_addneutral_for_float_in_return_should_add_plus_0():
     example_cst = libcst.parse_module("def some():\n\treturn 0.5")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -114,7 +114,7 @@ def test_addneutral_for_float_in_default_parameters_should_add_plus_0():
     example_cst = libcst.parse_module("def some(a: float = 0.5):\n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -128,7 +128,7 @@ def test_addneutral_for_float_in_default_parameters_should_work():
     example_cst = libcst.parse_module("def some(a: float = 0.5):\n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -140,7 +140,7 @@ def test_addneutral_for_float_should_have_worked():
     example_cst = libcst.parse_module("def some(): \n\ta = 0.5 \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -154,7 +154,7 @@ def test_addneutral_for_string_should_add_plus_empty_string():
     example_cst = libcst.parse_module("def some(): \n\ta = \"text\" \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -167,7 +167,7 @@ def test_addneutral_apply_twice_for_string_should_add_plus_emptystrings():
     example_cst = libcst.parse_module("def some(): \n\ta = \"text\" \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -182,7 +182,7 @@ def test_addneutral_apply_twice_for_string_should_reduce():
     example_cst = libcst.parse_module("def some(): \n\ta = \"text\" \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -198,7 +198,7 @@ def test_addneutral_apply_to_method_with_two_different_strings_should_be_applied
     example_cst = libcst.parse_module("def some(): \n\ta =\"hello\"\n\tb=\"world\" \n\treturn a+b")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -212,7 +212,7 @@ def test_addneutral_apply_to_method_with_two_identical_string_should_be_applied_
     example_cst = libcst.parse_module("def some(): \n\ta = \"hello\"\n\tb=\"hello\" \n\treturn a+b")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -226,7 +226,7 @@ def test_addneutral_apply_twice_for_string_should_work():
     example_cst = libcst.parse_module("def some(): \n\ta = \"hello\" \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -241,7 +241,7 @@ def test_addneutral_for_string_in_return_should_add_plus_emptystring():
     example_cst = libcst.parse_module("def some():\n\treturn \"world\"")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -254,7 +254,7 @@ def test_addneutral_for_string_in_default_parameters_should_add_plus_0():
     example_cst = libcst.parse_module("def some(a: str = \"hello\"):\n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -268,7 +268,7 @@ def test_addneutral_for_string_in_default_parameters_should_work():
     example_cst = libcst.parse_module("def some(a: str = \"hello\"):\n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -280,7 +280,7 @@ def test_addneutral_for_string_should_have_worked():
     example_cst = libcst.parse_module("def some(): \n\ta = \"hello\" \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -297,7 +297,7 @@ def test_addneutral_add_a_lot_of_strings_should_fail_gracefully():
     example_cst = libcst.parse_module("def some(): \n\ta = \"hello\" \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     altered_cst = example_cst
     for i in range(1, 90):
         transformer.reset()
@@ -311,7 +311,7 @@ def test_addneutral_for_int_should_add_plus_0_variant_a():
     example_cst_a = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
 
     random.seed(1996)
-    transformer_a = AddNeutralElementTransformer(max_tries=120)
+    transformer_a = AddNeutralElementTransformer(max_tries=1)
     transformer_a.reset()
 
     altered_cst_a = transformer_a.apply(example_cst_a)
@@ -327,7 +327,7 @@ def test_addneutral_for_int_should_add_plus_0_variant_b():
     example_cst_b = libcst.parse_module("def some(): \n\ta = 33 \n\treturn a")
 
     random.seed(1996)
-    transformer_b = AddNeutralElementTransformer(max_tries=120)
+    transformer_b = AddNeutralElementTransformer(max_tries=1)
 
     altered_cst_b = transformer_b.apply(example_cst_b)
 
@@ -341,7 +341,7 @@ def test_addneutral_for_int_should_add_plus_0_variant_c():
     example_cst_c = libcst.parse_module("def some(): \n\ta = 1 \n\treturn a")
 
     random.seed(1996)
-    transformer_c = AddNeutralElementTransformer(max_tries=120)
+    transformer_c = AddNeutralElementTransformer(max_tries=1)
     transformer_c.reset()
 
     altered_cst_c = transformer_c.apply(example_cst_c)
@@ -355,7 +355,7 @@ def test_addneutral_apply_twice_for_int_should_add_plus_0():
     example_cst = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer(max_tries=100)
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -372,7 +372,7 @@ def test_addneutral_apply_twice_for_int_should_reduce():
     example_cst = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer(max_tries=150)
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -389,7 +389,7 @@ def test_addneutral_apply_to_method_with_two_different_ints_should_be_applied_on
     example_cst = libcst.parse_module("def some(): \n\ta = 5\n\tb=3 \n\treturn a+b")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer(max_tries=100)
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -404,7 +404,7 @@ def test_addneutral_apply_to_method_with_two_identical_ints_should_be_applied_is
 
     random.seed(1996)
 
-    transformer = AddNeutralElementTransformer(max_tries=150)
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -418,7 +418,7 @@ def test_addneutral_apply_to_method_with_two_identical_ints_should_work():
     example_cst = libcst.parse_module("def some(): \n\ta = 4\n\tb = 4 \n\treturn a+b")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -431,7 +431,7 @@ def test_addneutral_apply_twice_for_int_should_work():
     example_cst = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer(max_tries=150)
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -445,7 +445,7 @@ def test_addneutral_for_int_in_return_should_add_plus_0():
     example_cst = libcst.parse_module("def some():\n\treturn 5")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer(max_tries=150)
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -458,7 +458,7 @@ def test_addneutral_for_int_in_default_parameters_should_add_plus_0():
     example_cst = libcst.parse_module("def some(a: int = 5):\n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer(max_tries=120)
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -471,7 +471,7 @@ def test_addneutral_for_int_in_default_parameters_should_work():
     example_cst = libcst.parse_module("def some(a: int = 5):\n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer(max_tries=120)
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -483,7 +483,7 @@ def test_addneutral_for_int_should_have_worked():
     example_cst = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
@@ -495,7 +495,7 @@ def test_addneutral_for_int_apply_many_times_should_have_worked():
     example_cst = libcst.parse_module("def some(): \n\ta = 5 \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer(max_tries=10)
+    transformer = AddNeutralElementTransformer(max_tries=1)
     altered_cst = example_cst
     counter = 0
     many_times = 20
@@ -515,7 +515,7 @@ def test_addneutral_for_string_apply_many_times_should_have_worked():
     example_cst = libcst.parse_module("def some(): \n\ta = \"hello\" \n\treturn a")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer(max_tries=10)
+    transformer = AddNeutralElementTransformer(max_tries=1)
     altered_cst = example_cst
     counter = 0
     many_times = 20
@@ -535,10 +535,20 @@ def test_addneutral_method_has_no_literals_transformer_did_not_work():
     example_cst = libcst.parse_module("def some(): return Math.Pi")
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
+
+    assert not transformer.worked()
+
+
+def test_addneutral_method_has_no_literals_transformer_did_not_work_even_after_many_retries():
+    example_cst = libcst.parse_module("def some(): return Math.Pi")
+
+    random.seed(1996)
+    transformer = AddNeutralElementTransformer(max_tries=150)
+    transformer.apply(example_cst)
 
     assert not transformer.worked()
 
@@ -548,7 +558,7 @@ def test_addneutral_method_has_no_literals_code_did_not_change():
     initial_code = str(example_cst.code)
 
     random.seed(1996)
-    transformer = AddNeutralElementTransformer()
+    transformer = AddNeutralElementTransformer(max_tries=1)
     transformer.reset()
 
     altered_cst = transformer.apply(example_cst)
