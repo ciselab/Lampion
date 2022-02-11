@@ -1,3 +1,8 @@
+"""
+Contains a unified method for extracting literals from an AST in a common fashion.
+
+Extracted from Add_Neutral and Lambda_Identity.
+"""
 from typing import Optional
 
 import libcst

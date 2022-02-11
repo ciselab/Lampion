@@ -38,9 +38,6 @@ class RenameVariableTransformer(BaseTransformer, ABC):
 
     """
 
-    __string_randomness: str
-    _worked: bool
-
     def __init__(self, string_randomness: str = "pseudo", max_tries:int = 75):
         if string_randomness in ["pseudo", "full"]:
             self.__string_randomness = string_randomness

@@ -43,9 +43,6 @@ class AddCommentTransformer(BaseTransformer, ABC):
         self.set_max_tries(max_tries)
         log.info("AddCommentTransformer created (%d Re-Tries)",self.get_max_tries())
 
-    _worked = False
-    __string_randomness: str
-
     def apply(self, cst_to_alter: CSTNode) -> CSTNode:
         """
         Apply the transformer to the given CST.
@@ -72,8 +69,6 @@ class AddCommentTransformer(BaseTransformer, ABC):
 
         if tries == max_tries:
             log.warning("Add Comment Transformer failed after %i attempts",max_tries)
-
-        #TODO: add Post-Processing Values here
 
         return altered_cst
 
@@ -131,11 +126,7 @@ class AddCommentTransformer(BaseTransformer, ABC):
             else:
                 raise ValueError["Received invalid value for String Randomness, supported values are 'pseud' and 'full'"]
 
-            log.debug("AddVariableVisitor Created")
             self.finished = False
-
-        finished: bool = False
-        __string_randomness: str
 
         def leave_SimpleStatementLine(
                 self, original_node: "SimpleStatementLine", updated_node: "SimpleStatementLine"

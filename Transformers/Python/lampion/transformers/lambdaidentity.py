@@ -53,7 +53,7 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
     See: https://docs.python.org/2/reference/expressions.html#
     """
 
-    def __init__(self, max_tries: int = 75):
+    def __init__(self, max_tries: int = 5):
         self._worked = False
         self.set_max_tries(max_tries)
         log.info("LambdaIdentityTransformer created (%d Re-Tries)", self.get_max_tries())

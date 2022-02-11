@@ -30,6 +30,12 @@ It can also (very unfortunately) happen that changing max-tries somewhere change
 
 I maybe have to be very strict about randomness and reset it very often.
 
+**Update** I found a major issue in the Literal-Collector-Visitor. 
+I extracted and tested it, it collected literals over multiple runs that were then 
+filling up stuff in the wrong places. 
+I.e., the second test had variables from the first tests, which may fail then by picking non-existing literals for transformation..
+
+
 ## CST Code Comparison
 
 Strings are immutable in Python, but the code element of a cst is not. 
