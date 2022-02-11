@@ -13,6 +13,7 @@ import libcst as cst
 import regex as re
 
 from lampion.transformers.basetransformer import BaseTransformer
+from lampion.transformers.literal_helpers import get_all_literals
 
 
 class AddNeutralElementTransformer(BaseTransformer, ABC):
@@ -65,26 +66,19 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
 
         Also, see the BaseTransformers notes if you want to implement your own.
         """
-        visitor = self.__LiteralCollector()
 
         altered_cst = cst_to_alter
+
+        seen_literals = get_all_literals(altered_cst)
+        # Exit early: No Literals to work on!
+        if len(seen_literals) == 0:
+            self._worked = False
+            return cst_to_alter
 
         tries: int = 0
         max_tries: int = self.get_max_tries()
 
         while (not self._worked) and tries <= max_tries:
-
-            cst_to_alter.visit(visitor)
-
-            seen_literals = \
-                [("simple_string", x) for x in visitor.seen_strings] \
-                + [("float", x) for x in visitor.seen_floats] \
-                + [("integer", x) for x in visitor.seen_integers]
-            # Exit early: No Literals to work on!
-            if len(seen_literals) == 0:
-                self._worked = False
-                return cst_to_alter
-
             to_replace = random.choice(seen_literals)
 
             replacer = self.__Replacer(to_replace[1], to_replace[0])
@@ -147,36 +141,6 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
         Manages all behavior after application, in case it worked(). Also calls reset().
         """
         self.reset()
-
-    class __LiteralCollector(cst.CSTVisitor):
-        """
-        CSTVisitor that collects all literal-values in traversal.
-        Any seen value is saved in an according attribute.
-        Currently supported types are floats, simple-strings and integers.
-        """
-        finished = True
-        seen_floats = []
-        seen_strings = []
-        seen_integers = []
-
-        def visit_Float(self, node: "Float") -> Optional[bool]:
-            """
-            LibCST built-in traversal that puts all seen float-literals in the known literals.
-            """
-            self.seen_floats.append(node)
-
-        def visit_Integer(self, node: "Integer") -> Optional[bool]:
-            """
-            LibCST built-in traversal that puts all seen integer-literals in the known literals.
-            """
-            self.seen_integers.append(node)
-
-        def visit_SimpleString(self, node: "SimpleString") -> Optional[bool]:
-            """
-            LibCST built-in traversal that puts all seen SimpleString-literals in the known literals.
-            Simple Strings are Strings that do not have anything fancy like format strings or regex.
-            """
-            self.seen_strings.append(node)
 
     class __Replacer(cst.CSTTransformer):
         """

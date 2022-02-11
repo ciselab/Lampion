@@ -12,6 +12,7 @@ from libcst import CSTNode
 import libcst as cst
 
 from lampion.transformers.basetransformer import BaseTransformer
+from lampion.transformers.literal_helpers import get_all_literals
 
 
 class LambdaIdentityTransformer(BaseTransformer, ABC):
@@ -46,6 +47,10 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
     The above added elements have redundant ( ) but I add them intentionally,
     so that I do not run into weird bugs about precedence.
     LibCST does not support finding this kind of behaviour afaik.
+
+    Note: For some Transformers we need libcst.the parse_statement,
+    however lambdas and function calls are both expressions, so all elements here are expressions.
+    See: https://docs.python.org/2/reference/expressions.html#
     """
 
     def __init__(self, max_tries: int = 75):
@@ -65,26 +70,20 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
 
         Also, see the BaseTransformers notes if you want to implement your own.
         """
-        visitor = self.__LiteralCollector()
 
         altered_cst = cst_to_alter
+
+        seen_literals = get_all_literals(cst_to_alter)
+        # Exit early if no matching literals exist
+        if len(seen_literals) == 0:
+            self._worked = False
+            return altered_cst
 
         tries: int = 0
         max_tries: int = self.get_max_tries()
 
         while (not self._worked) and tries <= max_tries:
             try:
-                cst_to_alter.visit(visitor)
-
-                seen_literals = \
-                    [("simple_string", x) for x in visitor.seen_strings] \
-                    + [("float", x) for x in visitor.seen_floats] \
-                    + [("integer", x) for x in visitor.seen_integers]
-                # Exit early: No Literals to work on!
-                if len(seen_literals) == 0:
-                    self._worked = False
-                    return cst_to_alter
-
                 to_replace = random.choice(seen_literals)
 
                 replacer = self.__Replacer(to_replace[1], to_replace[0])
@@ -96,8 +95,8 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
                 altered_cst = cst.parse_module(reduced_code)
 
                 tries = tries + 1
-                self._worked = replacer.worked
-                #return altered_cst
+                self._worked = replacer.replacer_finished
+                return altered_cst
             except AttributeError:
                 # This case happened when the seen variables were tuples
                 # Seen in OpenVocabCodeNLM Test Data
@@ -147,30 +146,6 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
         """
         self.reset()
 
-    class __LiteralCollector(cst.CSTVisitor):
-        finished = True
-        seen_floats = []
-        seen_strings = []
-        seen_integers = []
-
-        def visit_Float(self, node: "Float") -> Optional[bool]:
-            """
-            LibCST built-in traversal that puts all seen float-literals in the known literals.
-            """
-            self.seen_floats.append(node)
-
-        def visit_Integer(self, node: "Integer") -> Optional[bool]:
-            """
-            LibCST built-in traversal that puts all seen float-literals in the known literals.
-            """
-            self.seen_integers.append(node)
-
-        def visit_SimpleString(self, node: "SimpleString") -> Optional[bool]:
-            """
-            LibCST built-in traversal that puts all seen SimpleString-literals in the known literals.
-            """
-            self.seen_strings.append(node)
-
     class __Replacer(cst.CSTTransformer):
         """
         The CSTTransformer that traverses the CST and replaces literals with lambda: literal.
@@ -183,7 +158,7 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
         def __init__(self, to_replace: "CSTNode", replace_type: str):
             self.to_replace = to_replace
             self.replace_type = replace_type
-            self.worked = False
+            self.replacer_finished = False
 
         def leave_Float(
                 self, original_node: "Float", updated_node: "Float"
@@ -196,12 +171,14 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
             :param updated_node: The node after (downstream) changes
             :return: the updated node after our changes
             """
-            if self.replace_type == "float" and original_node.deep_equals(self.to_replace) and not self.worked:
+            if self.replace_type == "float" \
+                    and original_node.deep_equals(self.to_replace) \
+                    and not self.replacer_finished:
                 literal = str(original_node.value)
                 replacement = f"((lambda: {literal})())"
                 expr = cst.parse_expression(replacement)
                 updated_node = updated_node.deep_replace(updated_node, expr)
-                self.worked = True
+                self.replacer_finished = True
 
                 return updated_node
             return updated_node
@@ -217,12 +194,14 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
             :param updated_node: The node after (downstream) changes
             :return: the updated node after our changes
             """
-            if self.replace_type == "integer" and original_node.deep_equals(self.to_replace) and not self.worked:
+            if self.replace_type == "integer" \
+                    and original_node.deep_equals(self.to_replace) \
+                    and not self.replacer_finished:
                 literal = str(original_node.value)
                 replacement = f"((lambda: {literal})())"
                 expr = cst.parse_expression(replacement)
                 updated_node = updated_node.deep_replace(updated_node, expr)
-                self.worked = True
+                self.replacer_finished = True
 
                 return updated_node
             return updated_node
@@ -238,12 +217,14 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
             :param updated_node: The node after (downstream) changes
             :return: the updated node after our changes
             """
-            if self.replace_type == "simple_string" and original_node.deep_equals(self.to_replace) and not self.worked:
+            if self.replace_type == "simple_string" \
+                    and original_node.deep_equals(self.to_replace) \
+                    and not self.replacer_finished:
                 literal = str(original_node.value)
                 replacement = f"((lambda: {literal})())"
                 expr = cst.parse_expression(replacement)
                 updated_node = updated_node.deep_replace(updated_node, expr)
-                self.worked = True
+                self.replacer_finished = True
 
                 return updated_node
             return updated_node
