@@ -101,6 +101,15 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
                 # This case happened when the seen variables were tuples
                 # Seen in OpenVocabCodeNLM Test Data
                 tries = tries + 1
+            except cst._nodes.base.CSTValidationError:
+                # This can happen if we add too many (opening) Parentheses
+                # See https://github.com/Instagram/LibCST/issues/640
+                tries = tries + 1
+            except cst._exceptions.ParserSyntaxError:
+                # This can happen in two known cases:
+                # 1. Original Code is buggy
+                # 2. Reduction accidentally kills layout (e.g. removing indents)
+                tries = tries + 1
 
         if tries == max_tries:
             log.warning("Lambda Identity Transformer failed after %i attempt", max_tries)

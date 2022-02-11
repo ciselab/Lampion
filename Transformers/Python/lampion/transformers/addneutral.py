@@ -79,23 +79,29 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
         max_tries: int = self.get_max_tries()
 
         while (not self._worked) and tries <= max_tries:
-            to_replace = random.choice(seen_literals)
+            try:
+                to_replace = random.choice(seen_literals)
 
-            replacer = self.__Replacer(to_replace[1], to_replace[0])
+                replacer = self.__Replacer(to_replace[1], to_replace[0])
 
-            altered_cst = cst_to_alter.visit(replacer)
+                altered_cst = cst_to_alter.visit(replacer)
 
-            altered_code = altered_cst.code
-            reduced_code = _reduce_brackets(altered_code)
+                altered_code = altered_cst.code
+                reduced_code = _reduce_brackets(altered_code)
 
-            altered_cst = cst.parse_module(reduced_code)
+                altered_cst = cst.parse_module(reduced_code)
 
-            tries = tries + 1
-            self._worked = replacer.worked
-            # except libcst._nodes.base.CSTValidationError:
-            # This can happen if we try to add strings and add too many Parentheses
-            # See https://github.com/Instagram/LibCST/issues/640
-            #    tries = tries + 1
+                tries = tries + 1
+                self._worked = replacer.worked
+            except libcst._nodes.base.CSTValidationError:
+                # This can happen if we try to add strings and add too many Parentheses
+                # See https://github.com/Instagram/LibCST/issues/640
+                tries = tries + 1
+            except libcst._exceptions.ParserSyntaxError:
+                # This can happen in two known cases:
+                # 1. Original Code is buggy
+                # 2. Reduction accidentally kills layout (e.g. removing indents)
+                tries = tries + 1
 
         if tries == max_tries:
             log.warning("Add_Neutral_Element Transformer failed after %i attempts", max_tries)
