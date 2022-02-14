@@ -301,8 +301,6 @@ def test_run_per_class_with_default_transformers_with_two_CSTs_should_have_2_cst
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
     example_cst_B = cst.parse_module("def bye(): \n\tprint(\"Goodbye (cruel) World\")")
-    example_A_value = str(example_cst_A.code)
-    example_B_value = str(example_cst_B.code)
 
     csts = [("PLACEHOLDER", example_cst_A), ("PLACEHOLDER", example_cst_B)]
 
@@ -389,6 +387,108 @@ def test_run_with_bad_scope_CSTs_should_stay_unchanged():
     assert altered_cst_A == example_cst_A.code
     assert altered_cst_B == example_cst_B.code
 
+## "Integration" Tests
+# Testing a bit of the logic around
+
+def test_engine_with_literal_transformers_cst_has_no_literals():
+    # Important things to test here:
+    # 1. Termination
+    # 2. No successful Transformations
+    # 3. Bad Transformations recorded
+    # 4. Code remains unchanged
+    # 5. No Files touched
+
+    # Config that allows "only" literal-related Transformers
+    config = {}
+    config["AddUnusedVariableTransformer"] = False
+    config["AddCommentTransformer"] = False
+    config["RenameParameterTransformer"] = False
+    config["RenameVariableTransformer"] = False
+
+    config["AddNeutralElementTransformer"] = True
+    config["LambdaIdentityTransformer"] = True
+
+
+    testobject = Engine(config)
+
+    example_cst = [("PLACEHOLDER",cst.parse_module("def some(): return Math.Pi"))]
+
+    altered_cst = testobject.run(example_cst)
+
+    assert testobject.get_successful_transformations() == 0
+    assert testobject.get_failed_transformations() > 0
+    assert len(testobject.get_touched_paths()) == 0
+
+def test_engine_per_class_with_literal_transformers_cst_has_no_literals():
+    # Config that allows "only" literal-related Transformers
+    config = {}
+    config["AddUnusedVariableTransformer"] = False
+    config["AddCommentTransformer"] = False
+    config["RenameParameterTransformer"] = False
+    config["RenameVariableTransformer"] = False
+
+    config["AddNeutralElementTransformer"] = True
+    config["LambdaIdentityTransformer"] = True
+
+    config["transformationscope"] = "per_class"
+
+    testobject = Engine(config)
+
+    example_cst = [("PLACEHOLDER",cst.parse_module("def some(): return Math.Pi"))]
+
+    altered_cst = testobject.run(example_cst)
+
+    assert testobject.get_successful_transformations() == 0
+    assert testobject.get_failed_transformations() > 0
+    assert len(testobject.get_touched_paths()) == 0
+
+def test_engine_per_class_with_unfailable_transformers_has_no_failures():
+    # These transformers can never fail
+    config = {}
+    config["AddUnusedVariableTransformer"] = True
+    config["AddCommentTransformer"] = False
+    config["RenameParameterTransformer"] = False
+    config["RenameVariableTransformer"] = False
+
+    config["AddNeutralElementTransformer"] = False
+    config["LambdaIdentityTransformer"] = False
+
+    config["transformationscope"] = "per_class"
+    config["transformations"] = 10
+
+    testobject = Engine(config)
+
+    example_cst = [("PLACEHOLDER",cst.parse_module("def some(): \n\t a = 'bla' \n\t b = 'bla' \n\t c = 'bla' \n\t d = 'bla' \n\t e = 'bla' \n\t return Math.Pi"))]
+
+    altered_cst = testobject.run(example_cst)
+
+    assert testobject.get_successful_transformations() == 10
+    assert testobject.get_failed_transformations() == 0
+
+def test_engine_with_unfailable_transformers_has_no_failures():
+    # These transformers can never fail
+    config = {}
+    config["AddUnusedVariableTransformer"] = True
+    config["AddCommentTransformer"] = False
+    config["RenameParameterTransformer"] = False
+    config["RenameVariableTransformer"] = False
+
+    config["AddNeutralElementTransformer"] = False
+    config["LambdaIdentityTransformer"] = False
+
+    config["transformationscope"] = "global"
+    config["transformations"] = 3
+
+    testobject = Engine(config)
+
+    example_cst = [("PLACEHOLDER",cst.parse_module("def some(): \n\t a = 'bla' \n\t b = 'bla' \n\t c = 'bla' \n\t d = 'bla' \n\t e = 'bla' \n\t return Math.Pi"))]
+
+    altered_cst = testobject.run(example_cst)
+
+    assert 3 == testobject.get_successful_transformations()
+    assert 0 == testobject.get_failed_transformations()
+
+## Tests for Helpers, internals and Configs
 
 def test_touched_engine_not_run_none_touched():
     testobject = Engine(config={"transformations": 0, "transformationscope": "global"})

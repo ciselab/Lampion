@@ -133,6 +133,10 @@ class Engine:
         """
         max_transformations = self.__config["transformations"]
         while self.get_successful_transformations() < max_transformations:
+            if self.get_failed_transformations() > max_transformations * 3:
+                log.warning("Reached %d Transformation-Failures (3 times wanted transformations), exiting early",
+                            self.get_failed_transformations())
+                return csts
             # 1.1 pick a cst
             cst_index = random.randint(0, len(csts) - 1)
             (running_path, running_cst) = csts[cst_index]
