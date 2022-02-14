@@ -1,6 +1,8 @@
 import libcst
 import random
 
+import pytest
+
 from lampion.transformers.renameparam import RenameParameterTransformer
 
 
@@ -67,6 +69,11 @@ def test_rename_param_method_has_one_params_transformer_can_be_applied_any_time(
         altered_cst = transformer.apply(altered_cst)
 
     assert transformer.worked()
+
+def test_get_categories_is_not_null():
+    transformer = RenameParameterTransformer()
+
+    assert len(transformer.categories()) != 0
 
 def test_rename_param_method_has_one_params_param_should_be_renamed():
     example_cst = libcst.parse_module("def hi(yyy): \n\ta: int = 1\n\tprint(f\"Hello {yyy}\")")
@@ -198,6 +205,10 @@ def test_rename_param_method_has_two_parameters_apply_often_should_both_rename()
     xxx_in = "xxx" in altered_code
     # the != works as a logical XOR in this case
     assert (not yyy_in) and (not xxx_in)
+
+def test_rename_param_bad_value_for_string_randomness_throws_error():
+    with pytest.raises(ValueError):
+        RenameParameterTransformer(string_randomness="bad_randomness")
 
 def test_add_var_method_has_one_param_that_exists_in_str_should_be_kept_in_str():
     example_cst = libcst.parse_module("def hi(name = 1): \n\tprint(f\"name is {name}\")")

@@ -81,9 +81,6 @@ class RenameParameterTransformer(BaseTransformer, ABC):
                     replacement = get_pseudo_random_string()
                 elif self.__string_randomness == "full":
                     replacement = get_random_string(5)
-                else:
-                    raise ValueError(
-                        "Something changed the StringRandomness in RenameParamTransformer to an invalid value.")
 
                 renamer = self.__Renamer(to_replace, replacement)
 
@@ -91,14 +88,12 @@ class RenameParameterTransformer(BaseTransformer, ABC):
                 tries = tries + 1
 
             except AttributeError:
-                # This case happened when the seen variables were tuples
+                # This case happened when the seen variables were not tuples
                 # Seen in OpenVocabCodeNLM Test Data
                 tries = tries + 1
 
         if tries == max_tries:
             log.warning("Rename Variable Transformer failed after %i attempt",max_tries)
-
-        # TODO: add Post-Processing Values here
 
         return altered_cst
 

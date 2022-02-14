@@ -531,6 +531,11 @@ def test_lambdaidentity_method_has_no_literals_transformer_did_not_work():
     assert not transformer.worked()
 
 
+def test_get_categories_is_not_null():
+    transformer = LambdaIdentityTransformer()
+
+    assert len(transformer.categories()) != 0
+
 def test_lambdaidentity_method_has_no_literals_transformer_did_not_work_even_after_many_retries():
     example_cst = libcst.parse_module("def some(): return Math.Pi")
 

@@ -652,6 +652,10 @@ def test_reduce_brackets_mixed_elements_remains_unchanged():
 
     assert result == input
 
+def test_get_categories_is_not_null():
+    transformer = AddNeutralElementTransformer()
+
+    assert len(transformer.categories()) != 0
 
 # Learning Regex
 # (You always have to re-learn when you need it)

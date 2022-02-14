@@ -2,6 +2,8 @@
 import libcst
 import random
 
+import pytest
+
 from lampion.transformers.renamevar import RenameVariableTransformer
 
 
@@ -194,6 +196,15 @@ def test_rename_var_method_is_in_class_should_change():
 
     altered_code = altered_cst.code
     assert example_cst.code != altered_code
+
+def test_get_categories_is_not_null():
+    transformer = RenameVariableTransformer()
+
+    assert len(transformer.categories()) != 0
+
+def test_rename_param_bad_value_for_string_randomness_throws_error():
+    with pytest.raises(ValueError):
+        RenameVariableTransformer(string_randomness="bad_randomness")
 
 
 def example_with_one_var():

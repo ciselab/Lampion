@@ -1,6 +1,8 @@
 import libcst
 import random
 
+import pytest
+
 from lampion.transformers.addvar import AddVariableTransformer
 
 
@@ -45,6 +47,15 @@ def test_addvar_empty_module_should_not_work():
 
     assert (not transformer.worked())
 
+def test_bad_string_randomness_should_throw_error():
+    with pytest.raises(ValueError):
+        AddVariableTransformer(string_randomness="Bad Randomness")
+
+
+def test_get_categories_is_not_null():
+    transformer = AddVariableTransformer()
+
+    assert len(transformer.categories()) != 0
 
 def test_addvar_working_example_should_set_transformer_to_worked():
     example_cst = example()

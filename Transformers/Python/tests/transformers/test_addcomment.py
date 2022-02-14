@@ -1,6 +1,8 @@
 import libcst
 import random
 
+import pytest
+
 from lampion.transformers.addcomment import AddCommentTransformer
 
 
@@ -86,6 +88,10 @@ def test_addcomment_working_example_should_set_transformer_to_worked():
     assert (transformer.worked())
 
 
+def test_bad_string_randomness_should_throw_error():
+    with pytest.raises(ValueError):
+        AddCommentTransformer(string_randomness="Bad Randomness")
+
 def test_example_should_have_2_lines():
     """
     Dummy Test to check that the \n is picked up correctly
@@ -95,6 +101,10 @@ def test_example_should_have_2_lines():
     lines = len(example_cst.code.splitlines())
     assert (lines == 2)
 
+def test_get_categories_is_not_null():
+    transformer = AddCommentTransformer()
+
+    assert len(transformer.categories()) != 0
 
 def visit_until_worked(cst, transformer):
     """

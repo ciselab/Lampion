@@ -83,9 +83,6 @@ class RenameVariableTransformer(BaseTransformer, ABC):
                     replacement = get_pseudo_random_string()
                 elif self.__string_randomness == "full":
                     replacement = get_random_string(5)
-                else:
-                    raise ValueError(
-                        "Something changed the StringRandomness in RenameVariableTransformer to an invalid value.")
 
                 renamer = self.__Renamer(to_replace, replacement)
 
