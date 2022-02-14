@@ -44,7 +44,7 @@ class RenameVariableTransformer(BaseTransformer, ABC):
         else:
             raise ValueError("Unrecognized Value for String Randomness, supported are pseudo and full")
 
-        _worked = False
+        self._worked = False
         self.set_max_tries(max_tries)
         log.info("RenameVariableTransformer created (%d Re-Tries)",self.get_max_tries())
 

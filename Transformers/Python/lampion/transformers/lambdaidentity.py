@@ -1,16 +1,14 @@
 """
 Contains the "LambdaIdentityTransformer" that wraps literals into lambda functions and calls them.
 """
-import random
-import regex as re
-from abc import ABC
-from typing import Optional
-
 import logging as log
-
-from libcst import CSTNode
+import random
+from abc import ABC
 import libcst as cst
 
+import regex as re
+
+from libcst import CSTNode
 from lampion.transformers.basetransformer import BaseTransformer
 from lampion.transformers.literal_helpers import get_all_literals
 

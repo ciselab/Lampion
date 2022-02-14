@@ -3,7 +3,6 @@ Contains the "AddNeutralElementTransformer" that adds +0 to integers or +"" to s
 """
 import random
 from abc import ABC
-from typing import Optional
 
 import logging as log
 

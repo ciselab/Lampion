@@ -114,8 +114,7 @@ class BaseTransformer():
         """
         raise NotImplementedError()
 
-
-    def set_max_tries(self,max:int) -> None:
+    def set_max_tries(self, max_tries: int) -> None:
         """
         Sets the number how often the transformer re-tries itself in case of a bad application.
         Some transformers can fail by design, and retrying is normal and to be expected.
@@ -123,7 +122,7 @@ class BaseTransformer():
 
         :param max: the number of retries per transformer per application
         """
-        self._max_tries = max
+        self._max_tries = max_tries
 
     def get_max_tries(self) -> int:
         """

@@ -54,7 +54,7 @@ def run(path_to_code: str, path_to_config: str = None, output_prefix: str = "lam
         initial_cst_code = str((initial_tuple[1]).code)
         altered_cst_code = str((altered_tuple[1]).code)
 
-        # This is intentionally print and not logging 
+        # This is intentionally print and not logging
         print("Before:\n")
         print(initial_cst_code)
         print("\n")
@@ -103,9 +103,10 @@ def read_input_dir(path: str) -> [(str, CSTNode)]:
                         found_cst = cst.parse_module(file_content)
                         results.append((file_path, found_cst))
                     except:
-                        # Known (common) possible Errors: 
+                        # Known (common) possible Errors:
                         # UTF8-Error when reading files with strange encodings
                         # ParserSyntaxError when reading old python (v2)
+                        # ParserSyntaxError for "bad" files (i.e. errors in python)
                         # Type-Error for rare cases
                         fails.append(file_path)
                         log.debug("Failure in Parsing %s", file_path)
@@ -152,7 +153,7 @@ def read_config_file(path: str) -> dict:
 
     # Read in File, check for emptyness
     lines: [str] = []
-    with open(path, "r") as config_file:
+    with open(path, "r", encoding="utf-8") as config_file:
         lines = config_file.readlines()
     if not lines:
         log.warning("The configuration-file at %s was empty", path)
@@ -241,7 +242,7 @@ def _file_to_string(path: str) -> str:
     :return: the file's content
     :raises: FileNotFoundError if file does not exist
     """
-    with open(path, 'r') as file:
+    with open(path, 'r', encoding="utf-8") as file:
         return file.read()
 
 
@@ -299,6 +300,7 @@ def main() -> None:
 
     random.seed(19961106)
 
-    run(path_to_code=path, path_to_config=config, output_prefix=output, print_sample_diff=example)
+    run(path_to_code=path, path_to_config=config, output_prefix=output,
+        print_sample_diff=example, store_only_changed=store_only_changed)
 
     sys.exit(0)

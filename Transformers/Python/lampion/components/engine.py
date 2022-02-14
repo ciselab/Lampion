@@ -8,7 +8,6 @@ import random
 
 import logging as log
 import sys
-from typing import List, Union
 
 from libcst import CSTNode
 
@@ -292,7 +291,7 @@ class Engine:
                 # Create the (required) folders before trying to make the file
                 os.makedirs(os.path.dirname(pp), exist_ok=True)
                 # Open the File as write, with overwriting existing content
-                with open(pp, "w") as output_file:
+                with open(pp, "w", encoding="utf-8") as output_file:
                     output_file.write(cst.code)
                     output_file.close()
 
