@@ -23,7 +23,7 @@ This is the recommended way to use the transformer - adjust the properties and c
 
 ## Build & Run
 ```bash
-pip install libcst build pytest pytest-cov
+pip install -r requirements.txt
 ```
 
 Build (in Python-Root): 
@@ -66,7 +66,7 @@ docker run lampion/python-transformer:unstable
 ## Requirements
 
 - Docker 11+
-- [Alternative] Python 3.9 + Pip
+- [Alternative] Python 3.9 & Pip
 
 ## Built with:
 
