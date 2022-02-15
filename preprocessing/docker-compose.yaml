@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  OpenVocabCodeNLM_Preprocessing:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SUBWORD_NMT_VERSION: 0.3.8
+        PYTHON_VERSION: 3.9
+    image: ciselab/codebert-preprocessing:1.1
+    volumes:
+      - ./my_sample_files:/data:ro
+      - ./compose_output:/output
+      - ./python_encodings:/encodings:ro
+    environment:
+      input_folder: "/data"
+      output_folder: "/output"
+      encoding_path: "/encodings/python_encoding.enc_bpe_10000"
+      loglevel: "debug"
+      merged_filename: "selfmade_pre_enc_10000"
+      file_ending: ".py"
+      encoded_file_ending: ".py_enc"
