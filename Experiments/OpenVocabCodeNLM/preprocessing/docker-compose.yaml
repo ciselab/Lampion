@@ -18,6 +18,6 @@ services:
       output_folder: "/output"
       encoding_path: "/encodings/python_encoding.enc_bpe_10000"
       loglevel: "debug"
-      merged_filename: "selfmade_pre_enc_10000"
+      merged_filename: "lampion_pre_enc_10000"
       file_ending: ".py"
       encoded_file_ending: ".py_enc"

@@ -6,11 +6,11 @@ LABEL maintainer="L.H.Applis@tu-delft.nl"
 LABEL name="ciselab/openvocabcodenlm-preprocessing"
 LABEL description="Preprocessing for the OpenVocabCodeNLM Training & Evaluation"
 
-LABEL org.opencontainers.image.source="https://github.com/ciselab/openvocabcodenlm-preprocessing"
-LABEL vcs="https://github.com/ciselab/openvocabcodenlm-preprocessing/"
-LABEL url="https://github.com/ciselab/openvocabcodenlm-preprocessing/"
+LABEL org.opencontainers.image.source="https://github.com/ciselab/Lampion"
+LABEL vcs="https://github.com/ciselab/Lampion"
+LABEL url="https://github.com/ciselab/Lampion"
 
-# Where the lampion should be applied/run, default to a sample file
+# Where the preprocessing should be applied/run, default to a sample file
 ENV input_folder="/data"
 ENV output_folder="/output"
 ENV encoding_path="/encodings/python_encoding.enc_bpe_10000"

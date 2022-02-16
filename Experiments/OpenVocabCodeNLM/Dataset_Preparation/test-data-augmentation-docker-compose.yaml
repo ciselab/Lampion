@@ -12,6 +12,6 @@ services:
       only_store_touched: "true"
 
     volumes:
-      - ./augmentation_output/:/lampion_output
+      - ./augmentation_output/test/:/lampion_output
       - ./properties:/config
       - ./filter_output/test/input_data/Python_Test_Set/:/input_data

@@ -1,17 +1,17 @@
 version: '3.8'
 
 services:
-  python-augment-valid-data:
+  python-augment-train-data:
     image: lampion/python-transformer:0.0.2
     environment:
       target: "/input_data"
-      configfile: "/config/augment-valid.properties"
+      configfile: "/config/augment-training.properties"
       output: "/lampion_output/"
       loglevel: "info"
       print_example: "false"
       only_store_touched: "true"
 
     volumes:
-      - ./augmentation_output/:/lampion_output
+      - ./augmentation_output/train/:/lampion_output
       - ./properties:/config
-      - ./filter_output/validation/input_data/Python_Validation_Set/:/input_data
+      - ./filter_output/training/input_data/Python_Small_Training_Set/:/input_data
