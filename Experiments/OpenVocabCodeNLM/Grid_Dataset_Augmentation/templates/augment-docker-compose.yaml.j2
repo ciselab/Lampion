@@ -6,9 +6,9 @@ services:
     environment:
       # Target and Output can be kept hardcoded (unless you change the volumes)
       target: "/input_data"
-      configfile: {{ config_file }}
+      configfile: "{{ config_file }}"
       output: "/lampion_output/"
-      loglevel: {{ loglevel|default("info",true) }}
+      loglevel: "{{ loglevel|default("info",true) }}"
       print_example: "false"
       only_store_touched: "true"
 
