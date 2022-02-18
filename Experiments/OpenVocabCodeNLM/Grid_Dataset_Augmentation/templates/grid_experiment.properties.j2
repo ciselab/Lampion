@@ -1,0 +1,25 @@
+seed={{ seed|default(1996, true) }}
+
+transformations={{transformations}}
+
+# Currently supported scopes: "global","per_class"
+# Other Scopes Pending
+transformationscope={{ scope|default("per_class", true) }}
+
+# Transformer Related Attributes
+AddUnusedVariableTransformer={{ add_unused_variable | default(false,true) }}
+UnusedVariableStringRandomness={{ add_unused_variable_randomness | default(full,true) }}
+
+# Comments will be removed in preproccessing,
+# so don't add more
+AddCommentTransformer={{ add_comment | default(false,true) }}
+
+RenameParameterTransformer={{ rename_parameter | default(false,true) }}
+RenameParameterStringRandomness={{ rename_parameter_randomness | default(full,true) }}
+
+RenameVariableTransformer={{ rename_variable | default(false,true) }}
+RenameVariableStringRandomness={{ rename_variable_randomness | default(full,true) }}
+
+AddNeutralElementTransformer={{ add_neutral | default(false,true) }}
+
+LambdaIdentityTransformer={{ lambda_identity | default(false,true) }}
