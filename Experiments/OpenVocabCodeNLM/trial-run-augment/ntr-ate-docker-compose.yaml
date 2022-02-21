@@ -5,7 +5,7 @@ services:
     image: ciselab/openvocabcodenlm:latest
     oom_kill_disable: true
     volumes:
-      - ./data/python-n/:/data
+      - ./data/python-an/:/data
       - ./data/python-n/model:/models
     environment:
       DO_TRAIN: false
