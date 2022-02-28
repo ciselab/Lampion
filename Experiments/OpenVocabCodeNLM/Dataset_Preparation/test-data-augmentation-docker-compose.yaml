@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  python-augment-test-data:
+    image: lampion/python-transformer:0.0.2
+    environment:
+      target: "/input_data"
+      configfile: "/config/augment-test.properties"
+      output: "/lampion_output/"
+      loglevel: "info"
+      print_example: "false"
+      only_store_touched: "true"
+
+    volumes:
+      - ./augmentation_output/test/:/lampion_output
+      - ./properties:/config
+      - ./filter_output/test/input_data/Python_Test_Set/:/input_data

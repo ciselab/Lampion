@@ -1,10 +1,14 @@
 import libcst
+import random
+
+import pytest
 
 from lampion.transformers.addcomment import AddCommentTransformer
 
 
 def test_addcomment_working_example_should_add_line():
     example_cst = example()
+    random.seed(1996)
 
     transformer = AddCommentTransformer()
     transformer.reset()
@@ -17,6 +21,7 @@ def test_addcomment_working_example_should_add_line():
 
 def test_addcomment_apply_twice_should_add_two_lines():
     example_cst = example()
+    random.seed(1996)
 
     transformer = AddCommentTransformer()
     transformer.reset()
@@ -31,6 +36,7 @@ def test_addcomment_apply_twice_should_add_two_lines():
 
 def test_addcomment_apply_twice_without_reset_should_only_add_one_line():
     example_cst = example()
+    random.seed(1996)
 
     transformer = AddCommentTransformer()
     transformer.reset()
@@ -45,6 +51,7 @@ def test_addcomment_apply_twice_without_reset_should_only_add_one_line():
 
 def test_addcomment_empty_module_should_not_add_line():
     example_cst = libcst.parse_module("")
+    random.seed(1996)
 
     transformer = AddCommentTransformer()
     transformer.reset()
@@ -59,6 +66,7 @@ def test_addcomment_empty_module_should_not_add_line():
 
 def test_addcomment_empty_module_should_not_work():
     example_cst = libcst.parse_module("")
+    random.seed(1996)
 
     transformer = AddCommentTransformer()
     transformer.reset()
@@ -70,6 +78,7 @@ def test_addcomment_empty_module_should_not_work():
 
 def test_addcomment_working_example_should_set_transformer_to_worked():
     example_cst = example()
+    random.seed(1996)
 
     transformer = AddCommentTransformer()
     transformer.reset()
@@ -78,6 +87,10 @@ def test_addcomment_working_example_should_set_transformer_to_worked():
 
     assert (transformer.worked())
 
+
+def test_bad_string_randomness_should_throw_error():
+    with pytest.raises(ValueError):
+        AddCommentTransformer(string_randomness="Bad Randomness")
 
 def test_example_should_have_2_lines():
     """
@@ -88,6 +101,10 @@ def test_example_should_have_2_lines():
     lines = len(example_cst.code.splitlines())
     assert (lines == 2)
 
+def test_get_categories_is_not_null():
+    transformer = AddCommentTransformer()
+
+    assert len(transformer.categories()) != 0
 
 def visit_until_worked(cst, transformer):
     """

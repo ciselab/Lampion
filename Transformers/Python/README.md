@@ -3,13 +3,27 @@
 This part of the Lampion Project alters Python Files using metamorphic transformations 
 and returns/writes the altered files.
 
+**Important: Due to the used parser, only Python 3 files are supported!** 
+Buggy Python 3 files, as well as Python 2 files are ignored for transformation.
+
 It is currently in early development, I implemented every feature for the first trials, 
 but I expect bugs popping up when you use them on actual data.
 
+## Instant Build & Run 
+
+The easiest way is to use the [docker-compose](./docker-compose.yaml):
+
+```
+docker-compose up --build
+```
+
+This will test & build everything and run it on examples from the tests.
+
+This is the recommended way to use the transformer - adjust the properties and compose for your project.
 
 ## Build & Run
 ```bash
-pip install libcst build pytest pytest-cov
+pip install -r requirements.txt
 ```
 
 Build (in Python-Root): 
@@ -25,11 +39,13 @@ python -m pytest tests/
 ```
 Or with coverage `python -m pytest --cov=lampion tests/`
 
+**Note:** When running the tests in the IDE, it can happen that the file-paths do not match / resolve properly. That means, the CLI tests fail. This is to be expected, all other tests should pass.
+
 
 Install the python transformer
 
 ```bash
-pip install --force-reinstall ./dist/lampion_python_transformer-0.0.1-py2.py3-none-any.whl
+pip install --force-reinstall ./dist/lampion_python_transformer-0.0.2-py2.py3-none-any.whl
 ```
 
 Run with: 
@@ -52,7 +68,7 @@ docker run lampion/python-transformer:unstable
 ## Requirements
 
 - Docker 11+
-- [Alternative] Python 3.9 + Pip
+- [Alternative] Python 3.9 & Pip
 
 ## Built with:
 

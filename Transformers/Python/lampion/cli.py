@@ -20,7 +20,8 @@ from libcst import CSTNode
 from lampion.components.engine import Engine
 
 
-def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampion_output", print_sample_diff: bool = True) -> None:
+def run(path_to_code: str, path_to_config: str = None, output_prefix: str = "lampion_output",
+        store_only_changed:bool = False, print_sample_diff: bool = True) -> None:
     """
     Primary function to read the files, read the configuration, and run the engine.
     Separated from main for testability, as main() needs sys.args .
@@ -28,20 +29,21 @@ def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampio
     :param path_to_code: Path to Directory or File of Code.
     :param path_to_config: Path to Configuration to read in.
     :param output_prefix: Prefix to put before the output, will be created if not existing.
-    :param print_sample_diff: Whether or not to output one CST to Log. Default is true.
+    :param store_only_changed: Whether to print only changed CSTs. Default: False
+    :param print_sample_diff: Whether to output one CST to Log. Default is true.
     :return: None
     """
     log.info('Welcome to the Lampion-Python-Transformer')
-    log.info("Reading File(s) from %s",path_to_code)
+    log.info("Reading File(s) from %s", path_to_code)
 
     csts = read_input_dir(path_to_code)
     config = read_config_file(path_to_config)
 
     # Set seed a-new if one was found in config.
-    if "seed" in config.keys() and config["seed"] and isinstance(config["seed"],int):
+    if "seed" in config.keys() and config["seed"] and isinstance(config["seed"], int):
         random.seed(config["seed"])
 
-    engine = Engine(config, output_prefix)
+    engine = Engine(config=config, output_dir=output_prefix,store_only_changed = store_only_changed)
 
     altered_csts = engine.run(csts)
 
@@ -51,8 +53,8 @@ def run(path_to_code:str ,path_to_config:str = None, output_prefix:str = "lampio
 
         initial_cst_code = str((initial_tuple[1]).code)
         altered_cst_code = str((altered_tuple[1]).code)
-        
-        # This is intentionally print and not logging 
+
+        # This is intentionally print and not logging
         print("Before:\n")
         print(initial_cst_code)
         print("\n")
@@ -83,7 +85,7 @@ def read_input_dir(path: str) -> [(str, CSTNode)]:
     # Case 1: Path is a directory
     if os.path.isdir(path):
         log.info("Received Path is a Directory - Looking for multiple files")
-        log.info("This might take a while ... (run in debug to see process)")
+        log.info("This might take a while ... (run in debug to see progress)")
         results = []
         fails = []
         file_counter = 0
@@ -92,26 +94,24 @@ def read_input_dir(path: str) -> [(str, CSTNode)]:
             for f in fnames:
                 if f.endswith(".py"):
                     file_counter += 1
-                    file_path:str = os.path.join(dirpath, f)
-                    log.debug("Parsing ... %s",file_path)
+                    if (file_counter % 1000) == 0:
+                        log.info("Parsed %d Files (still running)",file_counter)
+                    file_path: str = os.path.join(dirpath, f)
+                    log.debug("Parsing %s", file_path)
                     try:
-                        file_content:str = _file_to_string(file_path)
+                        file_content: str = _file_to_string(file_path)
                         found_cst = cst.parse_module(file_content)
-                        log.debug("Parsed %s",file_path)
-                        results.append(file_path, found_cst)
+                        results.append((file_path, found_cst))
                     except:
-                        # Known (common) possible Errors: 
+                        # Known (common) possible Errors:
                         # UTF8-Error when reading files with strange encodings
                         # ParserSyntaxError when reading old python (v2)
+                        # ParserSyntaxError for "bad" files (i.e. errors in python)
                         # Type-Error for rare cases
-                        fails = fails.append(file_path) if fails else [file_path]
-                        log.debug("Failure in Parsing %s",file_path)
-        
-        if len(fails)>0 :
-            log.info("Failed Paths (%d) to parse:",len(fails))
-            for e in fails:
-                log.info("\t %s",e)
-        log.info("Found and (successfully) parsed %d of %d files",len(results),file_counter)
+                        fails.append(file_path)
+                        log.debug("Failure in Parsing %s", file_path)
+        __log_fails(fails)
+        log.info("Found and (successfully) parsed %d of %d files", len(results), file_counter)
         return results
     # Case 2: Path is a file
     elif os.path.isfile(path):
@@ -149,17 +149,17 @@ def read_config_file(path: str) -> dict:
     if not os.path.exists(path) or not os.path.isfile(path):
         raise ValueError("Path to ConfigFile did not exist or was not a file!")
     if ".properties" not in path:
-        log.warning("The configuration-file at %s did not end with the expected .properties",path)
+        log.warning("The configuration-file at %s did not end with the expected .properties", path)
 
     # Read in File, check for emptyness
     lines: [str] = []
-    with open(path,"r") as config_file:
+    with open(path, "r", encoding="utf-8") as config_file:
         lines = config_file.readlines()
     if not lines:
-        log.warning("The configuration-file at %s was empty",path)
+        log.warning("The configuration-file at %s was empty", path)
         return {}
     # Split the Lines and add to tuples
-    tuples: [(str,str)] = []
+    tuples: [(str, str)] = []
     for line in lines:
         # Filter out Empty Lines, and other tokens like Line-ends \n
         if line.strip() == "":
@@ -169,20 +169,20 @@ def read_config_file(path: str) -> dict:
         if "=" not in line:
             continue
         # Remove bad / unwanted elements from the line before splitting
-        cleaned_line = line.strip().replace(" ","").replace("\n","")
-        parts = cleaned_line.split("=",1)
-        tuples.append((parts[0],parts[1]))
+        cleaned_line = line.strip().replace(" ", "").replace("\n", "")
+        parts = cleaned_line.split("=", 1)
+        tuples.append((parts[0], parts[1]))
     # Try to parse the tuples and return dict
     config: dict = {}
     for tup in tuples:
         # Try to parse to bool
         parsed_value = __str2bool(tup[1])
-        if isinstance(parsed_value,bool):
+        if isinstance(parsed_value, bool):
             config[tup[0]] = parsed_value
             continue
         # Try to parse to int
         parsed_value = __str2int(tup[1])
-        if isinstance(parsed_value,int):
+        if isinstance(parsed_value, int):
             config[tup[0]] = parsed_value
             continue
         # otherwise keep it
@@ -190,15 +190,40 @@ def read_config_file(path: str) -> dict:
     # Return the Dict
     return config
 
+
+def __log_fails(fails: [str]) -> None:
+    """
+    Print info of the failed paths from parsing.
+
+    :param fails: a list of the paths that failed parsing
+    :return: Nothing, outputs to logging
+
+    Extracted from run for read_input_dir for readability.
+    """
+    #
+    if fails and len(fails) > 0:
+        if len(fails) < 50:
+            log.info("Failed Paths (%d) to parse:", len(fails))
+            for e in fails:
+                log.info("\t %s", e)
+        else:
+            log.info("More than 50 files failed to be read! %d Failed. To see details, please run in debug.",
+                     len(fails))
+            log.debug("Failed files were:")
+            for e in fails:
+                log.debug("\t %s", e)
+
+
 def __str2bool(value) -> str | bool:
     """
     Parses a str to bool if possible. Returns the str otherwise.
     """
-    if value.lower() in ["yes","true","1"]:
+    if value.lower() in ["yes", "true", "1"]:
         return True
     if value.lower() in ["no", "false", "0"]:
         return False
     return value
+
 
 def __str2int(value) -> str | int:
     """
@@ -208,6 +233,7 @@ def __str2int(value) -> str | int:
         return int(value)
     return value
 
+
 def _file_to_string(path: str) -> str:
     """
     Reads in a whole file under path, returns it's content.
@@ -216,8 +242,9 @@ def _file_to_string(path: str) -> str:
     :return: the file's content
     :raises: FileNotFoundError if file does not exist
     """
-    with open(path, 'r') as file:
+    with open(path, 'r', encoding="utf-8") as file:
         return file.read()
+
 
 def main() -> None:
     """
@@ -236,23 +263,28 @@ def main() -> None:
                         help='The config file to use with the transformer')
     parser.add_argument('input', metavar='input', type=str, nargs=1,
                         help='A path to either a folder containing .py files or a path to a .py file')
-    parser.add_argument('output',metavar='output', type=str, nargs=1, default="lampion_output",
+    parser.add_argument('output', metavar='output', type=str, nargs=1, default="lampion_output",
                         help="Prefix for the folder to place output in. "
                              "Within this new folder, the initial structure will be replicated. "
                              "Any files will be overwritten.")
 
-    parser.add_argument('loglevel',metavar="log", type=str, nargs="?", default="info",
-                        help="The loglevel for printing logs. Default \'info\'. supported: \'warn\',\'info\',\'debug\'" )
+    parser.add_argument("--output-only-changed",dest='store_only_changed',action="store_true",
+                        help="Whether or not to print only files that changed. Default:False (Print all, even untouched)")
 
-    parser.add_argument('example', metavar="exp", type=bool, nargs="?", default=True,
+    parser.add_argument('--loglevel', dest="loglevel", type=str, nargs="?", default="info",
+                        help="The loglevel for printing logs. Default \'info\'. supported: \'warn\',\'info\',\'debug\'")
+
+    parser.add_argument('--example', dest='print_example',action='store_true',
                         help="Whether or not to print an example of a changed file. ")
+    parser.set_defaults(print_example=False,store_only_changed=False)
 
     args = parser.parse_args()
 
     path = args.input[0]
     config = args.config[0]
     output = args.output[0]
-    example = args.example
+    example = args.print_example
+    store_only_changed = args.store_only_changed
 
     loglevel = log.INFO
     if args.loglevel.lower() == "debug":
@@ -262,12 +294,13 @@ def main() -> None:
     elif args.loglevel.lower() == "warn":
         loglevel = log.WARNING
     else:
-        print("Received unknown/unsupported format for loglevel - defaulting to info (%s)",args.loglevel.lower())
-    
-    log.basicConfig(level=loglevel,format='%(asctime)s [%(levelname)s] %(message)s')
-   
+        print("Received unknown/unsupported format for loglevel - defaulting to info (%s)", args.loglevel.lower())
+
+    log.basicConfig(level=loglevel, format='%(asctime)s [%(levelname)s] %(message)s',datefmt='%Y-%m-%d %H:%M:%S')
+
     random.seed(19961106)
 
-    run(path_to_code=path,path_to_config=config,output_prefix=output,print_sample_diff=example)
+    run(path_to_code=path, path_to_config=config, output_prefix=output,
+        print_sample_diff=example, store_only_changed=store_only_changed)
 
     sys.exit(0)

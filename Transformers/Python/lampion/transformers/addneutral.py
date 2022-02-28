@@ -3,14 +3,16 @@ Contains the "AddNeutralElementTransformer" that adds +0 to integers or +"" to s
 """
 import random
 from abc import ABC
-from typing import Optional
 
 import logging as log
 
+import libcst._nodes.base
 from libcst import CSTNode
 import libcst as cst
+import regex as re
 
 from lampion.transformers.basetransformer import BaseTransformer
+from lampion.transformers.literal_helpers import get_all_literals
 
 
 class AddNeutralElementTransformer(BaseTransformer, ABC):
@@ -46,9 +48,10 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
     LibCST does not support finding this kind of behaviour afaik.
     """
 
-    def __init__(self):
-        log.info("AddNeutralElementTransformer Created")
+    def __init__(self, max_tries: int = 5):
         self._worked = False
+        self.set_max_tries(max_tries)
+        log.info("AddNeutralElementTransformer created (%d Re-Tries)", self.get_max_tries())
 
     def apply(self, cst_to_alter: CSTNode) -> CSTNode:
         """
@@ -62,38 +65,45 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
 
         Also, see the BaseTransformers notes if you want to implement your own.
         """
-        visitor = self.__LiteralCollector()
 
         altered_cst = cst_to_alter
 
+        seen_literals = get_all_literals(altered_cst)
+        # Exit early: No Literals to work on!
+        if len(seen_literals) == 0:
+            self._worked = False
+            return cst_to_alter
+
         tries: int = 0
-        max_tries: int = 100
+        max_tries: int = self.get_max_tries()
 
         while (not self._worked) and tries <= max_tries:
-            cst_to_alter.visit(visitor)
+            try:
+                to_replace = random.choice(seen_literals)
 
-            seen_literals = \
-                [("simple_string", x) for x in visitor.seen_strings] \
-                + [("float", x) for x in visitor.seen_floats] \
-                + [("integer", x) for x in visitor.seen_integers]
-            # Exit early: No Literals to work on!
-            if len(seen_literals) == 0:
-                self._worked = False
-                return cst_to_alter
+                replacer = self.__Replacer(to_replace[1], to_replace[0])
 
-            to_replace = random.choice(seen_literals)
+                altered_cst = cst_to_alter.visit(replacer)
 
-            replacer = self.__Replacer(to_replace[1], to_replace[0])
+                altered_code = altered_cst.code
+                reduced_code = _reduce_brackets(altered_code)
 
-            altered_cst = cst_to_alter.visit(replacer)
+                altered_cst = cst.parse_module(reduced_code)
 
-            tries = tries + 1
-            self._worked = replacer.worked
+                tries = tries + 1
+                self._worked = replacer.worked
+            except libcst._nodes.base.CSTValidationError:
+                # This can happen if we try to add strings and add too many Parentheses
+                # See https://github.com/Instagram/LibCST/issues/640
+                tries = tries + 1
+            except libcst._exceptions.ParserSyntaxError:
+                # This can happen in two known cases:
+                # 1. Original Code is buggy
+                # 2. Reduction accidentally kills layout (e.g. removing indents)
+                tries = tries + 1
 
         if tries == max_tries:
-            log.warning("Add Add Neutral Element Transformer failed after %i attempt",max_tries)
-
-        # TODO: add Post-Processing Values here
+            log.warning("Add_Neutral_Element Transformer failed after %i attempts", max_tries)
 
         return altered_cst
 
@@ -137,36 +147,6 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
         """
         self.reset()
 
-    class __LiteralCollector(cst.CSTVisitor):
-        """
-        CSTVisitor that collects all literal-values in traversal.
-        Any seen value is saved in an according attribute.
-        Currently supported types are floats, simple-strings and integers.
-        """
-        finished = True
-        seen_floats = []
-        seen_strings = []
-        seen_integers = []
-
-        def visit_Float(self, node: "Float") -> Optional[bool]:
-            """
-            LibCST built-in traversal that puts all seen float-literals in the known literals.
-            """
-            self.seen_floats.append(node)
-
-        def visit_Integer(self, node: "Integer") -> Optional[bool]:
-            """
-            LibCST built-in traversal that puts all seen integer-literals in the known literals.
-            """
-            self.seen_integers.append(node)
-
-        def visit_SimpleString(self, node: "SimpleString") -> Optional[bool]:
-            """
-            LibCST built-in traversal that puts all seen SimpleString-literals in the known literals.
-            Simple Strings are Strings that do not have anything fancy like format strings or regex.
-            """
-            self.seen_strings.append(node)
-
     class __Replacer(cst.CSTTransformer):
         """
         The CSTTransformer that traverses the CST and replaces literals with literal+neutral element.
@@ -192,7 +172,7 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
             """
             if self.replace_type == "float" and original_node.deep_equals(self.to_replace) and not self.worked:
                 literal = str(original_node.value)
-                replacement = f"({literal}+0.0)"
+                replacement = f"({literal} + 0.0)"
                 expr = cst.parse_expression(replacement)
                 updated_node = updated_node.deep_replace(updated_node, expr)
                 self.worked = True
@@ -215,11 +195,10 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
                     and original_node.deep_equals(self.to_replace) \
                     and not self.worked:
                 literal = str(original_node.value)
-                replacement = f"({literal}+0)"
+                replacement = f"({literal} + 0)"
                 expr = cst.parse_expression(replacement)
                 updated_node = updated_node.deep_replace(updated_node, expr)
                 self.worked = True
-
                 return updated_node
             return updated_node
 
@@ -238,10 +217,63 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
                     and original_node.deep_equals(self.to_replace) \
                     and not self.worked:
                 literal = str(original_node.value)
-                replacement = f"({literal}+\"\")"
+                replacement = f"({literal} + \"\")"
                 expr = cst.parse_expression(replacement)
                 updated_node = updated_node.deep_replace(updated_node, expr)
                 self.worked = True
-
                 return updated_node
             return updated_node
+
+
+def _reduce_brackets(to_reduce: str) -> str:
+    """
+    Reduces redundant brackets within code.
+    As matching parentheses is something regex cannot do (or cannot do well),
+    the patterns are hardcoded to the alternations done in the visitors.
+    That is, it only changes found patterns for empty strings, + 0 and + 0.0.
+
+    Examples:
+    >>> _reduce_brackets('(("X" + "") + "")')
+    >>> '("X" + "" + "")'
+    >>> _reduce_brackets('("X" + ("" + ""))')
+    >>> '("X" + "" + "")'
+    or:
+    >>> _reduce_brackets('(("X" + "" + "" + "") + "")')
+    >>> "(\"X\" + \"\" + \"\" + \"\" + \"\")"
+    For more tests, see the class-level tests.
+
+    This method is intented to be used AFTER the alternation, so that the code never "grows" to big.
+    I.E. this should be called once the AST has been changed and not before changing the AST.
+
+    :param to_reduce str: the string to be reduced
+    :returns str: the string with less brackets, if no match then the unchanged string
+    This method was necessary as there is an issue with LibCST once it reaches too many opening brackets.
+    See Issue: https://github.com/Instagram/LibCST/issues/640
+    """
+    # (.*?) matches any character in a greedy way
+    # What I would like more is "any Character, a Space, a Plus and Quote-Mark" but I was not able to express it
+    # TODO: sharpen regex match
+    string_pattern = r'\(\("(.*?)" \+ ""\) \+ ""\)'
+    string_pattern_2 = r'\("(.*?)" \+ \("" \+ ""\)\)'
+    string_result_pattern = r'("\1" + "" + "")'
+
+    int_pattern = r'\(\((.*?) \+ 0\) \+ 0\)'
+    int_pattern_2 = r'\((.*?) \+ \(0 \+ 0\)\)'
+    int_result_pattern = r'(\1 + 0 + 0)'
+
+    float_pattern = r'\(\((.*?) \+ 0.0\) \+ 0.0\)'
+    float_pattern_2 = r'\((.*?) \+ \(0.0 \+ 0.0\)\)'
+    float_result_pattern = r'(\1 + 0.0 + 0.0)'
+
+    result:str = to_reduce
+
+    result = re.sub(string_pattern, string_result_pattern, result)
+    result = re.sub(string_pattern_2, string_result_pattern, result)
+    result = re.sub(int_pattern, int_result_pattern, result)
+    result = re.sub(int_pattern_2, int_result_pattern, result)
+    result = re.sub(float_pattern, float_result_pattern, result)
+    result = re.sub(float_pattern_2, float_result_pattern, result)
+
+    result = result.replace("  "," ")
+
+    return result

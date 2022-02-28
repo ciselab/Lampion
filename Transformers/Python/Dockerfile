@@ -1,7 +1,7 @@
 ARG PYTHON_VERSION=3.9.7
 FROM python:${PYTHON_VERSION}
 
-ARG TRANSFORMER_VERSION=0.0.1
+ARG TRANSFORMER_VERSION=0.0.2
 ARG WHEEL_POSTFIX=py2.py3-none-any
 
 LABEL maintainer="L.H.Applis@tu-delft.nl"
@@ -17,6 +17,7 @@ ENV configfile="./tests/test_configs/empty.properties"
 ENV output="/lampion_output/"
 ENV loglevel="info"
 ENV print_example="true"
+ENV only_store_touched="false"
 
 WORKDIR /lampion
 
@@ -33,7 +34,8 @@ COPY requirements.txt .
 #Copy the example
 COPY tests/test_inputs/hello_world.py /lampion_target/
 
-RUN pip install --upgrade pytest libcst build
+RUN pip install -r requirements.txt
+RUN pip install --upgrade pytest build
 
 RUN python3 -m pytest tests/
 RUN python3 -m build --wheel

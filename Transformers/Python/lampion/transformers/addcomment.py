@@ -33,17 +33,15 @@ class AddCommentTransformer(BaseTransformer, ABC):
 
     """
 
-    def __init__(self, string_randomness: str = "pseudo"):
+    def __init__(self, string_randomness: str = "pseudo",max_tries:int = 50):
         if string_randomness in ["pseudo","full"]:
             self.__string_randomness = string_randomness
         else:
             raise ValueError("Unrecognized Value for String Randomness, supported are pseudo and full")
 
-        log.info("AddCommentTransformer Created")
         self._worked = False
-
-    _worked = False
-    __string_randomness: str
+        self.set_max_tries(max_tries)
+        log.info("AddCommentTransformer created (%d Re-Tries)",self.get_max_tries())
 
     def apply(self, cst_to_alter: CSTNode) -> CSTNode:
         """
@@ -62,7 +60,7 @@ class AddCommentTransformer(BaseTransformer, ABC):
         altered_cst = cst_to_alter
 
         tries: int = 0
-        max_tries : int = 100
+        max_tries : int = self.get_max_tries()
 
         while (not self._worked) and tries <= max_tries:
             altered_cst = cst_to_alter.visit(visitor)
@@ -70,9 +68,7 @@ class AddCommentTransformer(BaseTransformer, ABC):
             tries = tries + 1
 
         if tries == max_tries:
-            log.warning("Add Comment Transformer failed after %i attempt",max_tries)
-
-        #TODO: add Post-Processing Values here
+            log.warning("Add Comment Transformer failed after %i attempts",max_tries)
 
         return altered_cst
 
@@ -130,11 +126,7 @@ class AddCommentTransformer(BaseTransformer, ABC):
             else:
                 raise ValueError["Received invalid value for String Randomness, supported values are 'pseud' and 'full'"]
 
-            log.debug("AddVariableVisitor Created")
             self.finished = False
-
-        finished: bool = False
-        __string_randomness: str
 
         def leave_SimpleStatementLine(
                 self, original_node: "SimpleStatementLine", updated_node: "SimpleStatementLine"

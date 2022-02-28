@@ -1,0 +1,28 @@
+{
+  "transformations": [1,5,10],
+  "transformer_combinations" : [
+    {
+      "lambda_identity": true
+    },
+    {
+      "add_neutral": true
+    },
+    {
+    "rename_parameter": true,
+    "rename_parameter_randomness": "pseudo",
+    "add_unused_variable": true,
+    "add_unused_variable_randomness": "pseudo"
+    },
+    {
+    "rename_parameter": true,
+    "rename_parameter_randomness": "full",
+    "add_unused_variable": true,
+    "add_unused_variable_randomness": "full"
+    },
+    {
+      "add_comment": true
+    }
+  ],
+
+  "seeds": [1996]
+}

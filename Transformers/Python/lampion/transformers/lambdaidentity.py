@@ -1,16 +1,16 @@
 """
 Contains the "LambdaIdentityTransformer" that wraps literals into lambda functions and calls them.
 """
+import logging as log
 import random
 from abc import ABC
-from typing import Optional
-
-import logging as log
-
-from libcst import CSTNode
 import libcst as cst
 
+import regex as re
+
+from libcst import CSTNode
 from lampion.transformers.basetransformer import BaseTransformer
+from lampion.transformers.literal_helpers import get_all_literals
 
 
 class LambdaIdentityTransformer(BaseTransformer, ABC):
@@ -45,11 +45,16 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
     The above added elements have redundant ( ) but I add them intentionally,
     so that I do not run into weird bugs about precedence.
     LibCST does not support finding this kind of behaviour afaik.
+
+    Note: For some Transformers we need libcst.the parse_statement,
+    however lambdas and function calls are both expressions, so all elements here are expressions.
+    See: https://docs.python.org/2/reference/expressions.html#
     """
 
-    def __init__(self):
-        log.info("LambdaIdentityTransformer Created")
+    def __init__(self, max_tries: int = 5):
         self._worked = False
+        self.set_max_tries(max_tries)
+        log.info("LambdaIdentityTransformer created (%d Re-Tries)", self.get_max_tries())
 
     def apply(self, cst_to_alter: CSTNode) -> CSTNode:
         """
@@ -63,38 +68,49 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
 
         Also, see the BaseTransformers notes if you want to implement your own.
         """
-        visitor = self.__LiteralCollector()
 
         altered_cst = cst_to_alter
 
+        seen_literals = get_all_literals(cst_to_alter)
+        # Exit early if no matching literals exist
+        if len(seen_literals) == 0:
+            self._worked = False
+            return altered_cst
+
         tries: int = 0
-        max_tries: int = 100
+        max_tries: int = self.get_max_tries()
 
         while (not self._worked) and tries <= max_tries:
-            cst_to_alter.visit(visitor)
+            try:
+                to_replace = random.choice(seen_literals)
 
-            seen_literals = \
-                [("simple_string", x) for x in visitor.seen_strings] \
-                + [("float", x) for x in visitor.seen_floats] \
-                + [("integer", x) for x in visitor.seen_integers]
-            # Exit early: No Literals to work on!
-            if len(seen_literals) == 0:
-                self._worked = False
-                return cst_to_alter
+                replacer = self.__Replacer(to_replace[1], to_replace[0])
 
-            to_replace = random.choice(seen_literals)
+                altered_cst = cst_to_alter.visit(replacer)
+                altered_code = str(altered_cst.code)
+                reduced_code = _reduce_brackets(altered_code)
 
-            replacer = self.__Replacer(to_replace[1], to_replace[0])
+                altered_cst = cst.parse_module(reduced_code)
 
-            altered_cst = cst_to_alter.visit(replacer)
-
-            tries = tries + 1
-            self._worked = replacer.worked
+                tries = tries + 1
+                self._worked = replacer.replacer_finished
+                return altered_cst
+            except AttributeError:
+                # This case happened when the seen variables were tuples
+                # Seen in OpenVocabCodeNLM Test Data
+                tries = tries + 1
+            except cst._nodes.base.CSTValidationError:
+                # This can happen if we add too many (opening) Parentheses
+                # See https://github.com/Instagram/LibCST/issues/640
+                tries = tries + 1
+            except cst._exceptions.ParserSyntaxError:
+                # This can happen in two known cases:
+                # 1. Original Code is buggy
+                # 2. Reduction accidentally kills layout (e.g. removing indents)
+                tries = tries + 1
 
         if tries == max_tries:
-            log.warning("Lambda Identity Transformer failed after %i attempt",max_tries)
-
-        # TODO: add Post-Processing Values here
+            log.warning("Lambda Identity Transformer failed after %i attempt", max_tries)
 
         return altered_cst
 
@@ -137,30 +153,6 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
         """
         self.reset()
 
-    class __LiteralCollector(cst.CSTVisitor):
-        finished = True
-        seen_floats = []
-        seen_strings = []
-        seen_integers = []
-
-        def visit_Float(self, node: "Float") -> Optional[bool]:
-            """
-            LibCST built-in traversal that puts all seen float-literals in the known literals.
-            """
-            self.seen_floats.append(node)
-
-        def visit_Integer(self, node: "Integer") -> Optional[bool]:
-            """
-            LibCST built-in traversal that puts all seen float-literals in the known literals.
-            """
-            self.seen_integers.append(node)
-
-        def visit_SimpleString(self, node: "SimpleString") -> Optional[bool]:
-            """
-            LibCST built-in traversal that puts all seen SimpleString-literals in the known literals.
-            """
-            self.seen_strings.append(node)
-
     class __Replacer(cst.CSTTransformer):
         """
         The CSTTransformer that traverses the CST and replaces literals with lambda: literal.
@@ -173,7 +165,7 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
         def __init__(self, to_replace: "CSTNode", replace_type: str):
             self.to_replace = to_replace
             self.replace_type = replace_type
-            self.worked = False
+            self.replacer_finished = False
 
         def leave_Float(
                 self, original_node: "Float", updated_node: "Float"
@@ -186,12 +178,14 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
             :param updated_node: The node after (downstream) changes
             :return: the updated node after our changes
             """
-            if self.replace_type == "float" and original_node.deep_equals(self.to_replace) and not self.worked:
+            if self.replace_type == "float" \
+                    and original_node.deep_equals(self.to_replace) \
+                    and not self.replacer_finished:
                 literal = str(original_node.value)
                 replacement = f"((lambda: {literal})())"
                 expr = cst.parse_expression(replacement)
                 updated_node = updated_node.deep_replace(updated_node, expr)
-                self.worked = True
+                self.replacer_finished = True
 
                 return updated_node
             return updated_node
@@ -207,12 +201,14 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
             :param updated_node: The node after (downstream) changes
             :return: the updated node after our changes
             """
-            if self.replace_type == "integer" and original_node.deep_equals(self.to_replace) and not self.worked:
+            if self.replace_type == "integer" \
+                    and original_node.deep_equals(self.to_replace) \
+                    and not self.replacer_finished:
                 literal = str(original_node.value)
                 replacement = f"((lambda: {literal})())"
                 expr = cst.parse_expression(replacement)
                 updated_node = updated_node.deep_replace(updated_node, expr)
-                self.worked = True
+                self.replacer_finished = True
 
                 return updated_node
             return updated_node
@@ -228,12 +224,50 @@ class LambdaIdentityTransformer(BaseTransformer, ABC):
             :param updated_node: The node after (downstream) changes
             :return: the updated node after our changes
             """
-            if self.replace_type == "simple_string" and original_node.deep_equals(self.to_replace) and not self.worked:
+            if self.replace_type == "simple_string" \
+                    and original_node.deep_equals(self.to_replace) \
+                    and not self.replacer_finished:
                 literal = str(original_node.value)
                 replacement = f"((lambda: {literal})())"
                 expr = cst.parse_expression(replacement)
                 updated_node = updated_node.deep_replace(updated_node, expr)
-                self.worked = True
+                self.replacer_finished = True
 
                 return updated_node
             return updated_node
+
+
+def _reduce_brackets(to_reduce: str) -> str:
+    """
+    Reduces redundant brackets within code.
+    As matching parentheses is something regex cannot do (or cannot do well),
+    the patterns are hardcoded to the alternations done in the visitors.
+    That is, it only changes found patterns for double lambdas and changes bracket-order.
+
+
+    Examples:
+    >>> _reduce_brackets('((lambda: ((lambda: "Hello World")()))())')
+    >>> '((lambda: lambda: "Hello World")()())'
+    or:
+    >>> _reduce_brackets('((lambda: (lambda: 5.2)())())')
+    >>> '((lambda: lambda: 5.2)()())'
+    For more tests, see the class-level tests.
+
+    This method is intented to be used AFTER the alternation, so that the code never "grows" to big.
+    I.E. this should be called once the AST has been changed and not before changing the AST.
+
+    :param to_reduce str: the string to be reduced
+    :returns str: the string with less brackets, if no match then the unchanged string
+    This method was necessary as there is an issue with LibCST once it reaches too many opening brackets.
+    This does "only" remove one pair of brackets, but there are less "opening" brackets
+    See Issue: https://github.com/Instagram/LibCST/issues/640
+    """
+    # (.*?) matches any character in a greedy way
+    # What I would like more is "any Character, a Space, a Plus and Quote-Mark" but I was not able to express it
+    # TODO: sharpen regex match
+
+    pattern = r'\(\(lambda: \(\(lambda: (.*?)\)\(\)\)\)\(\)\)'
+    output_pattern = r'((lambda: lambda: \1)()())'
+    result = re.sub(pattern, output_pattern, to_reduce)
+
+    return result

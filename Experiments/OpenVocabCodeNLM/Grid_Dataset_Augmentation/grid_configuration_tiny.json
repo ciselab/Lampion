@@ -1,0 +1,14 @@
+{
+  "transformations": [10],
+  "transformer_combinations" : [
+    {
+      "add_neutral": true
+    },
+    {
+    "add_unused_variable": true,
+    "add_unused_variable_randomness": "pseudo"
+    }
+  ],
+
+  "seeds": [1996]
+}

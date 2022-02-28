@@ -17,7 +17,7 @@ class BaseTransformer():
     """
 
     _was_applied: bool = False
-    _sql_info = None
+    _max_tries: int = 25
 
     def reset(self):
         """Resets the Transformer to be applied again.
@@ -114,9 +114,18 @@ class BaseTransformer():
         """
         raise NotImplementedError()
 
-    def _write_sql_entry(self):
-        """Writes an entry of this transformer into the manifest.
-
-        Currently TODO
+    def set_max_tries(self, max_tries: int) -> None:
         """
-        return 1
+        Sets the number how often the transformer re-tries itself in case of a bad application.
+        Some transformers can fail by design, and retrying is normal and to be expected.
+        High numbers of retries however can lead to high computing times.
+
+        :param max: the number of retries per transformer per application
+        """
+        self._max_tries = max_tries
+
+    def get_max_tries(self) -> int:
+        """
+        :returns int: the number of retries within one attempt of application
+        """
+        return self._max_tries

@@ -1,10 +1,14 @@
 import libcst
+import random
+
+import pytest
 
 from lampion.transformers.renameparam import RenameParameterTransformer
 
 
 def test_rename_param_method_has_no_params_should_stay_unchanged():
     example_cst = libcst.parse_module("def hi(): \n\ta: int = 1\n\tprint(\"Hello World\")")
+    random.seed(1996)
     initial_code = str(example_cst.code)
 
     transformer = RenameParameterTransformer()
@@ -17,6 +21,7 @@ def test_rename_param_method_has_no_params_should_stay_unchanged():
 
 def test_rename_param_method_has_no_params_transformer_did_not_work():
     example_cst = libcst.parse_module("def hi(): \n\ta: int = 1\n\tprint(\"Hello World\")")
+    random.seed(1996)
 
     transformer = RenameParameterTransformer()
     transformer.reset()
@@ -27,6 +32,7 @@ def test_rename_param_method_has_no_params_transformer_did_not_work():
 
 def test_rename_param_method_has_one_params_should_change():
     example_cst = libcst.parse_module("def hi(yyy): \n\ta: int = 1\n\tprint(f\"Hello {yyy}\")")
+    random.seed(1996)
     initial_code = str(example_cst.code)
 
     transformer = RenameParameterTransformer()
@@ -40,6 +46,7 @@ def test_rename_param_method_has_one_params_should_change():
 
 def test_rename_param_method_has_one_params_transformer_should_have_worked():
     example_cst = libcst.parse_module("def hi(yyy): \n\ta: int = 1\n\tprint(f\"Hello {yyy}\")")
+    random.seed(1996)
 
     transformer = RenameParameterTransformer()
     transformer.reset()
@@ -51,6 +58,7 @@ def test_rename_param_method_has_one_params_transformer_should_have_worked():
 
 def test_rename_param_method_has_one_params_transformer_can_be_applied_any_time():
     example_cst = libcst.parse_module("def hi(yyy): \n\ta: int = 1\n\tprint(f\"Hello {yyy}\")")
+    random.seed(1996)
 
     transformer = RenameParameterTransformer()
 
@@ -62,8 +70,14 @@ def test_rename_param_method_has_one_params_transformer_can_be_applied_any_time(
 
     assert transformer.worked()
 
+def test_get_categories_is_not_null():
+    transformer = RenameParameterTransformer()
+
+    assert len(transformer.categories()) != 0
+
 def test_rename_param_method_has_one_params_param_should_be_renamed():
     example_cst = libcst.parse_module("def hi(yyy): \n\ta: int = 1\n\tprint(f\"Hello {yyy}\")")
+    random.seed(1996)
 
     transformer = RenameParameterTransformer()
     transformer.reset()
@@ -77,6 +91,7 @@ def test_rename_param_method_has_one_params_param_should_be_renamed():
 
 def test_rename_param_method_has_one_typed_param_should_be_renamed():
     example_cst = libcst.parse_module("def hi(yyy: str): \n\ta: int = 1\n\tprint(f\"Hello {yyy}\")")
+    random.seed(1996)
 
     transformer = RenameParameterTransformer()
     transformer.reset()
@@ -89,6 +104,7 @@ def test_rename_param_method_has_one_typed_param_should_be_renamed():
 
 def test_rename_param_method_has_one_typed_param_should_keep_type():
     example_cst = libcst.parse_module("def hi(yyy: str): \n\ta: int = 1\n\tprint(f\"Hello {yyy}\")")
+    random.seed(1996)
 
     transformer = RenameParameterTransformer()
     transformer.reset()
@@ -101,6 +117,7 @@ def test_rename_param_method_has_one_typed_param_should_keep_type():
 
 def test_rename_param_method_has_one_defaulted_param_should_be_renamed():
     example_cst = libcst.parse_module("def hi(yyy = \"World\"): \n\ta: int = 1\n\tprint(f\"Hello {yyy}\")")
+    random.seed(1996)
 
     transformer = RenameParameterTransformer()
     transformer.reset()
@@ -112,6 +129,7 @@ def test_rename_param_method_has_one_defaulted_param_should_be_renamed():
 
 def test_rename_param_method_has_one_defaulted_param_should_keep_default():
     example_cst = libcst.parse_module("def hi(yyy = \"World\"): \n\ta: int = 1\n\tprint(f\"Hello {yyy}\")")
+    random.seed(1996)
 
     transformer = RenameParameterTransformer()
     transformer.reset()
@@ -123,6 +141,7 @@ def test_rename_param_method_has_one_defaulted_param_should_keep_default():
 
 def test_rename_param_method_has_one_typed_defaulted_param_should_be_renamed():
     example_cst = libcst.parse_module("def hi(yyy: str = \"World\"): \n\ta: int = 1\n\tprint(f\"Hello {yyy}\")")
+    random.seed(1996)
 
     transformer = RenameParameterTransformer()
     transformer.reset()
@@ -134,6 +153,7 @@ def test_rename_param_method_has_one_typed_defaulted_param_should_be_renamed():
 
 def test_rename_param_method_has_one_typed_defaulted_param_should_keep_default():
     example_cst = libcst.parse_module("def hi(yyy: str = \"World\"): \n\ta: int = 1\n\tprint(f\"Hello {yyy}\")")
+    random.seed(1996)
 
     transformer = RenameParameterTransformer()
     transformer.reset()
@@ -145,6 +165,7 @@ def test_rename_param_method_has_one_typed_defaulted_param_should_keep_default()
 
 def test_rename_param_method_has_one_typed_defaulted_param_should_keep_type():
     example_cst = libcst.parse_module("def hi(yyy: str = \"World\"): \n\ta: int = 1\n\tprint(f\"Hello {yyy}\")")
+    random.seed(1996)
 
     transformer = RenameParameterTransformer()
     transformer.reset()
@@ -156,6 +177,7 @@ def test_rename_param_method_has_one_typed_defaulted_param_should_keep_type():
 
 def test_rename_param_method_has_two_parameters_one_should_be_renamed():
     example_cst = libcst.parse_module("def hi(yyy,xxx): \n\ta: int = 1\n\tprint(f\"Hello {yyy} {xxx}\")")
+    random.seed(1996)
 
     transformer = RenameParameterTransformer()
     transformer.reset()
@@ -170,6 +192,7 @@ def test_rename_param_method_has_two_parameters_one_should_be_renamed():
 
 def test_rename_param_method_has_two_parameters_apply_often_should_both_rename():
     example_cst = libcst.parse_module("def hi(yyy,xxx): \n\ta: int = 1\n\tprint(f\"Hello {yyy} {xxx}\")")
+    random.seed(1996)
 
     transformer = RenameParameterTransformer()
     altered_cst = example_cst
@@ -183,8 +206,13 @@ def test_rename_param_method_has_two_parameters_apply_often_should_both_rename()
     # the != works as a logical XOR in this case
     assert (not yyy_in) and (not xxx_in)
 
+def test_rename_param_bad_value_for_string_randomness_throws_error():
+    with pytest.raises(ValueError):
+        RenameParameterTransformer(string_randomness="bad_randomness")
+
 def test_add_var_method_has_one_param_that_exists_in_str_should_be_kept_in_str():
     example_cst = libcst.parse_module("def hi(name = 1): \n\tprint(f\"name is {name}\")")
+    random.seed(1996)
 
     transformer = RenameParameterTransformer()
     transformer.reset()

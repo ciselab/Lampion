@@ -38,17 +38,15 @@ class RenameVariableTransformer(BaseTransformer, ABC):
 
     """
 
-    __string_randomness: str
-    _worked: bool
-
-    def __init__(self, string_randomness: str = "pseudo"):
+    def __init__(self, string_randomness: str = "pseudo", max_tries:int = 75):
         if string_randomness in ["pseudo", "full"]:
             self.__string_randomness = string_randomness
         else:
             raise ValueError("Unrecognized Value for String Randomness, supported are pseudo and full")
 
-        log.info("RenameVariableTransformer Created")
-        _worked = False
+        self._worked = False
+        self.set_max_tries(max_tries)
+        log.info("RenameVariableTransformer created (%d Re-Tries)",self.get_max_tries())
 
     def apply(self, cst_to_alter: CSTNode) -> CSTNode:
         """
@@ -67,37 +65,37 @@ class RenameVariableTransformer(BaseTransformer, ABC):
         altered_cst = cst_to_alter
 
         tries: int = 0
-        max_tries: int = 10
+        max_tries: int = self.get_max_tries()
 
         while (not self._worked) and tries <= max_tries:
-            cst_to_alter.visit(visitor)
-            self._worked = visitor.finished
+            try:
+                cst_to_alter.visit(visitor)
+                self._worked = visitor.finished
 
-            seen_names = list({x.target.value for x in visitor.seen_variables})
-            # Exit early: No local Variables!
-            if len(seen_names) == 0:
-                self._worked = False
-                return cst_to_alter
+                seen_names = list({x.target.value for x in visitor.seen_variables})
+                # Exit early: No local Variables!
+                if len(seen_names) == 0:
+                    self._worked = False
+                    return cst_to_alter
 
-            to_replace = random.choice(seen_names)
-            if self.__string_randomness == "pseudo":
-                replacement = get_pseudo_random_string()
-            elif self.__string_randomness == "full":
-                replacement = get_random_string(5)
-            else:
-                raise ValueError(
-                    "Something changed the StringRandomness in RenameVariableTransformer to an invalid value.")
+                to_replace = random.choice(seen_names)
+                if self.__string_randomness == "pseudo":
+                    replacement = get_pseudo_random_string()
+                elif self.__string_randomness == "full":
+                    replacement = get_random_string(5)
 
-            renamer = self.__Renamer(to_replace, replacement)
+                renamer = self.__Renamer(to_replace, replacement)
 
-            altered_cst = cst_to_alter.visit(renamer)
+                altered_cst = cst_to_alter.visit(renamer)
+                tries = tries + 1
 
-            tries = tries + 1
+            except AttributeError:
+                # This case happened when the seen variables were tuples
+                # Seen in OpenVocabCodeNLM Test Data
+                tries = tries + 1
 
         if tries == max_tries:
             log.warning("Rename Variable Transformer failed after %i attempt",max_tries)
-
-        # TODO: add Post-Processing Values here
 
         return altered_cst
 

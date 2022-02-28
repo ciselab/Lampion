@@ -1,4 +1,6 @@
 import libcst
+import random
+
 import pytest
 
 from lampion.transformers.addvar import AddVariableTransformer
@@ -6,8 +8,9 @@ from lampion.transformers.addvar import AddVariableTransformer
 
 def test_addvar_working_example_should_add_line():
     example_cst = example()
+    random.seed(1996)
 
-    transformer = AddVariableTransformer()
+    transformer = AddVariableTransformer(max_tries=100)
     transformer.reset()
 
     altered_cst = visit_until_worked(example_cst, transformer)
@@ -20,6 +23,7 @@ def test_addvar_working_example_should_add_line():
 
 def test_addvar_empty_module_should_not_add_line():
     example_cst = libcst.parse_module("")
+    random.seed(1996)
 
     transformer = AddVariableTransformer()
     transformer.reset()
@@ -34,6 +38,7 @@ def test_addvar_empty_module_should_not_add_line():
 
 def test_addvar_empty_module_should_not_work():
     example_cst = libcst.parse_module("")
+    random.seed(1996)
 
     transformer = AddVariableTransformer()
     transformer.reset()
@@ -42,9 +47,19 @@ def test_addvar_empty_module_should_not_work():
 
     assert (not transformer.worked())
 
+def test_bad_string_randomness_should_throw_error():
+    with pytest.raises(ValueError):
+        AddVariableTransformer(string_randomness="Bad Randomness")
+
+
+def test_get_categories_is_not_null():
+    transformer = AddVariableTransformer()
+
+    assert len(transformer.categories()) != 0
 
 def test_addvar_working_example_should_set_transformer_to_worked():
     example_cst = example()
+    random.seed(1996)
 
     transformer = AddVariableTransformer()
     transformer.reset()

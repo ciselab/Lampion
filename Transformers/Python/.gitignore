@@ -1,5 +1,6 @@
 lampion_output
 PLACEHOLDER_ENGINE_OUTPUT
+compose_output
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,0 +1,4 @@
+*.log
+python-corpus
+open-vocab-small
+augmentation_output

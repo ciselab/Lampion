@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  OpenVocabCodeNLM_DataAugmentation_{{ dataset }}_{{ id }}:
+    image: lampion/python-transformer:0.0.2
+    environment:
+      # Target and Output can be kept hardcoded (unless you change the volumes)
+      target: "/input_data"
+      configfile: "{{ config_file }}"
+      output: "/lampion_output/"
+      loglevel: "{{ loglevel|default("info",true) }}"
+      print_example: "false"
+      only_store_touched: "true"
+
+    volumes:
+      - {{ augmentation_output_path }}:/lampion_output
+      - {{ properties_folder }}:/config
+      - {{ augmentation_data_input_path }}:/input_data

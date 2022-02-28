@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  openvocabcodenlm-ntr-ate:
+    image: ciselab/openvocabcodenlm:latest
+    oom_kill_disable: true
+    volumes:
+      - ./data/python-an/:/data
+      - ./data/python-n/model:/models
+    environment:
+      DO_TRAIN: false
+      DO_TEST: true
+      DO_COMPLETION: true
+      VERBOSE: false
+
+      EPOCHS: 10
+
+      BATCH_SIZE: 128
+
+      TEST_FILE: test_lampion_pre_enc_bpe_10000
+      # For the dirs, be careful not to add "/" at the end, it will confuse the python
+      DATA_HOME: /data
+      MODEL_DIR: /models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]

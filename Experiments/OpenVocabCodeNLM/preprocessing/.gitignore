@@ -1,0 +1,10 @@
+.idea
+trial_augment_compose_output
+.txt
+
+*.py_enc
+prep_output
+prep
+*.txt
+
+compose_output
