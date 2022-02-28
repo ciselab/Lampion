@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  OpenVocabCodeNLM_Preprocessing_{{ dataset }}_{{id}}:
+    image: ciselab/codebert-preprocessing:1.1
+    volumes:
+      - {{ augmentation_output_path }}:/data:ro
+      - ./preprocess_output/{{ id }}/{{ dataset }}:/output
+      - ./python_encodings:/encodings:ro
+    environment:
+      # input_folder and output_folder can be kept hardcoded (unless you change the volumes)
+      input_folder: "/data"
+      output_folder: "/output"
+      encoding_path: "{{ path_to_encoding }}"
+      loglevel: "{{ loglevel|default("info",true) }}"
+      merged_filename: "{{ resulting_filename }}"
+      file_ending: ".py"
+      encoded_file_ending: ".py_enc"
