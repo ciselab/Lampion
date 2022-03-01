@@ -9,8 +9,8 @@ dependencies:
   - ncurses=6.2
   - openssl=1.1.1i
   - pip=20.3.3
-  - python=3.8.6
-  - python_abi=3.8
+  - python=3.9.10
+  - python_abi=3.9
   - readline=8.0
   - regex=2020.11.13
   - setuptools=49.6.0

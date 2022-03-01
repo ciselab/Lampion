@@ -6,7 +6,7 @@ import sys          # For handling command args
 Notes: 
 The filename needs to be class+function as otherwise they will overwrite each other
 """
-#TODO: Add a bit of debug info
+
 
 def readJsonl_andPrintAllToPython(jsonl_file: str, output_prefix:str = "./output/") -> None:
     """
@@ -21,6 +21,7 @@ def readJsonl_andPrintAllToPython(jsonl_file: str, output_prefix:str = "./output
             write_to_file(line,output_prefix)
             counter = counter + 1
     print(f"Wrote {counter} Entries from the JSONL file {jsonl_file} to .java files in {output_prefix}.")
+
 
 def write_to_file(line:str, output_prefix: str = "./output/" ) -> None:
     """
@@ -82,11 +83,10 @@ ur_sha {line['sha']} ur_sha
 ur_partition {line['partition']} ur_partition
 python_helper_header_end
 '''
-class {final_classname}:
-
-    {line['code']}
+{line['code']}
     
-    """
+"""
+
     return filecontent
 
 

@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  CodeBert_Preprocessing:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        TRANSFORMER_VERSION: latest
+    image: ciselab/codebert-python-preprocessing:latest
+    volumes:
+      - ./compose_input:/raw_data:ro
+      - ./compose_output:/data
+      - ./sample_config:/config:ro

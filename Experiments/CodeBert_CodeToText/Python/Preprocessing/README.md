@@ -35,6 +35,13 @@ See the other part of the repository for instructions how to build it.
 
 Docker 19+
 
+**On Script Requirements within Docker:**
+
+To run the scripts in this folder, the only "new" python dependency is jsonlines 2.0.0
+It needs however some basics from python, like wheel and regex. 
+To not end up overwriting dependencies, we only manually install jsonlines==2.0.0 and otherwise take regex and functions 
+from the base image, to not end up breaking lampion with the helpers here.
+
 ## Limitations
 
 As by the definition of the experiment, there are some limitations in what the transformer can do: 
