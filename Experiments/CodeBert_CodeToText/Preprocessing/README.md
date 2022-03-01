@@ -1,4 +1,6 @@
-# CodeBert Code-To-Text Preprocessing 
+# CodeBert Java Code-To-Text Preprocessing 
+
+**Note** The Dockerimage was previously called 'ciselab/codebert-preprocessing:1.1', and is now split into 'ciselab/codebert-java-preprocessing:1.2' and 'ciselab/codebert-python-preprocessing:1.2'.
 
 This part of the repository builds a container that alternates the training/test data of the CodeBERT-Experiment using the Java-Transformer. 
 
@@ -25,7 +27,7 @@ The above given compose is just a step to verify this building brick of the meta
 To provide it for the GridExperiment, do 
 
 ```
-docker build --build-arg TRANSFORMER_VERSION=latest . -t lampion/codebert-preprocessing:1.1  -t lampion/codebert-preprocessing:latest -t ciselab/codebert-preprocessing:1.1  -t ciselab/codebert-preprocessing:latest -t ghcr.io/ciselab/lampion/codebert-preprocessing:1.1 -t ghcr.io/ciselab/lampion/codebert-preprocessing:latest
+docker build --build-arg TRANSFORMER_VERSION=latest . -t lampion/codebert-java-preprocessing:1.2  -t lampion/codebert-java-preprocessing:latest -t ciselab/codebert-java-preprocessing:1.2  -t ciselab/codebert-preprocessing:latest -t ghcr.io/ciselab/lampion/codebert-java-preprocessing:1.2 -t ghcr.io/ciselab/lampion/codebert-java-preprocessing:latest
 ```
 
 ## Requirements

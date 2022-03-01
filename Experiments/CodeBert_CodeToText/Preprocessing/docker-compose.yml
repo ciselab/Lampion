@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
       args:
         TRANSFORMER_VERSION: 1.2
-    image: ciselab/codebert-preprocessing:1.1
+    image: ciselab/codebert-java-preprocessing:1.2
     volumes:
       - ./compose_input:/raw_data:ro
       - ./compose_output:/data
