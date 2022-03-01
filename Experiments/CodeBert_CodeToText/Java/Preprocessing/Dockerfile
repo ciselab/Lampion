@@ -1,7 +1,11 @@
 ARG TRANSFORMER_VERSION=latest
 FROM lampion/java-transformer:${TRANSFORMER_VERSION}
 
-LABEL org.opencontainers.image.source https://github.com/ciselab/lampion
+LABEL org.opencontainers.image.source="https://github.com/ciselab/lampion"
+LABEL url="https://github.com/ciselab/lampion"
+LABEL vcs="https://github.com/ciselab/lampion"
+LABEL maintainer="L.H.Applis@tu-delft.nl"
+LABEL name="lampion/codebert-java-preprocessing"
 
 RUN apk add python3>=3.8.5-r0 py3-pip>=20.1.1-r0 python3-dev>=3.8.5-r0 build-base bash
 
