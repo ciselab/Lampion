@@ -3,7 +3,7 @@ version: '3.8'
 services:
   {% for config in configurations -%}
   CodeBert_Preprocessing_{{ config.run_number }}:
-    image: lampion/codebert-preprocessing:latest
+    image: lampion/codebert-java-preprocessing:latest
     volumes:
       - ./ur_dataset:/raw_data:ro
       - ./{{ config.path_to }}/dataset:/data
