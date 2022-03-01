@@ -1,0 +1,22 @@
+name: lampion-codebert-python-preprocessing
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - jsonlines=2.0.0
+  - libcxx=11.0.0
+  - libffi=3.3
+  - ncurses=6.2
+  - openssl=1.1.1i
+  - pip=20.3.3
+  - python=3.8.6
+  - python_abi=3.8
+  - readline=8.0
+  - regex=2020.11.13
+  - setuptools=49.6.0
+  - six=1.15.0
+  - sqlite=3.34.0
+  - tk=8.6.10
+  - wheel=0.36.2
+  - xz=5.2.5
+  - zlib=1.2.11
