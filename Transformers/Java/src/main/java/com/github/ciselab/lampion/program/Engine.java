@@ -112,7 +112,7 @@ public class Engine {
         methods = codeRoot.getElements(c -> c instanceof CtMethod);
 
         logger.info("Found " + classes.size() + " Classes and "
-                + codeRoot.getElements(f -> f instanceof CtMethod).size() + " Methods");
+                + codeRoot.getElements(f -> f instanceof CtMethod).size() + " methods at " + codeDirectory );
         if(classes.size() == 0 || methods.size() == 0) {
             logger.error("Either found no classes or no methods - exiting early. " +
                     "Check your configuration, whether it points to actual files.");
