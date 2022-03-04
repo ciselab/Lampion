@@ -37,6 +37,8 @@ See the other part of the repository for instructions how to build it.
 
 Docker 19+
 
+Last tested python version: 3.8.12
+
 ## Limitations
 
 As by the definition of the experiment, there are some limitations in what the transformer can do: 

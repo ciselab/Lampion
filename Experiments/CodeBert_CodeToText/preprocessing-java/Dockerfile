@@ -9,15 +9,16 @@ LABEL name="ciselab/lampion/codebert-java-preprocessing"
 
 RUN apk add python3>=3.8.5-r0 py3-pip>=20.1.1-r0 python3-dev>=3.8.5-r0 build-base bash
 
-RUN pip install wheel==0.34.2 regex==2020.6.8 jsonlines
-
-# Important info from Obfuscator Image: 
+# Important info from Transformer Image:
 # The jar is placed under /usr/app
-# The config must be under /config
+# The config (of the transformer) must be under /config
 
 RUN mkdir /python-helpers
 
 WORKDIR /python-helpers
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
 COPY java_to_jsonl.py .
 RUN chmod +x java_to_jsonl.py
