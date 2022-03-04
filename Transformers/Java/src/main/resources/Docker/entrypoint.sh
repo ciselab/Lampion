@@ -2,4 +2,4 @@
 
 echo "Starting the Lampion Transformer Container"
 
-java -jar Lampion-Transformer.jar /config/config.properties
+java -jar Lampion-Transformer.jar ${configfile} ${target} ${output}

@@ -45,13 +45,26 @@ public class App {
         logger.info("Starting Lampion Java Transformer");
 
         if (args.length == 0) {
-            logger.info("Found no argument for config path - looking at default location");
+            logger.info("Found no argument for config path - looking at default locations");
             setPropertiesFromFile("./src/main/resources/config.properties");
             // start program
-        } else if (args.length == 1) {
-            logger.info("Received one argument - looking for properties in " + args[0]);
+        } else if (args.length == 3) {
+            logger.info("Received tree argument - looking for properties in "
+                    + args[0] + "running on " + args[1] + " returning to " + args[2]);
             setPropertiesFromFile(args[0]);
-            logger.info("The properties file had " + configuration.size() + " properties");
+            if(args[1] == null || args[1].isEmpty()){
+                logger.error("Received null or empty input directory as first argument!");
+                return;
+            }
+            if(args[2] == null || args[2].isEmpty()){
+                logger.error("Received null or empty output directory as second argument!");
+                return;
+            }
+
+            App.configuration.put("inputDirectory",args[1]);
+            App.configuration.put("outputDirectory",args[2]);
+
+            logger.debug("The properties file had " + configuration.size() + " properties");
         } else if (args.length == 2 && args[1].equalsIgnoreCase("undo")) {
             logger.info("Received undo action - cleaning output directories and stopping after");
             setPropertiesFromFile(args[0]);
@@ -59,7 +72,7 @@ public class App {
             return;
         }
         else {
-            logger.warn("Received an unknown number of arguments! Not starting.");
+            logger.error("Received an unknown number of arguments! Not starting.");
             return;
         }
 
@@ -142,12 +155,12 @@ public class App {
         if(properties.get("inputDirectory") != null){
             inputDir = (String) properties.getProperty("inputDirectory");
         } else {
-            throw new UnsupportedOperationException("There was no input-directory specified in the properties");
+            throw new UnsupportedOperationException("There was no input-directory specified");
         }
         if(properties.get("outputDirectory") != null) {
             outputDir = (String) properties.get("outputDirectory");
         } else {
-            throw new UnsupportedOperationException("There was no output-directory specified in the properties");
+            throw new UnsupportedOperationException("There was no output-directory specified");
         }
 
         // Build Base-Engine
