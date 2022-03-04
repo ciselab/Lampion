@@ -16,8 +16,15 @@ services:
       do_val: "true"
       do_test: "true"
       batch_size: {{batch_size|default(8,true)}}
+    {% if config.gpu_use %}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    {% else %}
     oom_kill_disable: true
     mem_limit: {{mem_limit|default("16g",true)}}
     memswap_limit: {{mem_limit|default("16g",true)}}
-    
+    {% endif %}
   {% endfor %}

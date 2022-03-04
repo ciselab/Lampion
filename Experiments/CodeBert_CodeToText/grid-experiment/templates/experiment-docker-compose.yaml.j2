@@ -15,8 +15,16 @@ services:
       do_test: "true"
       load_existing_model: "true"
       load_model_path: /models/{{ config.model_name | default("pytorch_model.bin",true)}}
+
+   {% if config.gpu_use %}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    {% else %}
     oom_kill_disable: true
     mem_limit: {{mem_limit|default("16g",true)}}
     memswap_limit: {{mem_limit|default("16g",true)}}
-    
+   {% endif %}
   {% endfor %}

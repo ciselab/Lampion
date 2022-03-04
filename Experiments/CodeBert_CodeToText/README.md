@@ -14,8 +14,9 @@ While the experiment from Microsoft/Nvidia has multiple languages, this experime
 ## Structure
 
 - *preprocessing* contains all items necessary to containerise the preprocessing done including the obfuscation --- 2 folders, one for java one for python. They use the same interface in docker-compose.
-- *GridExperiment* will contain all elements necessary to run the experiment in a parameterized, grid fashion (to be done)
+- *grid-experiment* contains all elements necessary to run the experiment in a parameterized, grid fashion
 - *evaluation* contains the evaluation of the meta experiment, using the results of the grid experiment.
+- *handwriting* contains a way to run small examples, providing your own java files and immediatly see results from a pretrained model. 
 
 ## Dataset - Preparation 
 

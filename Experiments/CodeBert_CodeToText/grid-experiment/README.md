@@ -8,7 +8,8 @@ The `main.py` uses the `grid_configuration.json` to build:
 2. A docker compose to run the preprocessing for the configurations
 3. A docker compose to run the experiment using the preprocessed jsonl files
 
-The docker composes (and scripts) are orchestrated to grab into each other, so be careful manually changing them.
+The docker composes (and scripts) are orchestrated to fit into each other, 
+so be careful manually changing them after creation.
 
 There are two scripts provided: 
 
@@ -20,11 +21,21 @@ The functionality of the replicator was initially in the main.py, but has been m
 [extractor.sh](./extractor.sh) will be run after the experiments, and it reduces the folder ./configs to fit what is required for the evaluation. It removes the altered dataset and the model. 
 **Be sure to have a backup before you run the extractor!** 
 
+## Intended Workflow
+
+1. Setup your Env & Get the (cleaned but unaltered) Data
+2. Adjust the grid_config to your liking
+3. run `main.py` as above
+4. ship to servers
+5. run `replicator.sh`
+6. run the composes on the servers
+7. run `extractor.sh` on the server
+8. retrieve the results packaged by `extractor.sh` to your machine for later evaluation.
 
 ## Requirements
 
 - Docker & Docker Compose 
-- Python 3 and Conda
+- Python 3.8 (Last checked version: 3.8.12)
 - The Docker Containers build / pulled
 - A pretrained model from the CodeBert experiment
 - The (cleaned) dataset as a .jsonl file
@@ -41,17 +52,14 @@ Place your model in *./models/* and either name it `model.bin` or adjust the nam
 
 Place your (unmodified dataset) in *./ur_dataset* and either name it `test_java.jsonl` or adjust the name in [the preprocessing template file](./templates/preprocessing-docker-compose.yaml.j2).
 
-Activate the conda environment and run 
+To run, you need to install 
 
 ```shell
-python3 main.py
+python3 main.py grid_configuration.json \
+    -preprocessing_image ciselab/lampion/codebert-python-preprocessing:1.1 \
+    -ne 3 -np 5 --use-gpu
 ```
 
-(Or run)
-
-```shell
-conda run -n Lampion_CodeToText_GridExperiment python3 main.py grid_configuration.json
-```
 
 It will create the above mentioned files.
 Run the replicator to place the copies in the right places: 
@@ -81,11 +89,11 @@ docker-compose -f experiment-docker-compose.yaml down
 The results of the runs are gathered under the configs.
 
 If you want to run the experiment with training, place the training and validation files under the configs `ur_dataset`. 
-This is sadly necessary as otherwise they fight over file-locks. 
+This duplication is sadly necessary as otherwise they fight over file-locks. 
 
 ## Limitations 
 
-Sometimes, sadly, the preprocessing fails for certain entries. 
+Sometimes the preprocessing fails for certain entries. 
 A guide what to remove from the original test-data is in [a nearby file](./removal-info.txt) but the cleaned dataset will also be provided.
 
 I am currently investigating this and will provide a dataset that is not failing in the preprocessing.

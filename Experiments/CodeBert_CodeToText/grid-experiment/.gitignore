@@ -5,6 +5,7 @@ configs
 model
 models
 secret_notes.md
+docker-composes
 
 *_config.json
 !grid_configuration.json
