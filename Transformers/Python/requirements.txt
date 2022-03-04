@@ -15,7 +15,7 @@ pyparsing==3.0.7
 pytest==7.0.1
 pytest-cov==3.0.0
 PyYAML==6.0
-setuptools==60.5.0
+setuptools==60.9.3
 toml==0.10.2
 tomli==2.0.0
 typing-extensions==4.0.1
