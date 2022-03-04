@@ -1,5 +1,5 @@
 ARG TRANSFORMER_VERSION=latest
-FROM lampion/java-transformer:${TRANSFORMER_VERSION}
+FROM ciselab/lampion/java-transformer:${TRANSFORMER_VERSION}
 
 LABEL org.opencontainers.image.source="https://github.com/ciselab/lampion"
 LABEL url="https://github.com/ciselab/lampion"

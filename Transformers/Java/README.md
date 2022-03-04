@@ -29,7 +29,7 @@ The exploration-test profile will **only** run Tests tagged as `@Tag("Exploratio
 To build with Docker: 
 
 ```sh
-docker build --build-arg TRANSFORMER_VERSION=1.3-SNAPSHOT . -t lampion/java-transformer:1.3 -t lampion/java-transformer:latest -t ciselab/java-transformer:1.3 -t ciselab/java-transformer:latest -t ghcr.io/ciselab/lampion/java-transformer:1.3
+docker build --build-arg TRANSFORMER_VERSION=1.3-SNAPSHOT . -t lampion/java-transformer:1.3 -t lampion/java-transformer:latest -t ciselab/lampion/java-transformer:1.3 -t ciselab/lampion/java-transformer:latest -t ghcr.io/ciselab/lampion/java-transformer:1.3
 ```
 
 where *snapshot*-versions are supported. 
