@@ -3,6 +3,7 @@ from libcst import CSTNode
 import random
 
 from lampion.components.engine import Engine
+from lampion.transformers.iftrue import IfTrueTransformer
 
 
 def test_create_engine_with_empty_config():
@@ -19,6 +20,32 @@ def test_default_engine_has_transformers():
     testobject = Engine({}, "PLACEHOLDER")
 
     assert len(testobject.get_transformers()) > 0
+
+
+def test_default_engine_has_IfTrueTransformer():
+    testobject = Engine({}, "PLACEHOLDER")
+
+    assert testobject.get_config()["IfTrueTransformer"]
+
+    seen_if_true = False
+    for t in testobject.get_transformers():
+        if type(t) == type(IfTrueTransformer()):
+            seen_if_true = True
+
+    assert seen_if_true
+
+
+def test_default_engine_IfTrueTransformer_disabled_should_not_be_in_there():
+    testobject = Engine({"IfTrueTransformer": False}, "PLACEHOLDER")
+
+    assert not testobject.get_config()["IfTrueTransformer"]
+
+    seen_if_true = False
+    for t in testobject.get_transformers():
+        if type(t) == type(IfTrueTransformer()):
+            seen_if_true = True
+
+    assert not seen_if_true
 
 
 def test_run_with_default_transformers_gives_output():
@@ -137,7 +164,7 @@ def test_with_one_file_after_transformation_path_is_the_same():
 
 
 def test_with_one_file_per_class_should_have_expected_transformations():
-    testobject = Engine({"transformationscope": "per_class", "transformations": 10}, None)
+    testobject = Engine({"transformationscope": "perClassEach", "transformations": 10}, None)
     random.seed(1996)
 
     example_cst = [example()]
@@ -159,7 +186,7 @@ def test_with_one_file_global_scope_should_have_expected_transformations():
 
 
 def test_with_one_file_per_class_should_have_expected_transformations_variant_b():
-    testobject = Engine({"transformationscope": "per_class", "transformations": 15}, None)
+    testobject = Engine({"transformationscope": "perClassEach", "transformations": 15}, None)
     random.seed(1996)
 
     example_cst = [example()]
@@ -296,7 +323,7 @@ def test_run_with_two_csts_no_transformations_none_touched():
 
 
 def test_run_per_class_with_default_transformers_with_two_CSTs_should_have_2_csts():
-    testobject = Engine({"transformationscope": "per_class"}, None)
+    testobject = Engine({"transformationscope": "perClassEach"}, None)
     random.seed(1996)
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
@@ -310,7 +337,7 @@ def test_run_per_class_with_default_transformers_with_two_CSTs_should_have_2_cst
 
 
 def test_run_per_class_with_default_transformers_with_two_CSTs_both_touched():
-    testobject = Engine({"transformationscope": "per_class"}, None)
+    testobject = Engine({"transformationscope": "perClassEach"}, None)
     random.seed(1996)
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
@@ -323,7 +350,7 @@ def test_run_per_class_with_default_transformers_with_two_CSTs_both_touched():
 
 
 def test_run_per_class_with_default_transformers_with_two_CSTs_both_changed():
-    testobject = Engine({"transformationscope": "per_class"}, None)
+    testobject = Engine({"transformationscope": "perClassEach"}, None)
     random.seed(1996)
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
@@ -343,7 +370,7 @@ def test_run_per_class_with_default_transformers_with_two_CSTs_both_changed():
 
 
 def test_run_per_class_with_default_transformers_with_two_CSTs_should_have_expected_number_of_transformations():
-    testobject = Engine({"transformationscope": "per_class", "transformations": 5}, None)
+    testobject = Engine({"transformationscope": "perClassEach", "transformations": 5}, None)
     random.seed(1996)
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
@@ -356,7 +383,7 @@ def test_run_per_class_with_default_transformers_with_two_CSTs_should_have_expec
 
 
 def test_run_per_class_with_default_transformers_with_two_CSTs_should_have_expected_number_of_transformations_variant_b():
-    testobject = Engine({"transformationscope": "per_class", "transformations": 10}, None)
+    testobject = Engine({"transformationscope": "perClassEach", "transformations": 10}, None)
     random.seed(1996)
 
     example_cst_A = cst.parse_module("def hi(): \n\tprint(\"Hello World\")")
@@ -387,6 +414,7 @@ def test_run_with_bad_scope_CSTs_should_stay_unchanged():
     assert altered_cst_A == example_cst_A.code
     assert altered_cst_B == example_cst_B.code
 
+
 ## "Integration" Tests
 # Testing a bit of the logic around
 
@@ -404,20 +432,22 @@ def test_engine_with_literal_transformers_cst_has_no_literals():
     config["AddCommentTransformer"] = False
     config["RenameParameterTransformer"] = False
     config["RenameVariableTransformer"] = False
+    config["IfTrueTransformer"] = False
+    config["IfFalseElseTransformer"] = False
 
     config["AddNeutralElementTransformer"] = True
     config["LambdaIdentityTransformer"] = True
 
-
     testobject = Engine(config)
 
-    example_cst = [("PLACEHOLDER",cst.parse_module("def some(): return Math.Pi"))]
+    example_cst = [("PLACEHOLDER", cst.parse_module("def some(): return Math.Pi"))]
 
     altered_cst = testobject.run(example_cst)
 
     assert testobject.get_successful_transformations() == 0
     assert testobject.get_failed_transformations() > 0
     assert len(testobject.get_touched_paths()) == 0
+
 
 def test_engine_per_class_with_literal_transformers_cst_has_no_literals():
     # Config that allows "only" literal-related Transformers
@@ -429,18 +459,21 @@ def test_engine_per_class_with_literal_transformers_cst_has_no_literals():
 
     config["AddNeutralElementTransformer"] = True
     config["LambdaIdentityTransformer"] = True
+    config["IfTrueTransformer"] = False
+    config["IfFalseElseTransformer"] = False
 
-    config["transformationscope"] = "per_class"
+    config["transformationscope"] = "perClassEach"
 
     testobject = Engine(config)
 
-    example_cst = [("PLACEHOLDER",cst.parse_module("def some(): return Math.Pi"))]
+    example_cst = [("PLACEHOLDER", cst.parse_module("def some(): return Math.Pi"))]
 
     altered_cst = testobject.run(example_cst)
 
     assert testobject.get_successful_transformations() == 0
     assert testobject.get_failed_transformations() > 0
     assert len(testobject.get_touched_paths()) == 0
+
 
 def test_engine_per_class_with_unfailable_transformers_has_no_failures():
     # These transformers can never fail
@@ -453,17 +486,19 @@ def test_engine_per_class_with_unfailable_transformers_has_no_failures():
     config["AddNeutralElementTransformer"] = False
     config["LambdaIdentityTransformer"] = False
 
-    config["transformationscope"] = "per_class"
+    config["transformationscope"] = "perClassEach"
     config["transformations"] = 10
 
     testobject = Engine(config)
 
-    example_cst = [("PLACEHOLDER",cst.parse_module("def some(): \n\t a = 'bla' \n\t b = 'bla' \n\t c = 'bla' \n\t d = 'bla' \n\t e = 'bla' \n\t return Math.Pi"))]
+    example_cst = [("PLACEHOLDER", cst.parse_module(
+        "def some(): \n\t a = 'bla' \n\t b = 'bla' \n\t c = 'bla' \n\t d = 'bla' \n\t e = 'bla' \n\t return Math.Pi"))]
 
     altered_cst = testobject.run(example_cst)
 
     assert testobject.get_successful_transformations() == 10
     assert testobject.get_failed_transformations() == 0
+
 
 def test_engine_with_unfailable_transformers_has_no_failures():
     # These transformers can never fail
@@ -481,12 +516,14 @@ def test_engine_with_unfailable_transformers_has_no_failures():
 
     testobject = Engine(config)
 
-    example_cst = [("PLACEHOLDER",cst.parse_module("def some(): \n\t a = 'bla' \n\t b = 'bla' \n\t c = 'bla' \n\t d = 'bla' \n\t e = 'bla' \n\t return Math.Pi"))]
+    example_cst = [("PLACEHOLDER", cst.parse_module(
+        "def some(): \n\t a = 'bla' \n\t b = 'bla' \n\t c = 'bla' \n\t d = 'bla' \n\t e = 'bla' \n\t return Math.Pi"))]
 
     altered_cst = testobject.run(example_cst)
 
     assert 3 == testobject.get_successful_transformations()
     assert 0 == testobject.get_failed_transformations()
+
 
 ## Tests for Helpers, internals and Configs
 
@@ -542,13 +579,13 @@ def test_get_successful_manual_change_should_be_changed():
 
 
 def test_overwrite_scope_should_be_overwritten():
-    config = {"transformationscope": "per_class"}
+    config = {"transformationscope": "perClassEach"}
 
     testobject = Engine(config)
 
     received_config = testobject.get_config()
 
-    assert received_config["transformationscope"] == "per_class"
+    assert received_config["transformationscope"] == "perClassEach"
 
 
 def test_overwrite_transformations_should_be_overwritten():

@@ -31,7 +31,7 @@ class AddVariableTransformer(BaseTransformer, ABC):
     >   hgwe: str = "anjlkgwe"
     >   print("Hello World")
 
-    Currently it can add ints, floats, doubles and strings.
+    Currently, it can add ints, floats, doubles and strings.
     Adding the type is an optional flag.
     """
 

@@ -246,6 +246,58 @@ def some(a):
     assert altered_code.count("True") == 1
 
 
+def test_if_true_one_try_does_not_work():
+    code: str = """
+def some(a):
+    for a in range(1,10):
+        print(a)
+        """
+
+    example_cst = libcst.parse_module(code)
+    random.seed(1996)
+
+    transformer = IfTrueTransformer(max_tries=1)
+    transformer.reset()
+
+    altered_cst = transformer.apply(example_cst)
+
+    altered_code = str(altered_cst.code)
+
+    assert altered_code.count("if") == 0
+    assert altered_code.count("True") == 0
+
+
+def test_if_true_zero_max_tries_does_not_do_anything():
+    code: str = """
+def some(a):
+    for a in range(1,10):
+        print(a)
+        """
+
+    example_cst = libcst.parse_module(code)
+    initial_code = str(example_cst.code)
+    random.seed(1996)
+
+    transformer = IfTrueTransformer(max_tries=0)
+    transformer.reset()
+
+    altered_cst = transformer.apply(example_cst)
+
+    altered_code = str(altered_cst.code)
+
+    assert altered_code == initial_code
+
+def test_if_true_post_processing_behaves_as_reset():
+    random.seed(1996)
+    example_cst = libcst.parse_module("def some(): return Math.Pi")
+
+    transformer = IfTrueTransformer()
+    transformer.apply(example_cst)
+
+    assert transformer.worked()
+    transformer.postprocessing()
+    assert not transformer.worked()
+
 def test_constructor_if_true_transformer_has_categories():
     transformer = IfTrueTransformer()
 

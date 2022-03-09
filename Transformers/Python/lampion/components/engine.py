@@ -15,6 +15,8 @@ from lampion.transformers.addcomment import AddCommentTransformer
 from lampion.transformers.addneutral import AddNeutralElementTransformer
 from lampion.transformers.addvar import AddVariableTransformer
 from lampion.transformers.basetransformer import BaseTransformer
+from lampion.transformers.iffalseelse import IfFalseElseTransformer
+from lampion.transformers.iftrue import IfTrueTransformer
 from lampion.transformers.lambdaidentity import LambdaIdentityTransformer
 from lampion.transformers.renameparam import RenameParameterTransformer
 from lampion.transformers.renamevar import RenameVariableTransformer
@@ -104,10 +106,11 @@ class Engine:
 
         if self.__config["transformationscope"] == "global":
             altered_csts = self._run_transformations_global(altered_csts)
-        elif self.__config["transformationscope"] == "per_class":
+        # The "per_class" is a bit of a legacy writing, and will be removed soon!
+        elif self.__config["transformationscope"] == "perClassEach" or self.__config["transformationscope"] == "per_class":
             altered_csts = self._run_transformations_per_class(altered_csts)
         else:
-            log.error("Did not receive valid scope! Supported Scopes are: 'global','per_class'. Exiting early.")
+            log.error("Did not receive valid scope! Supported Scopes are: 'global','perClassEach'. Exiting early.")
             return altered_csts
 
         if self.__output_dir:
@@ -329,6 +332,12 @@ def _create_transformers(config: dict) -> [BaseTransformer]:
     if config["AddNeutralElementTransformer"]:
         transformers.append(AddNeutralElementTransformer())
 
+    if config["IfTrueTransformer"]:
+        transformers.append(IfTrueTransformer())
+
+    if config["IfFalseElseTransformer"]:
+        transformers.append(IfFalseElseTransformer())
+
     return transformers
 
 
@@ -343,7 +352,7 @@ def _default_config() -> dict:
     # Program Wide Attributes
     default_config["seed"] = 11
     default_config["transformations"] = 50
-    # Supported are "global" and "per_class" (Spelling is important!)
+    # Supported are "global" and "perClassEach" (Spelling is important!)
     default_config["transformationscope"] = "global"
 
     # Transformer Related Attributes
@@ -362,5 +371,8 @@ def _default_config() -> dict:
     default_config["AddNeutralElementTransformer"] = True
 
     default_config["LambdaIdentityTransformer"] = True
+
+    default_config["IfTrueTransformer"] = True
+    default_config["IfFalseElseTransformer"] = True
 
     return default_config
