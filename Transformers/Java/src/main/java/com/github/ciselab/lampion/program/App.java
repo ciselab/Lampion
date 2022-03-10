@@ -49,7 +49,7 @@ public class App {
             setPropertiesFromFile("./src/main/resources/config.properties");
             // start program
         } else if (args.length == 3) {
-            logger.info("Received tree argument - looking for properties in "
+            logger.info("Received three argument - looking for properties in "
                     + args[0] + "running on " + args[1] + " returning to " + args[2]);
             setPropertiesFromFile(args[0]);
             if(args[1] == null || args[1].isEmpty()){
@@ -66,9 +66,7 @@ public class App {
 
             logger.debug("The properties file had " + configuration.size() + " properties");
         } else if (args.length == 2 && args[1].equalsIgnoreCase("undo")) {
-            logger.info("Received undo action - cleaning output directories and stopping after");
-            setPropertiesFromFile(args[0]);
-            undoAction();
+            logger.error("Received undo action - Undo Action has been deprecated!");
             return;
         }
         else {
@@ -81,28 +79,6 @@ public class App {
         engine.run();
 
         logger.info("Everything done - closing Lampion Java Transformer");
-    }
-
-    /**
-     * Cleans the output directories to ease re-running the program.
-     * Completely wipes all output folders. Does not touch input folders, configuration or schema.
-     */
-    private static void undoAction() throws IOException {
-        // Read directories from properties
-        String outputDir;
-        if(configuration.get("outputDirectory") != null) {
-            outputDir = (String) configuration.get("outputDirectory");
-        } else {
-            throw new UnsupportedOperationException("There was no output-directory specified in the properties - not running undo");
-        }
-
-        // Run over the Output folders and delete all files
-        if(Files.exists(Paths.get(outputDir))) {
-            Files.walk(Paths.get(outputDir))
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
-        }
     }
 
     /**
