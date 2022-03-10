@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  CodeBert_Preprocessing:
+  CodeBert_Python_Preprocessing:
     build:
       context: .
       dockerfile: Dockerfile

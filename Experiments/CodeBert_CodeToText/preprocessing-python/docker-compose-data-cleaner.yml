@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  CodeBert_Python_Preprocessing_Clean_Val:
+    image: ciselab/codebert-python-preprocessing:latest
+    environment:
+      RAW_DATA_FILE: /raw_data/valid.jsonl
+      POST_ALTERNATION_JSONL: /data/cleaned_valid.jsonl
+      LAMPION_CONFIG_FILE: /config/clean.properties
+    volumes:
+      - ./compose_input:/raw_data:ro
+      - ./compose_output:/data
+      - ./sample_config:/config:ro
