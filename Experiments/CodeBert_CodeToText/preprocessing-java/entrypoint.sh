@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 echo "Starting Python Pre-Processing"
 python3 /python-helpers/jsonl_to_java.py $RAW_DATA_FILE $POST_PRE_PROCESSING_DIRECTORY

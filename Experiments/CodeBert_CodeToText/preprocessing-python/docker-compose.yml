@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        TRANSFORMER_VERSION: latest
+        TRANSFORMER_VERSION: 1.3
     image: ciselab/codebert-python-preprocessing:latest
     volumes:
       - ./compose_input:/raw_data:ro

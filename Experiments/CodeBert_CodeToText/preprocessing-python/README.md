@@ -2,9 +2,9 @@
 
 This part of the repository builds a container that alternates the training/test data of the CodeBERT-Experiment using the **Python-Transformer**. 
 
-It first makes `.python-files` for all lines of the jsonl-dataset, 
+It first makes `.py`-files for all lines of the jsonl-dataset, 
 then it runs the Transformer, 
-then it stitches the altered `.python-files` back together into a new jsonl.
+then it stitches the altered `.py`-files back together into a new jsonl.
 
 Place the dataset in the *compose_input*-folder, 
 adjust the name (and maybe Transformer version) in the `docker-compose.yml`, 
@@ -16,9 +16,9 @@ and run it with
 docker-compose up --build
 ```
 
-You can also adjust the Transformer-Version setting the `--build-arg TRANSFORMER_VERSION=1.2-SNAPSHOT` or other versions. Just make sure your mounted configuration matches. 
+You can also adjust the Transformer-Version setting the `--build-arg TRANSFORMER_VERSION=1.3-SNAPSHOT` or other versions. Just make sure your mounted configuration matches. 
 
-For the Grid experiment, including the replication package and multiple configs, there is a [separate repository](../GridExperiment). 
+For the Grid experiment, including the replication package and multiple configs, there is a [separate repository](../grid-experiment). 
 
 The above given compose is just a step to verify this building brick of the meta experiment.    
 

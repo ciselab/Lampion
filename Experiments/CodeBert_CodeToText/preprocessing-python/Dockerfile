@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.source="https://github.com/ciselab/lampion"
 LABEL url="https://github.com/ciselab/lampion"
 LABEL vcs="https://github.com/ciselab/lampion"
 LABEL maintainer="L.H.Applis@tu-delft.nl"
-LABEL name="lampion/codebert-python-preprocessing"
+LABEL name="ciselab/lampion/codebert-python-preprocessing"
 
 RUN pip install jsonlines==2.0.0
 
@@ -44,4 +44,4 @@ ENV LAMPION_CONFIG_FILE /config/config.properties
 
 RUN mkdir /data
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["bash","./entrypoint.sh"]

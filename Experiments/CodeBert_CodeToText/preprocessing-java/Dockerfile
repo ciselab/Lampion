@@ -7,7 +7,7 @@ LABEL vcs="https://github.com/ciselab/lampion"
 LABEL maintainer="L.H.Applis@tu-delft.nl"
 LABEL name="ciselab/lampion/codebert-java-preprocessing"
 
-RUN apk add python3>=3.8.5-r0 py3-pip>=20.1.1-r0 python3-dev>=3.8.5-r0 build-base bash
+RUN apk add bash python3>=3.8.5-r0 py3-pip>=20.1.1-r0 python3-dev>=3.8.5-r0 build-base 
 
 # Important info from Transformer Image:
 # The jar is placed under /usr/app
@@ -45,4 +45,4 @@ ENV MANIFEST_PATH /usr/app/obfuscator_output/manifest/TransformationManifest.db
 
 RUN mkdir /data
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["bash","./entrypoint.sh"]
