@@ -15,22 +15,18 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import spoon.refactoring.CtRenameGenericVariableRefactoring;
 import spoon.refactoring.CtRenameLocalVariableRefactoring;
-import spoon.refactoring.CtRenameRefactoring;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtVariable;
-import spoon.reflect.factory.Factory;
-import spoon.reflect.reference.CtVariableReference;
 
 public class RenameVariableTransformer extends BaseTransformer {
 
     // Whether this Transformer will produce pseudo-random names or full character-soup
     private boolean fullRandomStrings = false;
-    protected String name = "RenameVariable";
+    protected String name = "RenameVariableTransformer";
 
     // This Map holds all changed VariableNames to not randomize VariableNames twice.
     private Map<CtMethod,List<CtLocalVariable>> alreadyAlteredVariableNames = new HashMap<>();
@@ -58,10 +54,16 @@ public class RenameVariableTransformer extends BaseTransformer {
      * @param ast The toplevel AST from which to pick a qualified children to transform.
      * @return The TransformationResult, containing all relevant information of the transformation
      */
+    //TODO: Remove debug code
     @Override
     public TransformationResult applyAtRandom(CtElement ast) {
         // Sanity check, if there are blockers in the constraints return empty TransformationResult
         if (!getRequirements().stream().allMatch(r -> r.test(ast))) {
+//            for(int i = 0; i < getRequirements().size(); i++) {
+//                Predicate<CtElement> t = (Predicate<CtElement>) getRequirements().toArray()[i];
+//                if(!t.test(ast))
+//                    System.out.println(i);
+//            }
             return new EmptyTransformationResult();
         }
         Optional<CtMethod> oToAlter = pickRandomMethod(ast);
@@ -123,7 +125,7 @@ public class RenameVariableTransformer extends BaseTransformer {
         if(alreadyAlteredVariableNames.containsKey(method)){
             List<CtLocalVariable> alteredVariables = new ArrayList<>(alreadyAlteredVariableNames.get(method));
 
-            existingVariables.removeIf(alteredVariables::contains);
+            existingVariables.removeAll(alteredVariables);
         }
         List<CtLocalVariable> varsToPickFrom = existingVariables;
 
@@ -149,13 +151,13 @@ public class RenameVariableTransformer extends BaseTransformer {
      * @return a random method. Empty if there are no suited left. Reference is passed, so altering this element will alter the toplevel ast
      */
     private Optional<CtMethod> pickRandomMethod(CtElement ast) {
-        // Check for all methods
-        List<CtMethod> allMethods = ast
-                .filterChildren(c -> c instanceof CtMethod)
-                .list()
-                .stream()
-                .map(o -> (CtMethod) o)
-                .collect(Collectors.toList());
+        // Get all Methods with Variables
+        List<CtMethod> allMethods = ast.filterChildren(
+                c -> c instanceof CtMethod                                  // the child is a method
+                        && !c.filterChildren(p -> p instanceof CtLocalVariable).list().isEmpty()       // the method has parameters
+                        && pickRandomVariable((CtMethod) c ).isPresent()   // there are free parameters left
+        ).list();
+        // Check for non-empty Methods is done beforehand per constraints
         // Pick a number between 0 and count(methods)
         int randomValidIndex = random.nextInt(allMethods.size());
         // return the method at the position
@@ -219,10 +221,10 @@ public class RenameVariableTransformer extends BaseTransformer {
         };
 
         Predicate<CtElement> methodsHaveVariables = ct -> {
-            return  ct.filterChildren(c -> c instanceof CtMethod)
+            return  ct.filterChildren(c -> c instanceof CtVariable)
                     .list()
                     .stream()
-                    .map(c -> (CtLocalVariable) c)
+                    .map(c -> (CtVariable) c)
                     .anyMatch( m -> !m.getSimpleName().isEmpty());
         };
 
@@ -232,8 +234,8 @@ public class RenameVariableTransformer extends BaseTransformer {
                     .list()
                     .stream()
                     .map(c -> (CtMethod) c)
-                    .filter(m -> !m.getSimpleName().isEmpty())
-                    .anyMatch( m -> !pickRandomVariable(m).isPresent());
+                    .filter(m -> !m.filterChildren(c -> c instanceof CtLocalVariable).list().isEmpty())
+                    .anyMatch( m -> pickRandomVariable(m).isPresent());
         };
 
         constraints.add(hasMethods);
