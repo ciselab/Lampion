@@ -22,6 +22,9 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtVariable;
 
+/**
+ * This transformer changes a random variable name of a random method to be a random string.
+ */
 public class RenameVariableTransformer extends BaseTransformer {
 
     // Whether this Transformer will produce pseudo-random names or full character-soup
@@ -54,16 +57,10 @@ public class RenameVariableTransformer extends BaseTransformer {
      * @param ast The toplevel AST from which to pick a qualified children to transform.
      * @return The TransformationResult, containing all relevant information of the transformation
      */
-    //TODO: Remove debug code
     @Override
     public TransformationResult applyAtRandom(CtElement ast) {
         // Sanity check, if there are blockers in the constraints return empty TransformationResult
         if (!getRequirements().stream().allMatch(r -> r.test(ast))) {
-//            for(int i = 0; i < getRequirements().size(); i++) {
-//                Predicate<CtElement> t = (Predicate<CtElement>) getRequirements().toArray()[i];
-//                if(!t.test(ast))
-//                    System.out.println(i);
-//            }
             return new EmptyTransformationResult();
         }
         Optional<CtMethod> oToAlter = pickRandomMethod(ast);
