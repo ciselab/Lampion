@@ -289,7 +289,7 @@ public class Engine {
         } else if (transformations == 0) {
             logger.info("Number of transformations is set to 0. This might not be desired.");
         }
-        
+
         this.scope = scope;
         this.numberOfTransformationsPerScope = transformations;
     }
