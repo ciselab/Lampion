@@ -120,9 +120,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.10.0</version>
                 <configuration>
-                    <release>14</release>
-                    <source>15</source>
-                    <target>15</target>
+                    <release>15</release>
                 </configuration>
             </plugin>
             <!-- This is required to run the project with mvn exec:java -->
