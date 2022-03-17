@@ -32,7 +32,7 @@ public class RenameVariableTransformer extends BaseTransformer {
     protected String name = "RenameVariableTransformer";
 
     // This Map holds all changed VariableNames to not randomize VariableNames twice.
-    private Map<CtMethod,List<CtLocalVariable>> alreadyAlteredVariableNames = new HashMap<>();
+    private Map<CtMethod,List<CtLocalVariable>> alteredVariableNames = new HashMap<>();
 
 
     public RenameVariableTransformer() {
@@ -86,19 +86,18 @@ public class RenameVariableTransformer extends BaseTransformer {
 
     private void applyRenameVariableTransformer(CtMethod toAlter, CtLocalVariable varToAlter) {
         CtRenameLocalVariableRefactoring refac = new CtRenameLocalVariableRefactoring();
-        //CtRenameGenericVariableRefactoring refac = new CtRenameGenericVariableRefactoring();
         refac.setTarget(varToAlter);
         String name = fullRandomStrings ? RandomNameFactory.getRandomString(random) : RandomNameFactory.getCamelcasedAnimalString(false,random);
         refac.setNewName(name);
         refac.refactor();
 
         // Add the altered variable to the toplevel map to keep track that it was altered in constraints
-        if(alreadyAlteredVariableNames.containsKey(toAlter)){
-            alreadyAlteredVariableNames.get(toAlter).add(varToAlter);
+        if(alteredVariableNames.containsKey(toAlter)){
+            alteredVariableNames.get(toAlter).add(varToAlter);
         } else {
-            List<CtLocalVariable> l = new ArrayList<>();
-            l.add(varToAlter);
-            alreadyAlteredVariableNames.put(toAlter,l);
+            List<CtLocalVariable> methodVars = new ArrayList<>();
+            methodVars.add(varToAlter);
+            alteredVariableNames.put(toAlter,methodVars);
         }
 
         // Take the closest compilable unit (the class) and restore the ast according to transformers presettings
@@ -119,8 +118,8 @@ public class RenameVariableTransformer extends BaseTransformer {
                 .collect(Collectors.toList());
         // If there are already altered variable names for this method,
         // remove all altered variables from the pool of possible chosen element
-        if(alreadyAlteredVariableNames.containsKey(method)){
-            List<CtLocalVariable> alteredVariables = new ArrayList<>(alreadyAlteredVariableNames.get(method));
+        if(alteredVariableNames.containsKey(method)){
+            List<CtLocalVariable> alteredVariables = new ArrayList<>(alteredVariableNames.get(method));
 
             existingVariables.removeAll(alteredVariables);
         }
