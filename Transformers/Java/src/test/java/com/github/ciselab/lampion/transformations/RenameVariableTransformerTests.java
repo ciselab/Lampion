@@ -96,17 +96,39 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
+    void differentSeedsHaveDifferentResults() {
+        CtClass ast = Launcher.parseClass("""
+                package lampion.test; class A {
+                int sum() { int a = 1;\n return a; }
+                }""");
+
+        RenameVariableTransformer transformer = new RenameVariableTransformer(2023);
+        RenameVariableTransformer transformerSecond = new RenameVariableTransformer(2022);
+
+        transformer.applyAtRandom(ast);
+        CtMethod method = (CtMethod) ast.filterChildren(c -> c instanceof CtMethod).list().get(0);
+        String variableOne = ((CtVariable) method.filterChildren(c -> c instanceof CtLocalVariable).list().get(0)).getSimpleName();
+
+        transformerSecond.applyAtRandom(ast);
+        CtMethod methodSecond = (CtMethod) ast.filterChildren(c -> c instanceof CtMethod).list().get(0);
+        String variableTwo = ((CtVariable) methodSecond.filterChildren(c -> c instanceof CtLocalVariable).list().get(0)).getSimpleName();
+
+        assertNotEquals(variableOne, variableTwo);
+    }
+
+    @Test
     void sharedVariableNamesAltered() {
         CtClass ast = Launcher.parseClass("""
                 package lampion.test; class A {
                 int methodA(int a) { return a; }
                 int sum(int b) { int a = 5;\n return a+b;}
                 }""");
-        CtMethod methodA = (CtMethod) ast.filterChildren(c -> c instanceof CtMethod).list().get(0);
-        CtMethod methodB = (CtMethod) ast.filterChildren(c -> c instanceof CtMethod).list().get(1);
         RenameVariableTransformer transformer = new RenameVariableTransformer();
 
         transformer.applyAtRandom(ast);
+        CtMethod methodA = (CtMethod) ast.filterChildren(c -> c instanceof CtMethod).list().get(0);
+        CtMethod methodB = (CtMethod) ast.filterChildren(c -> c instanceof CtMethod).list().get(1);
+
         assertTrue(methodA.getParameters().get(0).toString().equals("int a"));
         assertFalse(methodB.filterChildren(c -> c instanceof CtVariable).list().contains("int a"));
     }
