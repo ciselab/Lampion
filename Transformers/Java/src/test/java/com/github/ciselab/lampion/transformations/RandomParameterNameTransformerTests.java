@@ -173,18 +173,8 @@ public class RandomParameterNameTransformerTests {
 
         RandomParameterNameTransformer transformer = new RandomParameterNameTransformer();
 
-        TransformationResult result = new EmptyTransformationResult();
         for(int i = 0; i<20;i++) {
-            // For debugging
-            int beforeAlter = sumMethod.getParameters().size();
-
             transformer.applyAtRandom(ast);
-
-            if(beforeAlter!=sumMethod.getParameters().size()){
-                // For breakpoints
-                String oh = "oh oh";
-            }
-
         }
         assertEquals(2,sumMethod.getParameters().size());
     }

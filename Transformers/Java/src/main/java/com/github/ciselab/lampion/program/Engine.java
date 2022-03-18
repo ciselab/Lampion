@@ -1,5 +1,6 @@
 package com.github.ciselab.lampion.program;
 
+import com.github.ciselab.lampion.support.EngineResult;
 import com.github.ciselab.lampion.transformations.*;
 import com.github.ciselab.lampion.transformations.transformers.RemoveAllCommentsTransformer;
 import org.apache.logging.log4j.LogManager;
@@ -64,8 +65,6 @@ public class Engine {
 
     private boolean writeJavaOutput = true; // This switch enables/disables pretty printing of altered java files
 
-    private List<TransformationResult> finishedResults = new ArrayList<>();
-
     public Engine(String codeDirectory, String outputDirectory, TransformerRegistry registry){
         // Sanity Checks
         if (codeDirectory == null || codeDirectory.isEmpty() || codeDirectory.isBlank()) {
@@ -91,19 +90,16 @@ public class Engine {
         }
     }
 
-    public void run(){
+    public EngineResult run(CtModel codeRoot){
         logger.info("Starting Engine with Registry " + registry.name + "["+registry.getRegisteredTransformers().size()
             + " transformers] reading from " + codeDirectory + " writing to " + outputDirectory);
 
         Instant startOfEngine = Instant.now();
-        // Step 1:
-        // Read the Code in
-        Launcher launcher = new spoon.Launcher();
-        launcher.addInputResource(codeDirectory);
-        // The CodeRoot is the highest level of available information regarding the AST
-        CtModel codeRoot = launcher.buildModel();
-        // With the imports set to true, on second application the import will disappear, making Lambdas uncompilable.
-        launcher.getFactory().getEnvironment().setAutoImports(false);
+
+        EngineResult.Builder builder = new EngineResult.Builder(codeRoot, codeDirectory, outputDirectory, registry)
+                .javaOutput(writeJavaOutput)
+                .randomSeed(random)
+                .distribution(distribution);
 
         // Note:
         // It is important that methods are instantiated here and not while transformations are running,
@@ -116,7 +112,7 @@ public class Engine {
         if(classes.size() == 0 || methods.size() == 0) {
             logger.error("Either found no classes or no methods - exiting early. " +
                     "Check your configuration, whether it points to actual files.");
-            return;
+            return builder.build();
         }
 
         // Step 2:
@@ -199,24 +195,19 @@ public class Engine {
         }
         classes.forEach(c -> c.updateAllParentsBelow());
 
-        // Step 3:
-        // Write Transformed Code
-        if (writeJavaOutput) {
-            logger.debug("Starting to pretty-print  altered files to " + outputDirectory);
-            launcher.setSourceOutputDirectory(outputDirectory);
-            launcher.prettyprint();
-        } else {
-            logger.info("Writing the java files has been disabled for this run.");
-        }
+        builder.totalTransformations(totalTransformationsToDo)
+                .transformationFailures(transformationFailures)
+                .transformationResults(results);
 
-        finishedResults = results.stream()
-                // Filter out Empty Results
-                .filter(l -> ! l.equals(new EmptyTransformationResult()))
-                .collect(Collectors.toList());
+        return builder.build();
+    }
 
-        Instant endOfWriting = Instant.now();
-        logger.info("Writing files took " + Duration.between(endOfTransformations,endOfWriting).getSeconds() + " seconds");
-        logger.info("Engine ran successfully");
+    /**
+     * Getter for the code Directory field.
+     * @return the code directory.
+     */
+    public String getCodeDirectory() {
+        return codeDirectory;
     }
 
     /**
@@ -249,20 +240,6 @@ public class Engine {
             default: logger.error("Found unknown/unhandled Scope in Engine");
         }
         return toAlter;
-    }
-
-    /**
-     * Returns all non-empty results produced by the engines "run".
-     * In case of multiple runs, the results of the last run are returned.
-     * They are overwritten with every-run.
-     * For a not-yet-run (or fully failing) Engine it returns an empty list.
-     *
-     * This method is particularly useful for testing,
-     * after I removed the Writer I did not have a Mockwriter to check on Results.
-     * @return The Transformation-Results produced by "run".
-     */
-    public List<TransformationResult> getFinishedResults(){
-        return this.finishedResults;
     }
 
     /**
@@ -309,7 +286,10 @@ public class Engine {
     public void setNumberOfTransformationsPerScope(long transformations, TransformationScope scope){
         if (transformations < 0) {
            throw new UnsupportedOperationException("Number of transformations cannot be negative");
+        } else if (transformations == 0) {
+            logger.info("Number of transformations is set to 0. This might not be desired.");
         }
+
         this.scope = scope;
         this.numberOfTransformationsPerScope = transformations;
     }

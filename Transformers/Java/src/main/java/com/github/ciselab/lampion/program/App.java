@@ -1,5 +1,8 @@
 package com.github.ciselab.lampion.program;
 
+import com.github.ciselab.lampion.support.EngineResult;
+import com.github.ciselab.lampion.transformations.EmptyTransformationResult;
+import com.github.ciselab.lampion.transformations.TransformationResult;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -7,13 +10,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Properties;
 
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
 import com.github.ciselab.lampion.transformations.transformers.*;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import spoon.Launcher;
+import spoon.reflect.CtModel;
 
 /**
  * Entrypoint for this program.
@@ -76,9 +85,70 @@ public class App {
 
         Engine engine = buildEngineFromProperties(App.configuration);
 
-        engine.run();
+        // Step 1 for the engine run.
+        // Read the Code in
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(engine.getCodeDirectory());
+        // The CodeRoot is the highest level of available information regarding the AST
+        CtModel codeRoot = launcher.buildModel();
+        // With the imports set to true, on second application the import will disappear, making Lambdas uncompilable.
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        //Further steps are in the method below.
+        EngineResult result = engine.run(codeRoot);
+        WriteAST(result, launcher);
 
         logger.info("Everything done - closing Lampion Java Transformer");
+    }
+
+    /**
+     * Write the transformations to file so that they can be used by a neural network.
+     * @param engineResult The result of the run function in the Engine class.
+     * @param launcher The spoon launcher with the input directory.
+     * @return A list of the transformation results.
+     */
+    public static List<TransformationResult> WriteAST(EngineResult engineResult, Launcher launcher) {
+        // Write Transformed Code
+        Instant beginOfWriting = Instant.now();
+        if (engineResult.getWriteJavaOutput()) {
+            logger.debug("Starting to pretty-print  altered files to " + engineResult.getOutputDirectory());
+            launcher.setSourceOutputDirectory(engineResult.getOutputDirectory());
+            launcher.prettyprint();
+        } else {
+            logger.info("Writing the java files has been disabled for this run.");
+        }
+
+        List<TransformationResult> finishedResults = engineResult.getTransformationResults().stream()
+                // Filter out Empty Results
+                .filter(l -> ! l.equals(new EmptyTransformationResult()))
+                .collect(Collectors.toList());
+
+        Instant endOfWriting = Instant.now();
+        logger.info("Writing files took " + Duration.between(beginOfWriting,endOfWriting).getSeconds() + " seconds");
+        logger.info("Engine ran successfully");
+
+        return finishedResults;
+    }
+
+    /**
+     * Cleans the output directories to ease re-running the program.
+     * Completely wipes all output folders. Does not touch input folders, configuration or schema.
+     */
+    private static void undoAction() throws IOException {
+        // Read directories from properties
+        String outputDir;
+        if(configuration.get("outputDirectory") != null) {
+            outputDir = (String) configuration.get("outputDirectory");
+        } else {
+            throw new UnsupportedOperationException("There was no output-directory specified in the properties - not running undo");
+        }
+
+        // Run over the Output folders and delete all files
+        if(Files.exists(Paths.get(outputDir))) {
+            Files.walk(Paths.get(outputDir))
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
     }
 
     /**
@@ -240,6 +310,7 @@ public class App {
 
         registry.registerTransformer(new AddNeutralElementTransformer(globalRandomSeed));
         registry.registerTransformer(new AddUnusedVariableTransformer(globalRandomSeed));
+        registry.registerTransformer(new RenameVariableTransformer(globalRandomSeed));
 
         return registry;
     }
@@ -302,6 +373,24 @@ public class App {
                     full.setFullRandomStrings(true);
                     registry.registerTransformer(full);
                     registry.registerTransformer(new RandomParameterNameTransformer(globalRandomSeed));
+                } break;
+            }
+        }
+        if(properties.get("RenameVariableTransformer") != null
+                && ((String)properties.get("RenameVariableTransformer")).equalsIgnoreCase("true")){
+            String givenRandomness = (String) properties.get("RenameVariableStringRandomness");
+            switch (givenRandomness) {
+                case "full" : {
+                    RenameVariableTransformer full = new RenameVariableTransformer(globalRandomSeed);
+                    full.setFullRandomStrings(true);
+                    registry.registerTransformer(full);
+                } break;
+                case "pseudo" : {registry.registerTransformer(new RenameVariableTransformer(globalRandomSeed));} break;
+                case "both": {
+                    RenameVariableTransformer full = new RenameVariableTransformer(globalRandomSeed);
+                    full.setFullRandomStrings(true);
+                    registry.registerTransformer(full);
+                    registry.registerTransformer(new RenameVariableTransformer(globalRandomSeed));
                 } break;
             }
         }

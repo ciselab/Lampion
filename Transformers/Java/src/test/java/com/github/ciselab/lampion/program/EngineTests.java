@@ -1,10 +1,13 @@
 package com.github.ciselab.lampion.program;
 
+import com.github.ciselab.lampion.support.EngineResult;
 import com.github.ciselab.lampion.transformations.TransformationResult;
 import com.github.ciselab.lampion.transformations.Transformer;
 import com.github.ciselab.lampion.transformations.TransformerRegistry;
 import com.github.ciselab.lampion.transformations.transformers.*;
 import org.junit.jupiter.api.*;
+import spoon.Launcher;
+import spoon.reflect.CtModel;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 
@@ -18,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.github.ciselab.lampion.program.App.WriteAST;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class EngineTests {
@@ -61,7 +65,12 @@ public class EngineTests {
 
         testObject.setNumberOfTransformationsPerScope(10, Engine.TransformationScope.global);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
+        WriteAST(result, launcher);
 
         assertTrue(Files.exists(Path.of(outputTestFolder,expectedJavaFile)));
 
@@ -83,7 +92,12 @@ public class EngineTests {
 
         testObject.setWriteJavaOutput(false);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
+        WriteAST(result, launcher);
 
         assertFalse(Files.exists(Path.of(outputTestFolder,expectedJavaFile)));
     }
@@ -102,7 +116,12 @@ public class EngineTests {
 
         testObject.setNumberOfTransformationsPerScope(5, Engine.TransformationScope.global);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
+        WriteAST(result, launcher);
 
         String file = Files.readString(Path.of(outputTestFolder,expectedJavaFile));
         file.contains("if (true)");
@@ -130,7 +149,12 @@ public class EngineTests {
 
         testObject.setNumberOfTransformationsPerScope(transformations, Engine.TransformationScope.global);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
+        WriteAST(result, launcher);
 
         // CleanUp
 
@@ -156,7 +180,12 @@ public class EngineTests {
 
         testObject.setNumberOfTransformationsPerScope(transformations, Engine.TransformationScope.global);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
+        WriteAST(result, launcher);
 
         assertTrue(Files.exists(Paths.get("./src/test/resources/bad_javafiles_output/lampion/tests/examples/Misser.java")));
 
@@ -240,14 +269,22 @@ public class EngineTests {
     }
 
     @Test
-    void testGetFinishedResults_NotRunEngine_ShouldGiveEmptyList(){
+    void testGetFinishedResults_ZeroTransformations_ShouldGiveEmptyList() {
         String pathToTestFileFolder = "./src/test/resources/javafiles/javafiles_perMethodEach";
         TransformerRegistry registry = new TransformerRegistry("Test");
         registry.registerTransformer(new IfFalseElseTransformer());
 
         Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
 
-        assertTrue(testObject.getFinishedResults().isEmpty());
+        testObject.setNumberOfTransformationsPerScope(0, Engine.TransformationScope.perClassEach);
+
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
+
+        assertTrue(result.getTransformationResults().isEmpty());
     }
 
     @Test
@@ -262,9 +299,13 @@ public class EngineTests {
 
         testObject.setNumberOfTransformationsPerScope(5, Engine.TransformationScope.perClassEach);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
 
-        assertFalse(testObject.getFinishedResults().isEmpty());
+        assertFalse(result.getTransformationResults().isEmpty());
     }
 
     @Tag("System")
@@ -281,17 +322,21 @@ public class EngineTests {
 
         testObject.setNumberOfTransformationsPerScope(5, Engine.TransformationScope.perClassEach);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
 
         // Easy Check on Size
-        assertEquals(10,testObject.getFinishedResults().size());
+        assertEquals(10,result.getTransformationResults().size());
 
         // Distribution Checks
-        testObject.getFinishedResults().stream()
+        result.getTransformationResults().stream()
                 .collect(Collectors.groupingBy(t -> ((CtClass)t.getTransformedElement().getParent(p -> p instanceof CtClass)).getSimpleName()))
                 .values().stream().mapToLong(u -> u.size())
                 .forEach(f -> assertEquals(5,f));
-        assertEquals(2,testObject.getFinishedResults().stream()
+        assertEquals(2,result.getTransformationResults().stream()
                 .collect(Collectors.groupingBy(t -> ((CtClass)t.getTransformedElement().getParent(p -> p instanceof CtClass)).getSimpleName())).entrySet().size());
     }
 
@@ -310,10 +355,14 @@ public class EngineTests {
 
         testObject.setNumberOfTransformationsPerScope(5, Engine.TransformationScope.perClass);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
 
         // Easy Check on Size
-        assertEquals(10,testObject.getFinishedResults().size());
+        assertEquals(10,result.getTransformationResults().size());
     }
 
     @Tag("System")
@@ -330,16 +379,20 @@ public class EngineTests {
 
         testObject.setNumberOfTransformationsPerScope(3, Engine.TransformationScope.perMethodEach);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
 
         // Easy Check on Size
-        assertEquals(12,testObject.getFinishedResults().size());
+        assertEquals(12,result.getTransformationResults().size());
         // Distribution Checks
-        testObject.getFinishedResults().stream()
+        result.getTransformationResults().stream()
                 .collect(Collectors.groupingBy(t -> ((CtMethod)t.getTransformedElement()).getSimpleName()))
                 .values().stream().mapToLong(u -> u.size())
                 .forEach(f -> assertEquals(3,f));
-        assertEquals(4,testObject.getFinishedResults().stream()
+        assertEquals(4,result.getTransformationResults().stream()
                 .collect(Collectors.groupingBy(t -> ((CtMethod)t.getTransformedElement()).getSimpleName())).entrySet().size());
     }
 
@@ -358,10 +411,14 @@ public class EngineTests {
 
         testObject.setNumberOfTransformationsPerScope(3, Engine.TransformationScope.perMethod);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
 
         // Easy Check on Size
-        assertEquals(12,testObject.getFinishedResults().size());
+        assertEquals(12,result.getTransformationResults().size());
     }
 
     @Tag("System")
@@ -379,9 +436,13 @@ public class EngineTests {
 
         testObject.setRemoveAllComments(true);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
 
-        testObject.getFinishedResults().forEach(
+        result.getTransformationResults().forEach(
                 p -> assertFalse(p.getTransformedElement().toString().contains("Comment") ||p.getTransformedElement().toString().contains("JavaDoc"))
         );
     }
@@ -401,9 +462,13 @@ public class EngineTests {
 
         testObject.setRemoveAllComments(true);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
 
-        testObject.getFinishedResults().forEach(
+        result.getTransformationResults().forEach(
                 p -> assertFalse(p.getTransformedElement().toString().contains("Comment") ||p.getTransformedElement().toString().contains("JavaDoc"))
         );
     }
@@ -422,9 +487,13 @@ public class EngineTests {
 
         testObject.setRemoveAllComments(true);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
 
-        for(TransformationResult p : testObject.getFinishedResults()){
+        for(TransformationResult p : result.getTransformationResults()){
             assertFalse(p.getTransformedElement().toString().contains("Comment") ||p.getTransformedElement().toString().contains("JavaDoc"));
         }
     }
@@ -444,9 +513,13 @@ public class EngineTests {
 
         testObject.setRemoveAllComments(true);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
 
-        for(TransformationResult p : testObject.getFinishedResults()){
+        for(TransformationResult p : result.getTransformationResults()){
             assertFalse(p.getTransformedElement().toString().contains("Comment") ||p.getTransformedElement().toString().contains("JavaDoc"));
         }
     }
@@ -469,9 +542,13 @@ public class EngineTests {
 
         testObject.setRemoveAllComments(false);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
 
-        for(TransformationResult p : testObject.getFinishedResults()){
+        for(TransformationResult p : result.getTransformationResults()){
             assertTrue(p.getTransformedElement().toString().contains("Comment") ||p.getTransformedElement().toString().contains("JavaDoc"));
         }
     }
@@ -491,9 +568,13 @@ public class EngineTests {
 
         testObject.setRemoveAllComments(true);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
 
-        for(TransformationResult p : testObject.getFinishedResults()){
+        for(TransformationResult p : result.getTransformationResults()){
             assertFalse(p.getTransformedElement().toString().contains("Comment"));
         }
     }
@@ -517,10 +598,14 @@ public class EngineTests {
 
         testObject.setRemoveAllComments(true);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
 
         boolean haveSeenRemoveComments = false;
-        for(TransformationResult p : testObject.getFinishedResults()){
+        for(TransformationResult p : result.getTransformationResults()){
             haveSeenRemoveComments = haveSeenRemoveComments || p.getTransformationName().equals("RemoveAllComments");
         }
         assertTrue(haveSeenRemoveComments);
@@ -546,10 +631,14 @@ public class EngineTests {
 
         testObject.setRemoveAllComments(true);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
 
         boolean haveSeenRemoveComments = false;
-        for(TransformationResult p : testObject.getFinishedResults()){
+        for(TransformationResult p : result.getTransformationResults()){
             haveSeenRemoveComments = haveSeenRemoveComments || p.getTransformationName().equals("RemoveAllComments");
         }
         assertTrue(haveSeenRemoveComments);
@@ -573,10 +662,14 @@ public class EngineTests {
 
         testObject.setRemoveAllComments(false);
 
-        testObject.run();
+        Launcher launcher = new spoon.Launcher();
+        launcher.addInputResource(testObject.getCodeDirectory());
+        CtModel codeRoot = launcher.buildModel();
+        launcher.getFactory().getEnvironment().setAutoImports(false);
+        EngineResult result = testObject.run(codeRoot);
 
         boolean haveSeenRemoveComments = false;
-        for(TransformationResult p : testObject.getFinishedResults()){
+        for(TransformationResult p : result.getTransformationResults()){
             haveSeenRemoveComments = haveSeenRemoveComments || p.getTransformationName().equals("RemoveAllComments");
         }
         assertFalse(haveSeenRemoveComments);
