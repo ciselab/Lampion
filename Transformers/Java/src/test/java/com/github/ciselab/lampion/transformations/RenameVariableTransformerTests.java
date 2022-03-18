@@ -29,7 +29,7 @@ import spoon.reflect.declaration.CtVariable;
 public class RenameVariableTransformerTests {
 
     @RepeatedTest(5)
-    void applyTwiceToMethodWithTwoLocalVariables_firstOneThenTwoAltered(){
+    void testApply_ApplyToMethodTwice_withTwoLocalVariables_firstThenSecondAltered(){
         CtElement ast = addBothExample();
 
         RenameVariableTransformer transformer = new RenameVariableTransformer();
@@ -53,7 +53,7 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
-    void applyTwiceToMethodWithOneParameter_returnsEmptyTransformationResult(){
+    void testApply_ApplyToMethodTwice_withOneParameter_returnsEmptyTransformationResult(){
         CtElement ast = addOneLocalVariableExample();
 
         RenameVariableTransformer transformer = new RenameVariableTransformer();
@@ -65,7 +65,7 @@ public class RenameVariableTransformerTests {
     }
 
     @RepeatedTest(3)
-    void applyFiveTimesToClassWithTwoMethods_returnsEmptyTransformationResult_AndAltersAllItems(){
+    void testApply_ApplyToMethodFiveTimes_withClassWithTwoMethods_returnsEmptyTransformationResult_AndAltersAll(){
         CtClass ast = Launcher.parseClass("""
                 package lampion.test; class A {
                 int sum() { int a = 1, b = 1;\n return a+b;} 
@@ -96,7 +96,7 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
-    void differentSeedsHaveDifferentResults() {
+    void testApply_ApplyToMethod_withDifferentSeeds_resultInDifferentResults() {
         CtClass ast = Launcher.parseClass("""
                 package lampion.test; class A {
                 int sum() { int a = 1;\n return a; }
@@ -117,7 +117,7 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
-    void sharedVariableNamesAltered() {
+    void testApply_ApplyToMethod_methodsWithSharedVariableNames_notBothChanged() {
         CtClass ast = Launcher.parseClass("""
                 package lampion.test; class A {
                 int methodA(int a) { return a; }
@@ -134,7 +134,7 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
-    void classVariablesNotAltered() {
+    void testApply_ApplyToMethodFiveTimes_classVariablesAreNotAltered() {
         CtClass ast = Launcher.parseClass("""
                 package lampion.test; class A {
                 int c = 4;
@@ -148,22 +148,24 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
-    void oneParameterOneVariable() {
+    void testApply_ApplyToMethod_oneParameterOneVariable_onlyVariablesGetsChanged() {
         CtElement ast = addOneLocalVariableExample();
         CtMethod astMethod = (CtMethod) ast.filterChildren(c -> c instanceof CtMethod).list().get(0);
 
         RenameVariableTransformer transformer = new RenameVariableTransformer();
 
-        List<CtVariable> variables = astMethod.filterChildren(c -> c instanceof CtLocalVariable).list();
-        assertEquals(1, variables.size());
+        String variable = ((CtVariable) astMethod.filterChildren(c -> c instanceof CtLocalVariable).list().get(0)).getSimpleName();
+        String param = astMethod.getParameters().get(0).toString();
         transformer.applyAtRandom(astMethod);
-        List<CtVariable> variablesAfter = astMethod.filterChildren(c -> c instanceof CtLocalVariable).list();
-        assertEquals(1, variablesAfter.size());
+        String variableAfter = ((CtVariable) astMethod.filterChildren(c -> c instanceof CtLocalVariable).list().get(0)).getSimpleName();
+        String paramAfter = astMethod.getParameters().get(0).toString();
+        assertNotEquals(variable, variableAfter);
+        assertEquals(param, paramAfter);
     }
 
     @Tag("Regression")
     @Test
-    void amountOfParametersTest() {
+    void testApply_ApplyToMethodTwentyTimes_amountOfParametersWillNotChange() {
         CtElement ast = differentDeclarationExample();
         CtMethod astMethod = (CtMethod) ast.filterChildren(c -> c instanceof CtMethod).list().get(0);
 
@@ -180,7 +182,7 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
-    void applyWithFullRandom_shouldGiveNonEmptyResult(){
+    void testApply_ApplyToMethod_withFullRandom_shouldGiveNonEmptyResult(){
         CtElement ast = addBothExample();
 
         RenameVariableTransformer transformer = new RenameVariableTransformer();
@@ -193,7 +195,7 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
-    void applyToMethodWithoutParametersOrVariables_returnsEmptyTransformationResult(){
+    void testApply_ApplyToMethod_withoutParametersOrVariables_returnsEmptyTransformationResult(){
         CtClass ast = Launcher.parseClass("""
                 package lampion.test; class A {
                 int noParams() { return 1;}
@@ -207,7 +209,7 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
-    void applyToMethodOnlyWithParameters_returnsEmptyTransformationResult(){
+    void testApply_ApplyToMethod_withParametersOnly_returnsEmptyTransformationResult(){
         CtClass ast = Launcher.parseClass("""
                 package lampion.test; class A {
                 int sum(int a, int b) { return a+b; }
@@ -221,7 +223,7 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
-    void applyToClassWithoutMethods_returnsEmptyTransformationResult(){
+    void testApply_ApplyToClassWithoutMethods_returnsEmptyTransformationResult(){
         CtClass ast = Launcher.parseClass("class A { }");
 
         RenameVariableTransformer transformer = new RenameVariableTransformer();
@@ -232,7 +234,7 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
-    void applyToClassWithoutMethods_withPackage_returnsEmptyTransformationResult(){
+    void testApply_ApplyToClassWithoutMethods_withPackage_returnsEmptyTransformationResult(){
         CtClass ast = Launcher.parseClass("""
                 package lampion.test.package;
                 class A {
@@ -253,7 +255,7 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
-    void constraintsAreNotSatisfied_NoVariablesToChange_ReturnsEmptyResult(){
+    void testApply_ApplyToMethod_constraintsAreNotSatisfied_noVariablesToChange_ReturnsEmptyResult(){
         CtClass emptyClass = Launcher.parseClass("""
                 package lampion.test.examples;
                 class A {
@@ -267,7 +269,7 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
-    void applyToMethod_CheckTransformationResult_nameIsRandomVariableName(){
+    void testApply_ApplyToMethod_CheckTransformationResult_nameIsRandomVariableName(){
         CtElement ast = addOneLocalVariableExample();
 
         RenameVariableTransformer transformer = new RenameVariableTransformer();
@@ -278,7 +280,7 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
-    void applyToMethod_CheckTransformationResult_categoriesNotEmpty(){
+    void testApply_ApplyToClass_CheckTransformationResult_categoriesNotEmpty(){
         CtElement ast = addOneLocalVariableExample();
 
         RenameVariableTransformer transformer = new RenameVariableTransformer();
@@ -289,7 +291,7 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
-    void applyWithoutDebugSettingOn_TransformationResultShouldHaveNoOptionalInfo(){
+    void testApply_ApplyToClass_withoutDebugSettingOn_TransformationResultShouldHaveNoOptionalInfo(){
         CtElement ast = addOneLocalVariableExample();
 
         RenameVariableTransformer transformer = new RenameVariableTransformer();
@@ -303,7 +305,7 @@ public class RenameVariableTransformerTests {
     }
 
     @Test
-    void applyWithDebugSettingOn_TransformationResultShouldHaveMoreInfo(){
+    void testApply_ApplyToClass_WithDebugSettingOn_TransformationResultShouldHaveMoreInfo(){
         CtElement ast = addOneLocalVariableExample();
 
         RenameVariableTransformer transformer = new RenameVariableTransformer();
