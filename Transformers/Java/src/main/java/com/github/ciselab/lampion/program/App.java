@@ -312,6 +312,7 @@ public class App {
 
         registry.registerTransformer(new AddNeutralElementTransformer(globalRandomSeed));
         registry.registerTransformer(new AddUnusedVariableTransformer(globalRandomSeed));
+        registry.registerTransformer(new RenameVariableTransformer(globalRandomSeed));
 
         return registry;
     }
@@ -374,6 +375,24 @@ public class App {
                     full.setFullRandomStrings(true);
                     registry.registerTransformer(full);
                     registry.registerTransformer(new RandomParameterNameTransformer(globalRandomSeed));
+                } break;
+            }
+        }
+        if(properties.get("RenameVariableTransformer") != null
+                && ((String)properties.get("RenameVariableTransformer")).equalsIgnoreCase("true")){
+            String givenRandomness = (String) properties.get("RenameVariableStringRandomness");
+            switch (givenRandomness) {
+                case "full" : {
+                    RenameVariableTransformer full = new RenameVariableTransformer(globalRandomSeed);
+                    full.setFullRandomStrings(true);
+                    registry.registerTransformer(full);
+                } break;
+                case "pseudo" : {registry.registerTransformer(new RenameVariableTransformer(globalRandomSeed));} break;
+                case "both": {
+                    RenameVariableTransformer full = new RenameVariableTransformer(globalRandomSeed);
+                    full.setFullRandomStrings(true);
+                    registry.registerTransformer(full);
+                    registry.registerTransformer(new RenameVariableTransformer(globalRandomSeed));
                 } break;
             }
         }

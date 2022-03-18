@@ -23,7 +23,7 @@ public class RandomParameterNameTransformer extends BaseTransformer {
     // Whether this Transformer will produce pseudo-random names or full character-soup
     private boolean fullRandomStrings = false;
 
-    // This Map holds all changed Parameternames to not randomize ParameterNames twice.
+    // This Map holds all changed ParameterNames to not randomize ParameterNames twice.
     private Map<CtMethod,List<CtVariable>> alreadyAlteredParameterNames = new HashMap<>();
 
     public RandomParameterNameTransformer(){
@@ -75,11 +75,12 @@ public class RandomParameterNameTransformer extends BaseTransformer {
     }
 
     /**
-     * This method wraps the full body of a method into if(true)
+     * This method renames a random parameter of the toAlter method.
      * The toAlter CtMethod is altered in the process.
      *
      * if there is a return statement in the block, there is a trivial return null in the else block.
-     * @param toAlter the CTMethod to wrap in an if(true){...}
+     * @param toAlter the CTMethod to change a random parameter from.
+     * @param varToAlter the parameter to alter.
      */
     private void applyRandomParameterNameTransformation(CtMethod toAlter, CtVariable varToAlter) {
         CtRenameGenericVariableRefactoring refac = new CtRenameGenericVariableRefactoring();
@@ -152,7 +153,7 @@ public class RandomParameterNameTransformer extends BaseTransformer {
                 .filter(p -> ! ((CtVariable<?>) p).getSimpleName().equalsIgnoreCase("args"))
                 .collect(Collectors.toList());
 
-        // If there are already altered parameternames for this method,
+        // If there are already altered parameter names for this method,
         // remove all altered parameters from the pool of possible chosen element
         if(alreadyAlteredParameterNames.containsKey(method)){
             List<String> alteredParameters = alreadyAlteredParameterNames.get(method).stream()
@@ -219,9 +220,9 @@ public class RandomParameterNameTransformer extends BaseTransformer {
     /**
      * Adds the required base-line constraints for this class to the constraints.
      * For this Transformer, the constraints are:
-     * 1. there are methods in the Ast
-     * 2. the methods have parameters
-     * 3. there are methods that have not-randomized / not altered names (altering them twice would be useless)
+     * 1. There are methods in the Ast.
+     * 2. The methods have parameters.
+     * 3. There are methods that have not-randomized / not altered names (altering them twice would be useless).
      */
     private void setConstraints() {
         /*
