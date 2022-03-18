@@ -7,6 +7,8 @@ models
 secret_notes.md
 docker-composes
 
+experiment-setup
+
 *_config.json
 !grid_configuration.json
 

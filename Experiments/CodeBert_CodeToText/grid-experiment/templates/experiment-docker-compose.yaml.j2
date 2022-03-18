@@ -14,15 +14,17 @@ services:
       do_train: "false"
       do_val: "false"
       do_test: "true"
+      lang: "{{ config.lang | default("java",true)}}"
       load_existing_model: "true"
       load_model_path: /models/{{ config.model_name | default("pytorch_model.bin",true)}}
-
    {% if config.gpu_use %}
     deploy:
       resources:
         reservations:
           devices:
-            - capabilities: [gpu]
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     {% else %}
     oom_kill_disable: true
     mem_limit: {{mem_limit|default("16g",true)}}

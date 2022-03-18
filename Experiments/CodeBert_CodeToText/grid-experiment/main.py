@@ -59,6 +59,11 @@ def run(
     seeds = grid_configurations['seeds']
     models = grid_configurations['models']
 
+    lang = "python" if "python" in preprocessing_image else "java"
+
+    output_dir_grid_experiment = "experiment-setup"
+    os.makedirs(output_dir_grid_experiment, exist_ok=True)
+
     explicitImports = grid_configurations["ExplicitImports"]
 
     for tcomb in transformer_combinations:
@@ -69,12 +74,13 @@ def run(
                         "transformations": tn,
                         "seed": seed,
                         "run_number": counter,
-                        "path": f"configs/config_{counter}",
+                        "path": f"{output_dir_grid_experiment}/configs/config_{counter}",
                         "path_to": f"configs/config_{counter}",
                         "model_name": f"{model}",
                         "ExplicitImports": f"{explicitImports}".lower(),
                         "preprocessing_image":preprocessing_image,
-                        "gpu_use": gpu_use
+                        "gpu_use": gpu_use,
+                        "lang": lang
                     }
                     # Merge two dicts
                     config = {**config, **tcomb}
@@ -83,7 +89,6 @@ def run(
 
     print(f"Built {len(configurations)} configurations from {grid_config_file}")
 
-    os.makedirs("docker-composes", exist_ok=True)
 
     for config in configurations:
         os.makedirs(config['path'], exist_ok=True)
@@ -94,7 +99,7 @@ def run(
 
     # Case one: There is no specified number of containers per shard, just write all in one file
     if (number_of_preprocessing_containers == 0):
-        preprocessing_file = open(os.path.join("docker-composes","preprocessing-docker-compose.yaml"), "w")
+        preprocessing_file = open(os.path.join(output_dir_grid_experiment,"preprocessing-docker-compose.yaml"), "w")
         preprocessing_content = preprocessing_template.render(configurations=configurations)
         preprocessing_file.write(preprocessing_content)
         preprocessing_file.close()
@@ -109,7 +114,7 @@ def run(
             sub_configurations = configurations[low:up];
             # Write the file
             preprocessing_file = open(
-                os.path.join("docker-composes",f"preprocessing-docker-compose-part-{preproc_file}.yaml"), "w")
+                os.path.join(output_dir_grid_experiment,f"preprocessing-docker-compose-part-{preproc_file}.yaml"), "w")
             preprocessing_content = preprocessing_template.render(configurations=sub_configurations)
             preprocessing_file.write(preprocessing_content)
             preprocessing_file.close()
@@ -122,7 +127,7 @@ def run(
 
     if number_of_experiment_containers == 0:
         experiment_file = open(
-            os.path.join("docker-composes","experiment-docker-compose.yaml"), "w")
+            os.path.join(output_dir_grid_experiment,"experiment-docker-compose.yaml"), "w")
         experiment_content = experiment_template.render(
             configurations=configurations,
             batch_size=grid_configurations['batch_size'],
@@ -145,13 +150,13 @@ def run(
             sub_configurations = configurations[low:up];
             # Write the exp-file
             experiment_file = open(
-                os.path.join("docker-composes",f"experiment-docker-compose-part-{exp_file}.yaml"), "w")
+                os.path.join(output_dir_grid_experiment,f"experiment-docker-compose-part-{exp_file}.yaml"), "w")
             experiment_content = experiment_template.render(configurations=sub_configurations)
             experiment_file.write(experiment_content)
             experiment_file.close()
             # Write the exp-file with training
             experiment_with_train_file = open(
-                os.path.join("docker-composes",f"experiment-with-training-docker-compose-part-{exp_file}.yaml"), "w")
+                os.path.join(output_dir_grid_experiment,f"experiment-with-training-docker-compose-part-{exp_file}.yaml"), "w")
             experiment_with_train_content = experiment_with_train_template.render(
                 configurations=sub_configurations,
                 batch_size=grid_configurations['batch_size'],
