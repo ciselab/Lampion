@@ -14,8 +14,8 @@ services:
       - ./{{ config.path_to }}/dataset:/data
       - ./{{ config.path_to }}:/config:ro
     environment:
-      RAW_DATA_FILE: /raw_data/{{ config.test_file|default("cleaned_test.jsonl",true) }}
-      POST_ALTERNATION_JSONL: /data/{{ config.test_file|default("preprocessed_test_java.jsonl",true) }}
+      RAW_DATA_FILE: /raw_data/{{ config.raw_dataset|default("cleaned_test.jsonl",true) }}
+      POST_ALTERNATION_JSONL: /data/{{ config.processed_dataset | default("preprocessed.jsonl",true) }}
     oom_kill_disable: true
       
   {% endfor %}

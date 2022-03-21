@@ -83,7 +83,9 @@ def run(
                         "ExplicitImports": f"{explicitImports}".lower(),
                         "preprocessing_image": preprocessing_image,
                         "gpu_use": gpu_use,
-                        "lang": lang
+                        "lang": lang,
+                        "processed_dataset": grid_configurations["processed_dataset"],
+                        "raw_dataset": grid_configurations["ur_dataset"]
                     }
                     # Merge two dicts
                     config = {**config, **tcomb}

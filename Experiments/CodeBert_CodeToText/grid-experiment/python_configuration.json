@@ -29,6 +29,8 @@
   "ExplicitImports" : true,
 
   "models": ["pretrained_python_pytorch_model.bin"],
+  "ur_dataset": "cleaned_python_test.jsonl",
+  "processed_dataset": "preprocessed_python_test.jsonl",
 
   "seeds": [2022],
 

@@ -1,5 +1,5 @@
 {
-  "transformations": [1,10],
+  "transformations": [1,5,10],
   "transformer_combinations" : [
     {
       "IfTrueTransformer": true,
@@ -23,6 +23,8 @@
   "ExplicitImports" : true,
 
   "models": ["pretrained_java_pytorch_model.bin"],
+  "ur_dataset": ["cleaned_java_test.jsonl"],
+  "processed_dataset": ["preprocessed_java_test.jsonl"],
 
   "seeds": [2022],
 

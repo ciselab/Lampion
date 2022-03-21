@@ -14,7 +14,7 @@ services:
       - ./{{ config.path }}/experiment_output:/experiment/output
       - ./{{ config.path }}/model:/models
     environment:
-      test_file: /dataset/preprocessed_test_java.jsonl
+      test_file: /dataset/{{ config.processed_dataset | default("preprocessed.jsonl",true) }}
       do_train: "false"
       do_val: "false"
       do_test: "true"
