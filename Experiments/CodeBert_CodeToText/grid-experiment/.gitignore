@@ -10,7 +10,7 @@ docker-composes
 experiment-setup
 
 *_config.json
-!grid_configuration.json
+!sample_configuration.json
 
 experiment-docker-compose-part-*
 experiment-with-training-docker-compose-part-*

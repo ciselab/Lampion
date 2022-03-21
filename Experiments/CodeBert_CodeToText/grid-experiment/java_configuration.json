@@ -1,0 +1,31 @@
+{
+  "transformations": [1,10],
+  "transformer_combinations" : [
+    {
+      "IfTrueTransformer": true,
+      "IfFalseElseTransformer": true
+    },
+    {
+      "LambdaIdentityTransformer": true
+    },
+    {
+      "AddNeutralElementTransformer": true
+    },
+    {
+    "RandomParameterNameTransformer": true,
+    "RandomParameterNameStringRandomness": "pseudo",
+    "AddUnusedVariableTransformer": true,
+    "AddUnusedVariableTransformer_StringRandomness": "pseudo"
+    }
+  ],
+  
+  "WriteManifest": false,
+  "ExplicitImports" : true,
+
+  "models": ["pretrained_java_pytorch_model.bin"],
+
+  "seeds": [2022],
+
+  "batch_size": 16,
+  "mem_limit": "16g"
+}

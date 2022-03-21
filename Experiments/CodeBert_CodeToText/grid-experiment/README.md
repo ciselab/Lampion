@@ -2,7 +2,7 @@
 
 This folder holds everything required to run the experiment in a grid fashion. 
 
-The `main.py` uses the `grid_configuration.json` to build:
+The `main.py` uses the `sample_configuration.json` to build:
 
 1. A set of configurations 
 2. A docker compose to run the preprocessing for the configurations
@@ -24,7 +24,7 @@ The functionality of the replicator was initially in the main.py, but has been m
 ## Intended Workflow
 
 1. Setup your Env & Get the (cleaned but unaltered) Data
-2. Adjust the grid_config to your liking
+2. Adjust the sample_configuration to your liking
 3. run `main.py` as above
 4. ship to servers
 5. run `replicator.sh`
@@ -55,9 +55,9 @@ Place your (unmodified dataset) in *./ur_dataset* and either name it `test_java.
 To run, you need to install 
 
 ```shell
-python3 main.py grid_configuration.json \
+python3 main.py sample_configuration.json \
     -preprocessing_image ciselab/lampion/codebert-python-preprocessing:1.1 \
-    -ne 3 -np 5 --use-gpu
+    -ne 1 -np 3 --use-gpu
 ```
 
 
@@ -94,7 +94,7 @@ This duplication is sadly necessary as otherwise they fight over file-locks.
 ## Limitations 
 
 Sometimes the preprocessing fails for certain entries. 
-A guide what to remove from the original test-data is in [a nearby file](./removal-info.txt) but the cleaned dataset will also be provided.
+A guide what to remove from the original test-data is in [a nearby file](./java-removal-info.txt) but the cleaned dataset will also be provided.
 
 I am currently investigating this and will provide a dataset that is not failing in the preprocessing.
 

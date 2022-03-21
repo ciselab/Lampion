@@ -1,6 +1,4 @@
-Hi ! 
-
-This txt contains infos what to remove from the datapoints in the original test-set as provided by codeberts team. 
+This txt contains infos what to remove from the datapoints in the original test-set as provided by codeberts team.
 I highly recommend that you use the cleaned dataset provided by me, as this list is maybe not complete. 
 If you remove a datapoint, remove the whole json-line. For my experiments  I did not attempt to "fix" any datapoints, I only removed them.
 

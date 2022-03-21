@@ -1,3 +1,5 @@
+import shutil
+
 from jinja2 import Environment, FileSystemLoader  # For templating with jinja
 import os  # For File/Directory Creation
 import json  # For reading in the configurations
@@ -59,7 +61,8 @@ def run(
     seeds = grid_configurations['seeds']
     models = grid_configurations['models']
 
-    lang = "python" if "python" in preprocessing_image else "java"
+    lang:str = "python" if "python" in preprocessing_image else "java"
+    experiment_container_version:str = "1.3"
 
     output_dir_grid_experiment = "experiment-setup"
     os.makedirs(output_dir_grid_experiment, exist_ok=True)
@@ -78,7 +81,7 @@ def run(
                         "path_to": f"configs/config_{counter}",
                         "model_name": f"{model}",
                         "ExplicitImports": f"{explicitImports}".lower(),
-                        "preprocessing_image":preprocessing_image,
+                        "preprocessing_image": preprocessing_image,
                         "gpu_use": gpu_use,
                         "lang": lang
                     }
@@ -89,17 +92,16 @@ def run(
 
     print(f"Built {len(configurations)} configurations from {grid_config_file}")
 
-
     for config in configurations:
         os.makedirs(config['path'], exist_ok=True)
-        config_file = open(os.path.join(config['path'],"config.properties"), "w")
+        config_file = open(os.path.join(config['path'], "config.properties"), "w")
         config_content = config_template.render(config)
         config_file.write(config_content)
         config_file.close()
 
     # Case one: There is no specified number of containers per shard, just write all in one file
     if (number_of_preprocessing_containers == 0):
-        preprocessing_file = open(os.path.join(output_dir_grid_experiment,"preprocessing-docker-compose.yaml"), "w")
+        preprocessing_file = open(os.path.join(output_dir_grid_experiment, "preprocessing-docker-compose.yaml"), "w")
         preprocessing_content = preprocessing_template.render(configurations=configurations)
         preprocessing_file.write(preprocessing_content)
         preprocessing_file.close()
@@ -114,7 +116,7 @@ def run(
             sub_configurations = configurations[low:up];
             # Write the file
             preprocessing_file = open(
-                os.path.join(output_dir_grid_experiment,f"preprocessing-docker-compose-part-{preproc_file}.yaml"), "w")
+                os.path.join(output_dir_grid_experiment, f"preprocessing-docker-compose-part-{preproc_file}.yaml"), "w")
             preprocessing_content = preprocessing_template.render(configurations=sub_configurations)
             preprocessing_file.write(preprocessing_content)
             preprocessing_file.close()
@@ -127,7 +129,7 @@ def run(
 
     if number_of_experiment_containers == 0:
         experiment_file = open(
-            os.path.join(output_dir_grid_experiment,"experiment-docker-compose.yaml"), "w")
+            os.path.join(output_dir_grid_experiment, "experiment-docker-compose.yaml"), "w")
         experiment_content = experiment_template.render(
             configurations=configurations,
             batch_size=grid_configurations['batch_size'],
@@ -150,17 +152,20 @@ def run(
             sub_configurations = configurations[low:up];
             # Write the exp-file
             experiment_file = open(
-                os.path.join(output_dir_grid_experiment,f"experiment-docker-compose-part-{exp_file}.yaml"), "w")
-            experiment_content = experiment_template.render(configurations=sub_configurations)
+                os.path.join(output_dir_grid_experiment, f"experiment-docker-compose-part-{exp_file}.yaml"), "w")
+            experiment_content = experiment_template.render(configurations=sub_configurations,
+                                                            experiment_image_version=experiment_container_version)
             experiment_file.write(experiment_content)
             experiment_file.close()
             # Write the exp-file with training
             experiment_with_train_file = open(
-                os.path.join(output_dir_grid_experiment,f"experiment-with-training-docker-compose-part-{exp_file}.yaml"), "w")
+                os.path.join(output_dir_grid_experiment,
+                             f"experiment-with-training-docker-compose-part-{exp_file}.yaml"), "w")
             experiment_with_train_content = experiment_with_train_template.render(
                 configurations=sub_configurations,
                 batch_size=grid_configurations['batch_size'],
-                mem_limit=grid_configurations['mem_limit'])
+                mem_limit=grid_configurations['mem_limit'],
+                experiment_image_version=experiment_container_version)
             experiment_with_train_file.write(experiment_with_train_content)
             experiment_with_train_file.close()
 
@@ -168,6 +173,37 @@ def run(
             low += number_of_experiment_containers
             up += number_of_experiment_containers
             exp_file += 1
+
+    # Last step: Copy helper files
+    copy_other_files(target_dir=output_dir_grid_experiment)
+
+
+def copy_other_files(target_dir: str) -> None:
+    path_to_extractor_file = "./extractor.sh"
+    path_to_replicator_file = "./replicator.sh"
+
+    path_to_data_folder = "./ur_dataset"
+    path_to_model_folder = "./model"
+
+    if os.path.exists(path_to_extractor_file) and os.path.isfile(path_to_extractor_file):
+        shutil.copyfile(path_to_extractor_file, os.path.join(target_dir, path_to_extractor_file))
+    else:
+        print("Did not find the extractor file nearby - not packaging it")
+
+    if os.path.exists(path_to_replicator_file) and os.path.isfile(path_to_replicator_file):
+        shutil.copyfile(path_to_replicator_file, os.path.join(target_dir, path_to_replicator_file))
+    else:
+        print("Did not find the replicator file nearby - not packaging it")
+
+    if os.path.exists(path_to_data_folder) and os.path.isdir(path_to_data_folder):
+        shutil.copytree(path_to_data_folder, os.path.join(target_dir, path_to_data_folder))
+    else:
+        print("Did not find the ur_data folder nearby - not packaging it")
+
+    if os.path.exists(path_to_model_folder) and os.path.isdir(path_to_model_folder):
+        shutil.copytree(path_to_model_folder, os.path.join(target_dir, path_to_model_folder))
+    else:
+        print("Did not find the model folder nearby - not packaging it")
 
 
 if __name__ == '__main__':
@@ -186,8 +222,8 @@ if __name__ == '__main__':
     parser.add_argument('-ne', type=int, nargs='?',
                         help='number of containers started per experiment-compose (1 means one compose per container), '
                              '0 for "all in one file".', default=0)
-    parser.add_argument('--use-gpus',dest='use_gpu',action='store_true')
-    parser.add_argument('--use-cpus',dest='use_gpu',action='store_false')
+    parser.add_argument('--use-gpus', dest='use_gpu', action='store_true')
+    parser.add_argument('--use-cpus', dest='use_gpu', action='store_false')
     parser.set_defaults(use_gpu=False)
 
     args = parser.parse_args()
