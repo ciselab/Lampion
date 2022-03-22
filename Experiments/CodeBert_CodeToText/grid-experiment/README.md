@@ -97,6 +97,7 @@ Sometimes the preprocessing fails for certain entries.
 A guide what to remove from the original test-data is in [a nearby file](./java-removal-info.txt) but the cleaned dataset will also be provided.
 
 I am currently investigating this and will provide a dataset that is not failing in the preprocessing.
+This is not a failure of the models as far as I can tell, this is a limit for the preprocessing.
 
 
 ## Known Issues & Workarounds

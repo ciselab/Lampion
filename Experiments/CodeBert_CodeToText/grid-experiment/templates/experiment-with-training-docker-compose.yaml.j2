@@ -10,9 +10,9 @@ services:
     image: ciselab/codebert-code2text:latest
     user: "${UID}"
     volumes:
-      - ./{{ config.path }}/dataset/:/dataset:ro
-      - ./{{ config.path }}/ur_dataset/:/ur_dataset:ro
-      - ./{{ config.path }}/experiment_output:/experiment/output
+      - ./{{ config.path_to }}/dataset/:/dataset:ro
+      - ./{{ config.path_to }}/ur_dataset/:/ur_dataset:ro
+      - ./{{ config.path_to }}/experiment_output:/experiment/output
     environment:
       test_file: /dataset/preprocessed_test_java.jsonl
       train_file: /ur_dataset/train_java.jsonl

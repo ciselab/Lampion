@@ -10,9 +10,9 @@ services:
     image: ciselab/codebert-code2text:{{ experiment_image_version | default("latest",true) }}
     user: "${UID}"
     volumes:
-      - ./{{ config.path }}/dataset/:/dataset:ro
-      - ./{{ config.path }}/experiment_output:/experiment/output
-      - ./{{ config.path }}/model:/models
+      - ./{{ config.path_to }}/dataset/:/dataset:ro
+      - ./{{ config.path_to }}/experiment_output:/experiment/output
+      - ./{{ config.path_to }}/model:/models
     environment:
       test_file: /dataset/{{ config.processed_dataset | default("preprocessed.jsonl",true) }}
       do_train: "false"
