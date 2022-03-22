@@ -23,8 +23,8 @@
   "ExplicitImports" : true,
 
   "models": ["pretrained_java_pytorch_model.bin"],
-  "ur_dataset": ["cleaned_java_test.jsonl"],
-  "processed_dataset": ["preprocessed_java_test.jsonl"],
+  "ur_dataset": "cleaned_java_test.jsonl",
+  "processed_dataset": "preprocessed_java_test.jsonl",
 
   "seeds": [2022],
 

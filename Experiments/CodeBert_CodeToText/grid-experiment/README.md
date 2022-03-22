@@ -24,11 +24,11 @@ The functionality of the replicator was initially in the main.py, but has been m
 ## Intended Workflow
 
 1. Setup your Env & Get the (cleaned but unaltered) Data
-2. Adjust the sample_configuration to your liking
+2. Adjust the sample_configuration to your liking, put data and model in "ur_data" and "model" folder here
 3. run `main.py` as above
 4. ship to servers
 5. run `replicator.sh`
-6. run the composes on the servers
+6. run `runner.sh` as per `nohup ./runner.sh >runner.log &`
 7. run `extractor.sh` on the server
 8. retrieve the results packaged by `extractor.sh` to your machine for later evaluation.
 

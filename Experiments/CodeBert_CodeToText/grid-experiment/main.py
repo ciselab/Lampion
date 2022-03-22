@@ -183,6 +183,7 @@ def run(
 def copy_other_files(target_dir: str) -> None:
     path_to_extractor_file = "./extractor.sh"
     path_to_replicator_file = "./replicator.sh"
+    path_to_runner_file = "./runner.sh"
 
     path_to_data_folder = "./ur_dataset"
     path_to_model_folder = "./model"
@@ -194,6 +195,11 @@ def copy_other_files(target_dir: str) -> None:
 
     if os.path.exists(path_to_replicator_file) and os.path.isfile(path_to_replicator_file):
         shutil.copyfile(path_to_replicator_file, os.path.join(target_dir, path_to_replicator_file))
+    else:
+        print("Did not find the replicator file nearby - not packaging it")
+
+    if os.path.exists(path_to_runner_file) and os.path.isfile(path_to_runner_file):
+        shutil.copyfile(path_to_runner_file, os.path.join(target_dir, path_to_runner_file))
     else:
         print("Did not find the replicator file nearby - not packaging it")
 
