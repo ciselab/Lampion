@@ -10,7 +10,7 @@
     <version>1.3-SNAPSHOT</version>
     <description>
         Java Code Transformer used in the Lampion Project.
-        Applies metamorphic transformatiosn upon java code, which 
+        Applies metamorphic transformations upon java code, which
         change the semantics of code but keep the functionality.
     </description>
 
@@ -33,15 +33,12 @@
             <artifactId>slf4j-api</artifactId>
             <version>1.7.36</version>
         </dependency>
-
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.8.2</version>
             <scope>test</scope>
         </dependency>
-
-
         <!-- Spoon is the library to alter and adjust java sourcecode-->
         <dependency>
             <groupId>fr.inria.gforge.spoon</groupId>
