@@ -17,9 +17,9 @@ services:
       test_file: /dataset/preprocessed_test_java.jsonl
       train_file: /ur_dataset/train_java.jsonl
       dev_file: /ur_dataset/valid_java.jsonl
-      do_train: "true"
-      do_val: "true"
-      do_test: "true
+      DO_TRAIN: "true"
+      DO_VALID: "true"
+      DO_TEST: "true
       lang: {{ config.lang | default("java",true)}}"
       batch_size: {{batch_size|default(8,true)}}
     {% if config.gpu_use %}

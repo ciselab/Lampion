@@ -11,12 +11,14 @@ The `main.py` uses the `sample_configuration.json` to build:
 The docker composes (and scripts) are orchestrated to fit into each other, 
 so be careful manually changing them after creation.
 
-There are two scripts provided: 
+There are three scripts provided: 
 
 [replicator.sh](replicator.sh) which copies all files and models to the configs, making unique non-blocking items. 
 place the required model (with the correct name) under ./model and the training- and validation-file under ./ur_dataset.
 When not running the training, the ./ur_dataset can be left empty.
 The functionality of the replicator was initially in the main.py, but has been moved so that the replication can be done server side, reducing data in transit.
+
+[runner.sh](./runner.sh) runs all compose files matching the names created here in order and cleans up after.
 
 [extractor.sh](./extractor.sh) will be run after the experiments, and it reduces the folder ./configs to fit what is required for the evaluation. It removes the altered dataset and the model. 
 **Be sure to have a backup before you run the extractor!** 
@@ -45,7 +47,7 @@ There is also a ready-made experiment set from the paper that only needs to run 
 
 ## How to run 
 
-Adjust the `grid_configuration.json` to your likings, but be careful to not overdo it in a single run. 
+Adjust the `sample_configuration.json` to your likings, but be careful to not overdo it in a single run. 
 You might want to split it to multiple runs (which is fine to do, if you extract the results between the runs).
 
 Place your model in *./models/* and either name it `model.bin` or adjust the name in [the experiment template file](./templates/experiment-docker-compose.yaml.j2).
@@ -55,8 +57,8 @@ Place your (unmodified dataset) in *./ur_dataset* and either name it `test_java.
 To run, you need to install 
 
 ```shell
-python3 main.py sample_configuration.json \
-    -preprocessing_image ciselab/lampion/codebert-python-preprocessing:1.1 \
+python main.py sample_configuration.json \
+    -preprocessing_image ciselab/lampion/codebert-python-preprocessing:1.2 \
     -ne 1 -np 3 --use-gpu
 ```
 

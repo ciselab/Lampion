@@ -15,9 +15,9 @@ services:
       - ./{{ config.path_to }}/model:/models
     environment:
       test_file: /dataset/{{ config.processed_dataset | default("preprocessed.jsonl",true) }}
-      do_train: "false"
-      do_val: "false"
-      do_test: "true"
+      DO_TRAIN: "false"
+      DO_VALID: "false"
+      DO_TEST: "true"
       lang: "{{ config.lang | default("java",true)}}"
       load_existing_model: "true"
       load_model_path: /models/{{ config.model_name | default("pytorch_model.bin",true)}}

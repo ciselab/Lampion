@@ -16,6 +16,12 @@
     "RandomParameterNameStringRandomness": "pseudo",
     "AddUnusedVariableTransformer": true,
     "AddUnusedVariableTransformer_StringRandomness": "pseudo"
+    },
+    {
+    "RandomParameterNameTransformer": true,
+    "RandomParameterNameStringRandomness": "full",
+    "AddUnusedVariableTransformer": true,
+    "AddUnusedVariableTransformer_StringRandomness": "full"
     }
   ],
   
