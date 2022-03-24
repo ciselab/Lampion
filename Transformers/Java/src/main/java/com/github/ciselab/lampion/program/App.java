@@ -277,7 +277,7 @@ public class App {
 
         // Set compiling/non-compiling transformers
         if(properties.get("removeAllComments")!=null){
-            boolean removeAllComments = Boolean.parseBoolean((String) properties.get("setAutoImports"));
+            boolean removeAllComments = Boolean.parseBoolean((String) properties.get("removeAllComments"));
             if(removeAllComments){
                 logger.info("All comments will be removed before pretty printing the files");
                 engine.setRemoveAllComments(true);
