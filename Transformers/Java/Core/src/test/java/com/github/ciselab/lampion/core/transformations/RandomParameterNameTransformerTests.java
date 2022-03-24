@@ -1,5 +1,6 @@
 package com.github.ciselab.lampion.core.transformations;
 
+import com.github.ciselab.lampion.core.transformations.transformers.RandomParameterNameTransformer;
 import com.github.ciselab.lampion.core.transformations.transformers.EmptyMethodTransformer;
 import com.github.ciselab.lampion.core.transformations.transformers.RandomInlineCommentTransformer;
 import com.github.ciselab.lampion.core.transformations.transformers.RandomParameterNameTransformer;
@@ -314,6 +315,152 @@ public class RandomParameterNameTransformerTests {
 
         assertFalse(transformer.isFullRandomStrings());
     }
+
+    /*
+    ========================================================
+                   Equality & HashCode Tests
+    ========================================================
+     */
+
+    @Test
+    void testEquals_Reflexivity(){
+        RandomParameterNameTransformer transformer = new RandomParameterNameTransformer(2022);
+
+        assertEquals(transformer,transformer);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentSeeds_areNotEquals(){
+        RandomParameterNameTransformer t1 = new RandomParameterNameTransformer(1);
+        RandomParameterNameTransformer t2 = new RandomParameterNameTransformer(2);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentSeeds_seedsAreChangedAfterCreation_areNotEquals(){
+        RandomParameterNameTransformer t1 = new RandomParameterNameTransformer(1);
+        RandomParameterNameTransformer t2 = new RandomParameterNameTransformer(1);
+        t2.setSeed(2);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentTryingToCompile_areNotEquals(){
+        RandomParameterNameTransformer t1 = new RandomParameterNameTransformer(1);
+        t1.setTryingToCompile(false);
+        RandomParameterNameTransformer t2 = new RandomParameterNameTransformer(1);
+        t2.setTryingToCompile(true);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentAutoImports_areNotEquals(){
+        RandomParameterNameTransformer t1 = new RandomParameterNameTransformer(1);
+        t1.setSetsAutoImports(false);
+        RandomParameterNameTransformer t2 = new RandomParameterNameTransformer(1);
+        t2.setSetsAutoImports(true);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoFreshTransformers_areEqual(){
+        RandomParameterNameTransformer t1 = new RandomParameterNameTransformer(5);
+        RandomParameterNameTransformer t2 = new RandomParameterNameTransformer(5);
+
+        assertEquals(t1,t2);
+    }
+
+
+    @Test
+    void testEquals_TransformerWithDifferentStringRandomness_areNotEqual(){
+        RandomParameterNameTransformer t1 = new RandomParameterNameTransformer(1);
+        t1.setFullRandomStrings(true);
+        RandomParameterNameTransformer t2 = new RandomParameterNameTransformer(1);
+        t2.setFullRandomStrings(false);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testHashCode_FreshTransformer_isNotNull(){
+        RandomParameterNameTransformer transformer = new RandomParameterNameTransformer(10);
+
+        int result = transformer.hashCode();
+
+        assertNotNull(result);
+        assertNotEquals(0,result);
+    }
+
+    @Test
+    void testHashCode_TransformerWithSameSeeds_haveSameHashCode(){
+        RandomParameterNameTransformer t1 = new RandomParameterNameTransformer(1);
+        RandomParameterNameTransformer t2 = new RandomParameterNameTransformer(1);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithDifferentStringRandomness_haveSameDifferentHashCode(){
+        RandomParameterNameTransformer t1 = new RandomParameterNameTransformer(1);
+        t1.setFullRandomStrings(true);
+        RandomParameterNameTransformer t2 = new RandomParameterNameTransformer(1);
+        t2.setFullRandomStrings(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithDifferentSeeds_haveDifferentHashCode(){
+        RandomParameterNameTransformer t1 = new RandomParameterNameTransformer(1);
+        RandomParameterNameTransformer t2 = new RandomParameterNameTransformer(2);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithTryingToCompile_haveDifferentHashCode(){
+        RandomParameterNameTransformer t1 = new RandomParameterNameTransformer(5);
+        t1.setTryingToCompile(true);
+        RandomParameterNameTransformer t2 = new RandomParameterNameTransformer(5);
+        t2.setTryingToCompile(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithSetsAutoImports_haveDifferentHashCode(){
+        RandomParameterNameTransformer t1 = new RandomParameterNameTransformer(5);
+        t1.setSetsAutoImports(true);
+        RandomParameterNameTransformer t2 = new RandomParameterNameTransformer(5);
+        t2.setSetsAutoImports(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    /*
+    =============================================================
+                   Helper Methods & Factories
+    =============================================================
+     */
 
     static CtElement addOneExample(){
         CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { int addOne(int a) { return a + 1 }");

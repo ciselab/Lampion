@@ -1,10 +1,6 @@
 package com.github.ciselab.lampion.core.transformations;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import com.github.ciselab.lampion.core.transformations.transformers.RenameVariableTransformer;
 import com.github.ciselab.lampion.core.transformations.transformers.RenameVariableTransformer;
 import java.util.List;
 import java.util.function.Predicate;
@@ -17,6 +13,8 @@ import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtVariable;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * This is the test suite for the RenameVariableTransformer class.
@@ -333,6 +331,152 @@ public class RenameVariableTransformerTests {
 
         assertFalse(transformer.isFullRandomStrings());
     }
+
+    /*
+    ========================================================
+                   Equality & HashCode Tests
+    ========================================================
+     */
+
+    @Test
+    void testEquals_Reflexivity(){
+        RenameVariableTransformer transformer = new RenameVariableTransformer(2022);
+
+        assertEquals(transformer,transformer);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentSeeds_areNotEquals(){
+        RenameVariableTransformer t1 = new RenameVariableTransformer(1);
+        RenameVariableTransformer t2 = new RenameVariableTransformer(2);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentSeeds_seedsAreChangedAfterCreation_areNotEquals(){
+        RenameVariableTransformer t1 = new RenameVariableTransformer(1);
+        RenameVariableTransformer t2 = new RenameVariableTransformer(1);
+        t2.setSeed(2);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentTryingToCompile_areNotEquals(){
+        RenameVariableTransformer t1 = new RenameVariableTransformer(1);
+        t1.setTryingToCompile(false);
+        RenameVariableTransformer t2 = new RenameVariableTransformer(1);
+        t2.setTryingToCompile(true);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentAutoImports_areNotEquals(){
+        RenameVariableTransformer t1 = new RenameVariableTransformer(1);
+        t1.setSetsAutoImports(false);
+        RenameVariableTransformer t2 = new RenameVariableTransformer(1);
+        t2.setSetsAutoImports(true);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoFreshTransformers_areEqual(){
+        RenameVariableTransformer t1 = new RenameVariableTransformer(5);
+        RenameVariableTransformer t2 = new RenameVariableTransformer(5);
+
+        assertEquals(t1,t2);
+    }
+
+
+    @Test
+    void testEquals_TransformerWithDifferentStringRandomness_areNotEqual(){
+        RenameVariableTransformer t1 = new RenameVariableTransformer(1);
+        t1.setFullRandomStrings(true);
+        RenameVariableTransformer t2 = new RenameVariableTransformer(1);
+        t2.setFullRandomStrings(false);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testHashCode_FreshTransformer_isNotNull(){
+        RenameVariableTransformer transformer = new RenameVariableTransformer(10);
+
+        int result = transformer.hashCode();
+
+        assertNotNull(result);
+        assertNotEquals(0,result);
+    }
+
+    @Test
+    void testHashCode_TransformerWithSameSeeds_haveSameHashCode(){
+        RenameVariableTransformer t1 = new RenameVariableTransformer(1);
+        RenameVariableTransformer t2 = new RenameVariableTransformer(1);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithDifferentStringRandomness_haveSameDifferentHashCode(){
+        RenameVariableTransformer t1 = new RenameVariableTransformer(1);
+        t1.setFullRandomStrings(true);
+        RenameVariableTransformer t2 = new RenameVariableTransformer(1);
+        t2.setFullRandomStrings(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithDifferentSeeds_haveDifferentHashCode(){
+        RenameVariableTransformer t1 = new RenameVariableTransformer(1);
+        RenameVariableTransformer t2 = new RenameVariableTransformer(2);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithTryingToCompile_haveDifferentHashCode(){
+        RenameVariableTransformer t1 = new RenameVariableTransformer(5);
+        t1.setTryingToCompile(true);
+        RenameVariableTransformer t2 = new RenameVariableTransformer(5);
+        t2.setTryingToCompile(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithSetsAutoImports_haveDifferentHashCode(){
+        RenameVariableTransformer t1 = new RenameVariableTransformer(5);
+        t1.setSetsAutoImports(true);
+        RenameVariableTransformer t2 = new RenameVariableTransformer(5);
+        t2.setSetsAutoImports(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    /*
+    =============================================================
+                   Helper Methods & Factories
+    =============================================================
+     */
 
     static CtElement addOneLocalVariableExample(){
         CtClass testObject = Launcher.parseClass("""

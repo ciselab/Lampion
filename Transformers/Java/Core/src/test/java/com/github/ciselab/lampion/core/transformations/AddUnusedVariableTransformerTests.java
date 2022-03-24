@@ -1,6 +1,6 @@
 package com.github.ciselab.lampion.core.transformations;
 
-import com.github.ciselab.lampion.core.transformations.transformers.AddNeutralElementTransformer;
+import com.github.ciselab.lampion.core.transformations.transformers.AddUnusedVariableTransformer;
 import com.github.ciselab.lampion.core.transformations.transformers.AddUnusedVariableTransformer;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
@@ -137,18 +137,18 @@ public class AddUnusedVariableTransformerTests {
         // Be careful: If the variable Transformer picks a boolean, the element transformer fails
         // So pick a seed that produces one of the supported types
         AddUnusedVariableTransformer variableTransformer = new AddUnusedVariableTransformer(125);
-        AddNeutralElementTransformer elementTransformer = new AddNeutralElementTransformer();
+        AddUnusedVariableTransformer elementTransformer = new AddUnusedVariableTransformer();
 
         CtElement ast =  Launcher.parseClass("package lampion.test.examples; class A { " +
                 "void some(){}" +
                 "}");
 
-        variableTransformer.applyAtRandom(ast);
-        var result = elementTransformer.applyAtRandom(ast);
+        var result1 = variableTransformer.applyAtRandom(ast);
+        var result2 = elementTransformer.applyAtRandom(ast);
 
+        assertNotEquals(new EmptyTransformationResult(),result1);
         assertTrue(ast.toString().contains("="));
-        assertTrue(ast.toString().contains("+"));
-        assertNotEquals(new EmptyTransformationResult(),result);
+        assertNotEquals(new EmptyTransformationResult(),result2);
     }
 
     @Test
@@ -293,6 +293,152 @@ public class AddUnusedVariableTransformerTests {
             assertNotEquals(new EmptyTransformationResult(),result);
         }
     }
+
+    /*
+    ========================================================
+                   Equality & HashCode Tests
+    ========================================================
+     */
+
+    @Test
+    void testEquals_Reflexivity(){
+        AddUnusedVariableTransformer transformer = new AddUnusedVariableTransformer(2022);
+
+        assertEquals(transformer,transformer);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentSeeds_areNotEquals(){
+        AddUnusedVariableTransformer t1 = new AddUnusedVariableTransformer(1);
+        AddUnusedVariableTransformer t2 = new AddUnusedVariableTransformer(2);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentSeeds_seedsAreChangedAfterCreation_areNotEquals(){
+        AddUnusedVariableTransformer t1 = new AddUnusedVariableTransformer(1);
+        AddUnusedVariableTransformer t2 = new AddUnusedVariableTransformer(1);
+        t2.setSeed(2);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentTryingToCompile_areNotEquals(){
+        AddUnusedVariableTransformer t1 = new AddUnusedVariableTransformer(1);
+        t1.setTryingToCompile(false);
+        AddUnusedVariableTransformer t2 = new AddUnusedVariableTransformer(1);
+        t2.setTryingToCompile(true);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentAutoImports_areNotEquals(){
+        AddUnusedVariableTransformer t1 = new AddUnusedVariableTransformer(1);
+        t1.setSetsAutoImports(false);
+        AddUnusedVariableTransformer t2 = new AddUnusedVariableTransformer(1);
+        t2.setSetsAutoImports(true);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoFreshTransformers_areEqual(){
+        AddUnusedVariableTransformer t1 = new AddUnusedVariableTransformer(5);
+        AddUnusedVariableTransformer t2 = new AddUnusedVariableTransformer(5);
+
+        assertEquals(t1,t2);
+    }
+
+
+    @Test
+    void testEquals_TransformerWithDifferentStringRandomness_areNotEqual(){
+        AddUnusedVariableTransformer t1 = new AddUnusedVariableTransformer(1);
+        t1.setFullRandomStrings(true);
+        AddUnusedVariableTransformer t2 = new AddUnusedVariableTransformer(1);
+        t2.setFullRandomStrings(false);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testHashCode_FreshTransformer_isNotNull(){
+        AddUnusedVariableTransformer transformer = new AddUnusedVariableTransformer(10);
+
+        int result = transformer.hashCode();
+
+        assertNotNull(result);
+        assertNotEquals(0,result);
+    }
+
+    @Test
+    void testHashCode_TransformerWithSameSeeds_haveSameHashCode(){
+        AddUnusedVariableTransformer t1 = new AddUnusedVariableTransformer(1);
+        AddUnusedVariableTransformer t2 = new AddUnusedVariableTransformer(1);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithDifferentStringRandomness_haveSameDifferentHashCode(){
+        AddUnusedVariableTransformer t1 = new AddUnusedVariableTransformer(1);
+        t1.setFullRandomStrings(true);
+        AddUnusedVariableTransformer t2 = new AddUnusedVariableTransformer(1);
+        t2.setFullRandomStrings(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithDifferentSeeds_haveDifferentHashCode(){
+        AddUnusedVariableTransformer t1 = new AddUnusedVariableTransformer(1);
+        AddUnusedVariableTransformer t2 = new AddUnusedVariableTransformer(2);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithTryingToCompile_haveDifferentHashCode(){
+        AddUnusedVariableTransformer t1 = new AddUnusedVariableTransformer(5);
+        t1.setTryingToCompile(true);
+        AddUnusedVariableTransformer t2 = new AddUnusedVariableTransformer(5);
+        t2.setTryingToCompile(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithSetsAutoImports_haveDifferentHashCode(){
+        AddUnusedVariableTransformer t1 = new AddUnusedVariableTransformer(5);
+        t1.setSetsAutoImports(true);
+        AddUnusedVariableTransformer t2 = new AddUnusedVariableTransformer(5);
+        t2.setSetsAutoImports(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    /*
+    =============================================================
+                   Helper Methods & Factories
+    =============================================================
+     */
 
     static CtElement classWithoutReturnMethod(){
         CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { void m() { System.out.println(\"yeah\");} }");

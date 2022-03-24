@@ -258,4 +258,48 @@ public class AddNeutralElementTransformer extends BaseTransformer {
         categories.add(TransformationCategory.SMELL);
         return categories;
     }
+
+    /*
+    =========================================================
+                       Hashcode & Equals
+    =========================================================
+    The Implementation of HashCode and Equals are a bit of a philosophical question.
+    Without an override, two Transformers are always different.
+    We aim to have an implementation that two transformers are equal if they
+    are from the same Type (E.g. IfTrueTransformer) and have a similar configuration.
+    This includes seeds.
+
+    The tests for identity are in the test-file for this Transformer,
+    but there is a separate Testfile for comparing different transformers.
+
+    The provided implementation is taken from Joshua Bloch
+    "Effective Java - third Edition".
+     */
+    // HashCode method with lazily initialized cached hash code
+    private int hashCode = 0;
+
+    @Override
+    public int hashCode() {
+        int result = hashCode;
+        if (result == 0) {
+            result = name.hashCode();
+            result = 31 * result + Boolean.hashCode(this.triesToCompile);
+            result = 31 * result + Boolean.hashCode(this.setsAutoImports);
+            result = 31 * result + Long.hashCode(this.seedOnCreation);
+            hashCode = result;
+        }
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this)
+            return true;
+        if (o instanceof AddNeutralElementTransformer other){
+            return other.triesToCompile == this.triesToCompile
+                && other.setsAutoImports == this.setsAutoImports
+                && other.seedOnCreation == this.seedOnCreation;
+        }
+        return false;
+    }
 }

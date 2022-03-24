@@ -20,9 +20,12 @@ public abstract class BaseTransformer implements Transformer {
     protected boolean triesToCompile = true;          // Whether after applying the change, the snippets try to be compiled
     protected boolean setsAutoImports = true;         // Whether foreign references will be resolved to their fully qualified name
 
+    protected long seedOnCreation;                    // The seed used to create this transformer, later used for equality and hashcode
+
     Set<Predicate<CtElement>> constraints = new HashSet<Predicate<CtElement>>();
 
     public BaseTransformer() {
+        this.seedOnCreation = Engine.globalRandomSeed;
         this.random = new Random(Engine.globalRandomSeed);
     }
 
@@ -30,6 +33,7 @@ public abstract class BaseTransformer implements Transformer {
      * @param seed for the random number provider, used for testing and reproducible results
      */
     public BaseTransformer(long seed) {
+        this.seedOnCreation = seed;
         this.random = new Random(seed);
     }
 
@@ -55,6 +59,7 @@ public abstract class BaseTransformer implements Transformer {
     }
 
     public void setSeed(long seed){
+        this.seedOnCreation = seed;
         this.random = new Random(seed);
     }
 
@@ -111,4 +116,5 @@ public abstract class BaseTransformer implements Transformer {
             containingClass.compileAndReplaceSnippets();
         }
     }
+
 }

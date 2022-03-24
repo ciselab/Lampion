@@ -1,5 +1,6 @@
 package com.github.ciselab.lampion.core.transformations;
 
+import com.github.ciselab.lampion.core.transformations.transformers.IfTrueTransformer;
 import com.github.ciselab.lampion.core.transformations.transformers.IfFalseElseTransformer;
 import com.github.ciselab.lampion.core.transformations.transformers.IfTrueTransformer;
 import org.junit.jupiter.api.RepeatedTest;
@@ -348,6 +349,129 @@ public class IfTrueTransformerTests {
         transformer.applyAtRandom(testObject);
         assertTrue(testObject.toString().contains("return 0L;"));
     }
+
+    /*
+    ========================================================
+                   Equality & HashCode Tests
+    ========================================================
+     */
+
+    @Test
+    void testEquals_Reflexivity(){
+        IfTrueTransformer transformer = new IfTrueTransformer(2022);
+
+        assertEquals(transformer,transformer);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentSeeds_areNotEquals(){
+        IfTrueTransformer t1 = new IfTrueTransformer(1);
+        IfTrueTransformer t2 = new IfTrueTransformer(2);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentSeeds_seedsAreChangedAfterCreation_areNotEquals(){
+        IfTrueTransformer t1 = new IfTrueTransformer(1);
+        IfTrueTransformer t2 = new IfTrueTransformer(1);
+        t2.setSeed(2);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentTryingToCompile_areNotEquals(){
+        IfTrueTransformer t1 = new IfTrueTransformer(1);
+        t1.setTryingToCompile(false);
+        IfTrueTransformer t2 = new IfTrueTransformer(1);
+        t2.setTryingToCompile(true);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentAutoImports_areNotEquals(){
+        IfTrueTransformer t1 = new IfTrueTransformer(1);
+        t1.setSetsAutoImports(false);
+        IfTrueTransformer t2 = new IfTrueTransformer(1);
+        t2.setSetsAutoImports(true);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoFreshTransformers_areEqual(){
+        IfTrueTransformer t1 = new IfTrueTransformer(5);
+        IfTrueTransformer t2 = new IfTrueTransformer(5);
+
+        assertEquals(t1,t2);
+    }
+
+
+    @Test
+    void testHashCode_FreshTransformer_isNotNull(){
+        IfTrueTransformer transformer = new IfTrueTransformer(10);
+
+        int result = transformer.hashCode();
+
+        assertNotNull(result);
+        assertNotEquals(0,result);
+    }
+
+    @Test
+    void testHashCode_TransformerWithSameSeeds_haveSameHashCode(){
+        IfTrueTransformer t1 = new IfTrueTransformer(1);
+        IfTrueTransformer t2 = new IfTrueTransformer(1);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithDifferentSeeds_haveDifferentHashCode(){
+        IfTrueTransformer t1 = new IfTrueTransformer(1);
+        IfTrueTransformer t2 = new IfTrueTransformer(2);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithTryingToCompile_haveDifferentHashCode(){
+        IfTrueTransformer t1 = new IfTrueTransformer(5);
+        t1.setTryingToCompile(true);
+        IfTrueTransformer t2 = new IfTrueTransformer(5);
+        t2.setTryingToCompile(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithSetsAutoImports_haveDifferentHashCode(){
+        IfTrueTransformer t1 = new IfTrueTransformer(5);
+        t1.setSetsAutoImports(true);
+        IfTrueTransformer t2 = new IfTrueTransformer(5);
+        t2.setSetsAutoImports(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    /*
+    =============================================================
+                   Helper Methods & Factories
+    =============================================================
+     */
 
 
     static CtElement classWithoutReturnMethod(){

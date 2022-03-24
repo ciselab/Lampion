@@ -1,5 +1,6 @@
 package com.github.ciselab.lampion.core.transformations;
 
+import com.github.ciselab.lampion.core.transformations.transformers.RemoveAllCommentsTransformer;
 import com.github.ciselab.lampion.core.transformations.transformers.IfTrueTransformer;
 import com.github.ciselab.lampion.core.transformations.transformers.RemoveAllCommentsTransformer;
 import org.junit.jupiter.api.Test;
@@ -150,6 +151,128 @@ public class RemoveAllCommentsTransformerTests {
 
         assertTrue(transformer.isExclusiveWith().isEmpty());
     }
+
+    /*
+    ========================================================
+                   Equality & HashCode Tests
+    ========================================================
+     */
+
+    @Test
+    void testEquals_Reflexivity(){
+        RemoveAllCommentsTransformer transformer = new RemoveAllCommentsTransformer(2022);
+
+        assertEquals(transformer,transformer);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentSeeds_areNotEquals(){
+        RemoveAllCommentsTransformer t1 = new RemoveAllCommentsTransformer(1);
+        RemoveAllCommentsTransformer t2 = new RemoveAllCommentsTransformer(2);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentSeeds_seedsAreChangedAfterCreation_areNotEquals(){
+        RemoveAllCommentsTransformer t1 = new RemoveAllCommentsTransformer(1);
+        RemoveAllCommentsTransformer t2 = new RemoveAllCommentsTransformer(1);
+        t2.setSeed(2);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentTryingToCompile_areNotEquals(){
+        RemoveAllCommentsTransformer t1 = new RemoveAllCommentsTransformer(1);
+        t1.setTryingToCompile(false);
+        RemoveAllCommentsTransformer t2 = new RemoveAllCommentsTransformer(1);
+        t2.setTryingToCompile(true);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentAutoImports_areNotEquals(){
+        RemoveAllCommentsTransformer t1 = new RemoveAllCommentsTransformer(1);
+        t1.setSetsAutoImports(false);
+        RemoveAllCommentsTransformer t2 = new RemoveAllCommentsTransformer(1);
+        t2.setSetsAutoImports(true);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoFreshTransformers_areEqual(){
+        RemoveAllCommentsTransformer t1 = new RemoveAllCommentsTransformer(5);
+        RemoveAllCommentsTransformer t2 = new RemoveAllCommentsTransformer(5);
+
+        assertEquals(t1,t2);
+    }
+
+    @Test
+    void testHashCode_FreshTransformer_isNotNull(){
+        RemoveAllCommentsTransformer transformer = new RemoveAllCommentsTransformer(10);
+
+        int result = transformer.hashCode();
+
+        assertNotNull(result);
+        assertNotEquals(0,result);
+    }
+
+    @Test
+    void testHashCode_TransformerWithSameSeeds_haveSameHashCode(){
+        RemoveAllCommentsTransformer t1 = new RemoveAllCommentsTransformer(1);
+        RemoveAllCommentsTransformer t2 = new RemoveAllCommentsTransformer(1);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithDifferentSeeds_haveDifferentHashCode(){
+        RemoveAllCommentsTransformer t1 = new RemoveAllCommentsTransformer(1);
+        RemoveAllCommentsTransformer t2 = new RemoveAllCommentsTransformer(2);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithTryingToCompile_haveDifferentHashCode(){
+        RemoveAllCommentsTransformer t1 = new RemoveAllCommentsTransformer(5);
+        t1.setTryingToCompile(true);
+        RemoveAllCommentsTransformer t2 = new RemoveAllCommentsTransformer(5);
+        t2.setTryingToCompile(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithSetsAutoImports_haveDifferentHashCode(){
+        RemoveAllCommentsTransformer t1 = new RemoveAllCommentsTransformer(5);
+        t1.setSetsAutoImports(true);
+        RemoveAllCommentsTransformer t2 = new RemoveAllCommentsTransformer(5);
+        t2.setSetsAutoImports(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    /*
+    =============================================================
+                   Helper Methods & Factories
+    =============================================================
+     */
 
     static CtElement commentExample(){
         CtClass testObject = Launcher.parseClass("package lampion.test.examples; // some comment \n class A { int sum(int a, int b) { return a + b;} }");

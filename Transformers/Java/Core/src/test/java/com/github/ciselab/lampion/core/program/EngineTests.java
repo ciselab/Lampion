@@ -49,7 +49,7 @@ public class EngineTests {
     }
 
     @Test
-    void testSetDistribution_DistributionHasUknownElements_ShouldThrowException(){
+    void testSetDistribution_DistributionHasUnknownElements_ShouldThrowException(){
         Transformer in = new IfTrueTransformer();
 
         Transformer notIn = new RandomParameterNameTransformer();

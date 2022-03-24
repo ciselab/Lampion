@@ -1,6 +1,7 @@
 package com.github.ciselab.lampion.core.transformations;
 
 import com.github.ciselab.lampion.core.transformations.transformers.LambdaIdentityTransformer;
+import com.github.ciselab.lampion.core.transformations.transformers.LambdaIdentityTransformer;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import spoon.Launcher;
@@ -347,6 +348,128 @@ public class LambdaIdentityTransformerTests {
         var prettyPrintedFile = defaultJavaPrettyPrinter.prettyprint(unit);
         assertTrue(prettyPrintedFile.contains("import java.util.Hashset;"));
     }
+
+    /*
+    ========================================================
+                   Equality & HashCode Tests
+    ========================================================
+     */
+
+    @Test
+    void testEquals_Reflexivity(){
+        LambdaIdentityTransformer transformer = new LambdaIdentityTransformer(2022);
+
+        assertEquals(transformer,transformer);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentSeeds_areNotEquals(){
+        LambdaIdentityTransformer t1 = new LambdaIdentityTransformer(1);
+        LambdaIdentityTransformer t2 = new LambdaIdentityTransformer(2);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentSeeds_seedsAreChangedAfterCreation_areNotEquals(){
+        LambdaIdentityTransformer t1 = new LambdaIdentityTransformer(1);
+        LambdaIdentityTransformer t2 = new LambdaIdentityTransformer(1);
+        t2.setSeed(2);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentTryingToCompile_areNotEquals(){
+        LambdaIdentityTransformer t1 = new LambdaIdentityTransformer(1);
+        t1.setTryingToCompile(false);
+        LambdaIdentityTransformer t2 = new LambdaIdentityTransformer(1);
+        t2.setTryingToCompile(true);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentAutoImports_areNotEquals(){
+        LambdaIdentityTransformer t1 = new LambdaIdentityTransformer(1);
+        t1.setSetsAutoImports(false);
+        LambdaIdentityTransformer t2 = new LambdaIdentityTransformer(1);
+        t2.setSetsAutoImports(true);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoFreshTransformers_areEqual(){
+        LambdaIdentityTransformer t1 = new LambdaIdentityTransformer(5);
+        LambdaIdentityTransformer t2 = new LambdaIdentityTransformer(5);
+
+        assertEquals(t1,t2);
+    }
+
+    @Test
+    void testHashCode_FreshTransformer_isNotNull(){
+        LambdaIdentityTransformer transformer = new LambdaIdentityTransformer(10);
+
+        int result = transformer.hashCode();
+
+        assertNotNull(result);
+        assertNotEquals(0,result);
+    }
+
+    @Test
+    void testHashCode_TransformerWithSameSeeds_haveSameHashCode(){
+        LambdaIdentityTransformer t1 = new LambdaIdentityTransformer(1);
+        LambdaIdentityTransformer t2 = new LambdaIdentityTransformer(1);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithDifferentSeeds_haveDifferentHashCode(){
+        LambdaIdentityTransformer t1 = new LambdaIdentityTransformer(1);
+        LambdaIdentityTransformer t2 = new LambdaIdentityTransformer(2);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithTryingToCompile_haveDifferentHashCode(){
+        LambdaIdentityTransformer t1 = new LambdaIdentityTransformer(5);
+        t1.setTryingToCompile(true);
+        LambdaIdentityTransformer t2 = new LambdaIdentityTransformer(5);
+        t2.setTryingToCompile(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithSetsAutoImports_haveDifferentHashCode(){
+        LambdaIdentityTransformer t1 = new LambdaIdentityTransformer(5);
+        t1.setSetsAutoImports(true);
+        LambdaIdentityTransformer t2 = new LambdaIdentityTransformer(5);
+        t2.setSetsAutoImports(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    /*
+    =============================================================
+                   Helper Methods & Factories
+    =============================================================
+     */
 
     static CtElement classWithoutLiteral(){
         String pathToTestFile = "./src/test/resources/javafiles/javafiles_for_lambda_identity_tests/NoLiteralExample.java";

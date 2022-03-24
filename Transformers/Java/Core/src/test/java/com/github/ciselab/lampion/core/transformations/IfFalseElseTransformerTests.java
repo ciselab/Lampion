@@ -1,6 +1,7 @@
 package com.github.ciselab.lampion.core.transformations;
 
 import com.github.ciselab.lampion.core.transformations.transformers.IfFalseElseTransformer;
+import com.github.ciselab.lampion.core.transformations.transformers.IfFalseElseTransformer;
 import com.github.ciselab.lampion.core.transformations.transformers.IfTrueTransformer;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
@@ -370,6 +371,128 @@ public class IfFalseElseTransformerTests {
         assertTrue(testObject.toString().contains("return 0L;"));
     }
 
+
+    /*
+    ========================================================
+                   Equality & HashCode Tests
+    ========================================================
+     */
+
+    @Test
+    void testEquals_Reflexivity(){
+        IfFalseElseTransformer transformer = new IfFalseElseTransformer(2022);
+
+        assertEquals(transformer,transformer);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentSeeds_areNotEquals(){
+        IfFalseElseTransformer t1 = new IfFalseElseTransformer(1);
+        IfFalseElseTransformer t2 = new IfFalseElseTransformer(2);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentSeeds_seedsAreChangedAfterCreation_areNotEquals(){
+        IfFalseElseTransformer t1 = new IfFalseElseTransformer(1);
+        IfFalseElseTransformer t2 = new IfFalseElseTransformer(1);
+        t2.setSeed(2);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentTryingToCompile_areNotEquals(){
+        IfFalseElseTransformer t1 = new IfFalseElseTransformer(1);
+        t1.setTryingToCompile(false);
+        IfFalseElseTransformer t2 = new IfFalseElseTransformer(1);
+        t2.setTryingToCompile(true);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoTransformers_differentAutoImports_areNotEquals(){
+        IfFalseElseTransformer t1 = new IfFalseElseTransformer(1);
+        t1.setSetsAutoImports(false);
+        IfFalseElseTransformer t2 = new IfFalseElseTransformer(1);
+        t2.setSetsAutoImports(true);
+
+        assertNotEquals(t1,t2);
+    }
+
+    @Test
+    void testEquals_TwoFreshTransformers_areEqual(){
+        IfFalseElseTransformer t1 = new IfFalseElseTransformer(5);
+        IfFalseElseTransformer t2 = new IfFalseElseTransformer(5);
+
+        assertEquals(t1,t2);
+    }
+
+    @Test
+    void testHashCode_FreshTransformer_isNotNull(){
+        IfFalseElseTransformer transformer = new IfFalseElseTransformer(10);
+
+        int result = transformer.hashCode();
+
+        assertNotNull(result);
+        assertNotEquals(0,result);
+    }
+
+    @Test
+    void testHashCode_TransformerWithSameSeeds_haveSameHashCode(){
+        IfFalseElseTransformer t1 = new IfFalseElseTransformer(1);
+        IfFalseElseTransformer t2 = new IfFalseElseTransformer(1);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithDifferentSeeds_haveDifferentHashCode(){
+        IfFalseElseTransformer t1 = new IfFalseElseTransformer(1);
+        IfFalseElseTransformer t2 = new IfFalseElseTransformer(2);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithTryingToCompile_haveDifferentHashCode(){
+        IfFalseElseTransformer t1 = new IfFalseElseTransformer(5);
+        t1.setTryingToCompile(true);
+        IfFalseElseTransformer t2 = new IfFalseElseTransformer(5);
+        t2.setTryingToCompile(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    @Test
+    void testHashCode_TransformerWithSetsAutoImports_haveDifferentHashCode(){
+        IfFalseElseTransformer t1 = new IfFalseElseTransformer(5);
+        t1.setSetsAutoImports(true);
+        IfFalseElseTransformer t2 = new IfFalseElseTransformer(5);
+        t2.setSetsAutoImports(false);
+
+        int r1 = t1.hashCode();
+        int r2 = t2.hashCode();
+
+        assertNotEquals(r1,r2);
+    }
+
+    /*
+    =============================================================
+                   Helper Methods & Factories
+    =============================================================
+     */
 
     static CtElement classWithoutReturnMethod(){
         CtClass testObject = Launcher.parseClass("package lampion.test.examples; class A { void m() { System.out.println(\"yeah\");} }");
