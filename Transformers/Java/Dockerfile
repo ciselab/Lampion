@@ -3,8 +3,8 @@
 FROM maven:3.8.4-openjdk-17 as builder
 
 WORKDIR /app
-COPY .. .
-RUN mvn package verify
+COPY . .
+RUN mvn package -P nofiles verify
 
 #### STAGE 2
 #### Deploying the application
@@ -27,7 +27,7 @@ RUN apk update && apk add bash
 RUN mkdir -p $dir
 Run mkdir -p /config
 
-COPY --from=builder /app/target/Lampion-JavaTransformer-$TRANSFORMER_VERSION.jar $dir
+COPY --from=builder /app/target/Lampion-JavaTransformer-${TRANSFORMER_VERSION}-shaded.pom $dir
 COPY --from=builder /app/src/main/resources/Docker/entrypoint.sh $dir
 # Copy the sample config
 COPY --from=builder /app/src/main/resources/Docker/config.properties /config/
@@ -41,7 +41,7 @@ WORKDIR $dir
 # The issue with build args is that they disappear after build time, 
 # They are not availible as env-variables after the container was build 
 # hence, rename the jar to a non-versioned name at build time, to not have runtime issues while keeping same entrypoint
-RUN mv Lampion-JavaTransformer-$TRANSFORMER_VERSION.jar Lampion-Transformer.jar
+RUN mv Lampion-JavaTransformer-${TRANSFORMER_VERSION}-shaded.pom Lampion-Transformer.jar
 
 RUN chmod +x ./entrypoint.sh
 

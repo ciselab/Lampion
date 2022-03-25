@@ -6,7 +6,7 @@ version: '3.3'
 services:
   obfuscator:
     build:
-      context: ..
+      context: ""
       dockerfile: Dockerfile
       args:
         TRANSFORMER_VERSION: 1.3-SNAPSHOT

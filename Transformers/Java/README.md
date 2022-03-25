@@ -1,6 +1,7 @@
 # Java Transformer
 
 This part of the Lampion Project alters Java Files using metamorphic transformations and returns/writes the altered javafiles as well as a manifest. 
+It has two parts, the CLI and the CORE library.
 
 It is currently still under development. 
 
@@ -51,7 +52,8 @@ If you want to add Transformations, have a look at
 5. Write the Transformation Class, keep it close to existing Transformations
 6. Test it!
 
-If you want to alter something in terms of program flow or IO behaviour, the best starting point is *Engine.java*.
+If you want to alter something in terms of program flow, the best starting point is *Engine.java*.
+For the file IO the starting point would be *App.java*.
 
 ## Requirements 
 
