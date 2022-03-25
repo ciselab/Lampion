@@ -28,9 +28,9 @@ RUN mkdir -p $dir
 Run mkdir -p /config
 
 COPY --from=builder /app/target/Lampion-JavaTransformer-${TRANSFORMER_VERSION}-shaded.pom $dir
-COPY --from=builder /app/src/main/resources/Docker/entrypoint.sh $dir
+COPY --from=builder /app/resources/Docker/entrypoint.sh $dir
 # Copy the sample config
-COPY --from=builder /app/src/main/resources/Docker/config.properties /config/
+COPY --from=builder /app/resources/Docker/config.properties /config/
 
 ENV target="/app/transformer_input"
 ENV configfile="/config/config.properties"
