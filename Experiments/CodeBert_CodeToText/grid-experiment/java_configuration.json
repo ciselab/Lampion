@@ -26,7 +26,7 @@
   ],
   
   "WriteManifest": false,
-  "ExplicitImports" : true,
+  "ExplicitImports" : false,
 
   "models": ["pretrained_java_pytorch_model.bin"],
   "ur_dataset": "cleaned_java_test.jsonl",

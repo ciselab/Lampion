@@ -15,7 +15,7 @@ seed={{ seed|default(2022, true) }}
 
 # Whether the Transformers should try to compile after transformations, default true.
 # This should be kept for sanity, but some domains require snippets that cannot compile by design.
-compilingTransformers=true
+compilingTransformers=false
 # Whether the Transformer should resolve references to their fully qualified name
 # e.g. new Arraylist() -> new java.utils.collections.ArrayList()
 setAutoImports={{ ExplicitImports|default(false, true) }}
