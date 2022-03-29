@@ -4,7 +4,7 @@ FROM maven:3.8.4-openjdk-17 as builder
 
 WORKDIR /app
 COPY . .
-RUN mvn package -P nofiles verify
+RUN mvn package -P nofiles package verify
 
 #### STAGE 2
 #### Deploying the application
@@ -13,7 +13,7 @@ FROM azul/zulu-openjdk-alpine:17
 ARG TRANSFORMER_VERSION="1.3-SNAPSHOT"
 
 LABEL maintainer="L.H.Applis@tudelft.nl"
-LABEL name="lampion/java-transformer"
+LABEL name="ciselab/lampion/java-transformer"
 LABEL description="A metamorphic transformer for Java code"
 LABEL org.opencontainers.image.source="https://github.com/ciselab/Lampion"
 LABEL url="https://github.com/ciselab/Lampion"
@@ -45,4 +45,4 @@ RUN mv Lampion-JavaTransformer-${TRANSFORMER_VERSION}-shaded.pom Lampion-Transfo
 
 RUN chmod +x ./entrypoint.sh
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["bash","./entrypoint.sh"]

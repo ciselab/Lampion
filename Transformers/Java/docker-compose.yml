@@ -4,7 +4,7 @@ version: '3.3'
 # Beware: For the Java Sources you still need to do the maven goals locally first!
 
 services:
-  obfuscator:
+  java_transformer:
     build:
       context: ""
       dockerfile: Dockerfile
@@ -13,7 +13,7 @@ services:
     image: ciselab/lampion/java-transformer:latest
     volumes:
       - ./compose_output:/app/transformer_output
-      - ./src/test/resources/javafiles/javafiles_perMethodEach:/app/transformer_input
+      - ./CLI/src/test/resources/javafiles/javafiles_perMethodEach:/app/transformer_input
     # These values can be kept as they are, if the volumes mount into the same place
     # If the volumes are touched, the target, output & config need to be adjusted as well
     environment:
