@@ -8,7 +8,6 @@ services:
   {% for config in configurations -%}
   CodeBert_CodeToText_Experiment_{{ config.run_number }}:
     image: ciselab/codebert-code2text:latest
-    user: "${UID}"
     volumes:
       - ./{{ config.path_to }}/dataset/:/dataset:ro
       - ./{{ config.path_to }}/ur_dataset/:/ur_dataset:ro

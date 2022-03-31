@@ -8,7 +8,6 @@ services:
   {% for config in configurations -%}
   CodeBert_Preprocessing_{{ config.run_number }}:
     image: {{ config.preprocessing_image | default("ciselab/lampion/codebert-java-preprocessing:latest",true) }}
-    user: "${UID}"
     volumes:
       - ./ur_dataset:/raw_data:ro
       - ./{{ config.path_to }}/dataset:/data

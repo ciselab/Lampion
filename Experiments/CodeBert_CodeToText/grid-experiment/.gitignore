@@ -8,6 +8,8 @@ secret_notes.md
 docker-composes
 
 experiment-setup
+java-experiment-setup
+python-experiment-setup
 
 *_config.json
 !sample_configuration.json
