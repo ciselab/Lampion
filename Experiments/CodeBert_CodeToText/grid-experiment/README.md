@@ -36,9 +36,9 @@ The functionality of the replicator was initially in the main.py, but has been m
 
 ## Requirements
 
-- Docker & Docker Compose 
+Requirements to produce the grid experiment, for requirements of the experiment itself see [Instructions](INSTRUCTIONS.md).
+
 - Python 3.8 (Last checked version: 3.8.12)
-- The Docker Containers build / pulled
 - A pretrained model from the CodeBert experiment
 - The (cleaned) dataset as a .jsonl file
 
@@ -50,11 +50,11 @@ There is also a ready-made experiment set from the paper that only needs to run 
 Adjust the `sample_configuration.json` to your likings, but be careful to not overdo it in a single run. 
 You might want to split it to multiple runs (which is fine to do, if you extract the results between the runs).
 
-Place your model in *./models/* and either name it `model.bin` or adjust the name in [the experiment template file](./templates/experiment-docker-compose.yaml.j2).
+Place your model in *./models/* and either name it `pytorch_model.bin` or adjust the name in the configuration.
 
-Place your (unmodified dataset) in *./ur_dataset* and either name it `test_java.jsonl` or adjust the name in [the preprocessing template file](./templates/preprocessing-docker-compose.yaml.j2).
+Place your (unmodified dataset) in *./ur_dataset* and either name it `cleaned_test.jsonl` or adjust the name in the configuration.
 
-To run, you need to install 
+To run, you need to do 
 
 ```shell
 python main.py sample_configuration.json \
@@ -64,34 +64,22 @@ python main.py sample_configuration.json \
 
 
 It will create the above mentioned files.
-Run the replicator to place the copies in the right places: 
 
-```shell
-./replicator.sh
+**For further instructions, see [INSTRUCTIONS.md](INSTRUCTIONS.md)**.
+This covers the process of running the experiment. It is added to your created files as a README, by default.
+
+*Shortcut for Grid Experiment defaults:*
+
+```shell 
+python main.py python_configuration.json \
+    -preprocessing_image ciselab/lampion/codebert-python-preprocessing:1.2 \
+    -ne 1 -np 3 --use-gpu
+mv experiment-setup python-experiment-setup
+python main.py java_configuration.json \
+    -preprocessing_image ciselab/lampion/codebert-java-preprocessing:1.2 \
+    -ne 1 -np 3 --use-gpu
+mv experiment-setup java-experiment-setup
 ```
-
-Run the docker-composes using
-
-```
-docker-compose -f preprocessing-docker-compose.yaml up 
-[...]
-docker-compose -f preprocessing-docker-compose.yaml down
-```
-
-and 
-
-```
-docker-compose -f experiment-docker-compose.yaml up 
-[...]
-docker-compose -f experiment-docker-compose.yaml down
-```
-
-**Make sure to docker compose down, otherwise you infest your system with a lot of containers.**
-
-The results of the runs are gathered under the configs.
-
-If you want to run the experiment with training, place the training and validation files under the configs `ur_dataset`. 
-This duplication is sadly necessary as otherwise they fight over file-locks. 
 
 ## Limitations 
 

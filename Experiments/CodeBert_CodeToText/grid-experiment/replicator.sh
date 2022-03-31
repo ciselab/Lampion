@@ -13,8 +13,7 @@ echo there are $maxindex config folders
 for c in ${config_array[*]}
 do  
     cp -r ./model ./configs/$c/
-    mkdir ./configs/$c/dataset
-    cp -r ./ur_dataset/ ./configs/$c/dataset
+    cp -r ./ur_dataset/ ./configs/$c/
 done
 
 echo "done copying - exiting successful"

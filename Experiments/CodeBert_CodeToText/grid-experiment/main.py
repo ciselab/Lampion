@@ -1,9 +1,9 @@
 import shutil
 
-from jinja2 import Environment, FileSystemLoader  # For templating with jinja
-import os  # For File/Directory Creation
-import json  # For reading in the configurations
-import argparse  # For handling a nice commandline interface
+from jinja2 import Environment, FileSystemLoader    # For templating with jinja
+import os                                           # For File/Directory Creation
+import json                                         # For reading in the configurations
+import argparse                                     # For handling a nice commandline interface
 
 
 def run(
@@ -11,7 +11,8 @@ def run(
         number_of_preprocessing_containers: int = 0,
         number_of_experiment_containers: int = 0,
         preprocessing_image: str = None,
-        gpu_use: bool = True) -> None:
+        gpu_use: bool = True,
+        do_training_containers: bool = False) -> None:
     """
     Primary Method of this file. It will
     1. Read the templates
@@ -20,6 +21,7 @@ def run(
     4.1 Sort Configs in Compose-Batches if configured
     4.2 Fill all Templates accordingly
     5. Print the filled templates to files
+    6. Copy helpers and nearby contents necessary for a replication package
 
     The parameters "number_of_preprocessing_containers" and "number_of_experiment_containers"
     handle how many containers will be put in one compose template.
@@ -37,6 +39,7 @@ def run(
         Must have label attached, e.g.: "ciselab/lampion/codebert-java-preprocessing:1.2"
     :param gpu_use: Whether the experiment composes should have GPUs.
         If true (default), memory and CPU limitations will be ignored from grid_config_file.
+    :param do_training_containers: Whether the docker-compose-with-training should be filled & added.
 
     Note: The provided config.properties.j2 is based on the (more complex) java-transformer-properties.
     The Python Transformer just ignores the extra-values.
@@ -61,8 +64,8 @@ def run(
     seeds = grid_configurations['seeds']
     models = grid_configurations['models']
 
-    lang:str = "python" if "python" in preprocessing_image else "java"
-    experiment_container_version:str = "1.3"
+    lang: str = "python" if "python" in preprocessing_image else "java"
+    experiment_container_version: str = "1.3"
 
     output_dir_grid_experiment = "experiment-setup"
     os.makedirs(output_dir_grid_experiment, exist_ok=True)
@@ -126,8 +129,8 @@ def run(
             low += number_of_preprocessing_containers
             up += number_of_preprocessing_containers
             preproc_file += 1
-        print(
-            f"Finished writing {preproc_file} preprocessing files with at most {number_of_preprocessing_containers} per file")
+        print(f"Finished writing {preproc_file} preprocessing files "
+              f"with at most {number_of_preprocessing_containers} containers per compose")
 
     if number_of_experiment_containers == 0:
         experiment_file = open(
@@ -138,13 +141,14 @@ def run(
             mem_limit=grid_configurations['mem_limit'])
         experiment_file.write(experiment_content)
         experiment_file.close()
-        experiment_with_train_file = open("experiment-with-training-docker-compose.yaml", "w")
-        experiment_with_train_content = experiment_with_train_template.render(
-            configurations=configurations,
-            batch_size=grid_configurations['batch_size'],
-            mem_limit=grid_configurations['mem_limit'])
-        experiment_with_train_file.write(experiment_with_train_content)
-        experiment_with_train_file.close()
+        if do_training_containers:
+            experiment_with_train_file = open("experiment-with-training-docker-compose.yaml", "w")
+            experiment_with_train_content = experiment_with_train_template.render(
+                configurations=configurations,
+                batch_size=grid_configurations['batch_size'],
+                mem_limit=grid_configurations['mem_limit'])
+            experiment_with_train_file.write(experiment_with_train_content)
+            experiment_with_train_file.close()
     else:
         exp_file = 1;
         low = 0;
@@ -159,31 +163,37 @@ def run(
                                                             experiment_image_version=experiment_container_version)
             experiment_file.write(experiment_content)
             experiment_file.close()
-            # Write the exp-file with training
-            experiment_with_train_file = open(
-                os.path.join(output_dir_grid_experiment,
-                             f"experiment-with-training-docker-compose-part-{exp_file}.yaml"), "w")
-            experiment_with_train_content = experiment_with_train_template.render(
-                configurations=sub_configurations,
-                batch_size=grid_configurations['batch_size'],
-                mem_limit=grid_configurations['mem_limit'],
-                experiment_image_version=experiment_container_version)
-            experiment_with_train_file.write(experiment_with_train_content)
-            experiment_with_train_file.close()
+
+            if do_training_containers:
+                # Write the exp-file with training
+                experiment_with_train_file = open(
+                    os.path.join(output_dir_grid_experiment,
+                                 f"experiment-with-training-docker-compose-part-{exp_file}.yaml"), "w")
+                experiment_with_train_content = experiment_with_train_template.render(
+                    configurations=sub_configurations,
+                    batch_size=grid_configurations['batch_size'],
+                    mem_limit=grid_configurations['mem_limit'],
+                    experiment_image_version=experiment_container_version)
+                experiment_with_train_file.write(experiment_with_train_content)
+                experiment_with_train_file.close()
 
             # Increase all the necessary counters
             low += number_of_experiment_containers
             up += number_of_experiment_containers
             exp_file += 1
 
-    # Last step: Copy helper files
+        print(f"Finished writing {exp_file} experiment files "
+              f"with at most {number_of_experiment_containers} containers per compose")
+
+    # Last step: Copy helper files and config
     copy_other_files(target_dir=output_dir_grid_experiment)
 
 
-def copy_other_files(target_dir: str) -> None:
+def copy_other_files(target_dir: str, config_file_path: str = None) -> None:
     path_to_extractor_file = "./extractor.sh"
     path_to_replicator_file = "./replicator.sh"
     path_to_runner_file = "./runner.sh"
+    path_to_instructions_file = "./INSTRUCTIONS.md"
 
     path_to_data_folder = "./ur_dataset"
     path_to_model_folder = "./model"
@@ -203,6 +213,11 @@ def copy_other_files(target_dir: str) -> None:
     else:
         print("Did not find the replicator file nearby - not packaging it")
 
+    if os.path.exists(path_to_instructions_file) and os.path.isfile(path_to_instructions_file):
+        shutil.copyfile(path_to_instructions_file, os.path.join(target_dir, "README.md"))
+    else:
+        print("Did not find the INSTRUCTIONS.md nearby - not packaging it")
+
     if os.path.exists(path_to_data_folder) and os.path.isdir(path_to_data_folder):
         shutil.copytree(path_to_data_folder, os.path.join(target_dir, path_to_data_folder))
     else:
@@ -212,6 +227,10 @@ def copy_other_files(target_dir: str) -> None:
         shutil.copytree(path_to_model_folder, os.path.join(target_dir, path_to_model_folder))
     else:
         print("Did not find the model folder nearby - not packaging it")
+
+    # Copy the Config too
+    if config_file_path:
+        shutil.copyfile(config_file_path, os.path.join(target_dir, config_file_path))
 
 
 if __name__ == '__main__':
@@ -232,11 +251,10 @@ if __name__ == '__main__':
                              '0 for "all in one file".', default=0)
     parser.add_argument('--use-gpus', dest='use_gpu', action='store_true')
     parser.add_argument('--use-cpus', dest='use_gpu', action='store_false')
-    parser.set_defaults(use_gpu=False)
+    parser.add_argument('--do-train', dest='do_train', action='store_true')
+    parser.set_defaults(use_gpu=False, do_train=False)
 
     args = parser.parse_args()
-
-    print(args)
 
     run(args.configfile[0], number_of_experiment_containers=args.ne, number_of_preprocessing_containers=args.np,
         preprocessing_image=args.preprocessing_image,
