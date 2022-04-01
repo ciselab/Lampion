@@ -67,7 +67,7 @@ public class App {
             setPropertiesFromFile("./src/main/resources/config.properties");
             // start program
         } else if (args.length == 3) {
-            logger.info("Received tree argument - looking for properties in "
+            logger.info("Received three argument - looking for properties in "
                     + args[0] + "running on " + args[1] + " returning to " + args[2]);
             setPropertiesFromFile(args[0]);
             if(args[1] == null || args[1].isEmpty()){
@@ -84,9 +84,7 @@ public class App {
 
             logger.debug("The properties file had " + configuration.size() + " properties");
         } else if (args.length == 2 && args[1].equalsIgnoreCase("undo")) {
-            logger.info("Received undo action - cleaning output directories and stopping after");
-            setPropertiesFromFile(args[0]);
-            undoAction();
+            logger.error("Received undo action - Undo Action has been deprecated!");
             return;
         }
         else {
