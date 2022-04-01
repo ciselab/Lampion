@@ -102,18 +102,6 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.10.0</version>
             </plugin>
-            <!-- This is required to run the project with mvn exec:java -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.0.0</version>
-                <configuration>
-                    <mainClass>com.github.ciselab.lampion.cli.program.App</mainClass>
-                    <arguments>
-                        <argument>src/main/resources/config.properties</argument>
-                    </arguments>
-                </configuration>
-            </plugin>
 
         </plugins>
     </build>
