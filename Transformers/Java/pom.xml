@@ -7,7 +7,7 @@
     <groupId>com.github.ciselab</groupId>
     <artifactId>Lampion-JavaTransformer</artifactId>
     <packaging>pom</packaging>
-    <version>1.3</version>
+    <version>1.4-SNAPSHOT</version>
     <description>
         Java Code Transformer used in the Lampion Project.
         Applies metamorphic transformations upon java code, which

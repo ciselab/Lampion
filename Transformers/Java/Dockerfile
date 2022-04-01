@@ -10,7 +10,7 @@ RUN mvn -P nofiles verify
 #### Deploying the application
 FROM azul/zulu-openjdk-alpine:17
 
-ARG TRANSFORMER_VERSION="1.3"
+ARG TRANSFORMER_VERSION="1.4-SNAPSHOT"
 
 LABEL maintainer="L.H.Applis@tudelft.nl"
 LABEL name="ciselab/lampion/java-transformer"
