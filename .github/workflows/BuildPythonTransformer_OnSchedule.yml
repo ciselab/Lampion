@@ -40,8 +40,7 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            ghcr.io/ciselab/lampion/python
-            lampion/python
+            ghcr.io/ciselab/lampion/python-transformer
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
@@ -60,16 +59,13 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.CI_USER }}
+          password: ${{ secrets.CISELAB_CI_PAT }}
       -
         name: Build and push
         uses: docker/build-push-action@v2
         with:
           context: ./Transformers/Python
-          build-args: |
-            "PYTHON_VERSION=3.9.7"
-            "LAMPION_VERSION=0.0.1"
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
