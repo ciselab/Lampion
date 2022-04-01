@@ -6,58 +6,72 @@
 
     <groupId>com.github.ciselab</groupId>
     <artifactId>Lampion-JavaTransformer</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <version>1.4-SNAPSHOT</version>
     <description>
         Java Code Transformer used in the Lampion Project.
         Applies metamorphic transformations upon java code, which
         change the semantics of code but keep the functionality.
     </description>
 
+    <developers>
+        <developer>
+            <name>Leonhard Applis</name>
+            <email>L.H.Applis@tudelft.nl</email>
+            <organization>TU Delft</organization>
+            <roles>
+                <role>Lead</role>
+                <role>Developer</role>
+            </roles>
+        </developer>
+    </developers>
+    <contributors>
+        <contributor>
+            <!-- Ruben helped greatly with splitting the Project in CLI+Library during his MSc with CISELAB-->
+            <name>Ruben Marang</name>
+            <email>R.J.Marang@student.tudelft.nl</email>
+            <url>https://github.com/wubero</url>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </contributor>
+    </contributors>
+
+    <licenses>
+        <license>
+            <name>MIT</name>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/ciselab/Lampion/</url>
+    </scm>
+
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
+    <modules>
+        <module>Core</module>
+        <module>CLI</module>
+    </modules>
+
     <dependencies>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>2.17.2</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.17.2</version>
-        </dependency>
-
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.8.2</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>5.8.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.8.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.8.2</version>
-            <scope>test</scope>
-        </dependency>
-
         <!-- Spoon is the library to alter and adjust java sourcecode-->
         <dependency>
             <groupId>fr.inria.gforge.spoon</groupId>
@@ -85,7 +99,7 @@
             </build>
         </profile>
         <!--Profile to run Tests without file-use (file use broke on CI action) -->
-        <!-- use: mvn test -Pnofiles -->
+        <!-- use: mvn test -P nofiles -->
         <profile>
             <id>nofiles</id>
             <build>
@@ -118,62 +132,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
-                <configuration>
-                    <release>15</release>
-                </configuration>
-            </plugin>
-            <!-- This is required to run the project with mvn exec:java -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.0.0</version>
-                <configuration>
-                    <mainClass>com.github.ciselab.lampion.program.App</mainClass>
-                    <arguments>
-                        <argument>src/main/resources/config.properties</argument>
-                    </arguments>
-                </configuration>
+                <version>3.10.0</version>
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <!-- This transformer is necessary, as otherwise the current Spoon version breaks on runtime missing a Logger -->
-                            <!-- See: https://github.com/INRIA/spoon/pull/3678 -->
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.github.ciselab.lampion.program.App</mainClass>
-                                    <manifestEntries>
-                                        <Multi-Release>true</Multi-Release>
-                                    </manifestEntries>
-                                </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                            </transformers>
-                            <!--This filter is necessary to not break on security issues-->
-                            <!-- See: https://stackoverflow.com/questions/34855649/invalid-signature-file-digest-for-manifest-main-attributes-exception-while-tryin -->
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>
