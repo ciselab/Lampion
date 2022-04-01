@@ -354,6 +354,9 @@ public class App {
         if(properties.get("RandomInlineCommentTransformer") != null
                 && ((String)properties.get("RandomInlineCommentTransformer")).equalsIgnoreCase("true")){
             String givenRandomness = (String) properties.get("RandomInlineCommentStringRandomness");
+            if (givenRandomness == null){
+                givenRandomness = "pseudo";
+            }
             switch (givenRandomness) {
                 case "full" : {
                     RandomInlineCommentTransformer t = new RandomInlineCommentTransformer(globalRandomSeed);
@@ -390,6 +393,9 @@ public class App {
         if(properties.get("RenameVariableTransformer") != null
                 && ((String)properties.get("RenameVariableTransformer")).equalsIgnoreCase("true")){
             String givenRandomness = (String) properties.get("RenameVariableStringRandomness");
+            if (givenRandomness == null){
+                givenRandomness = "pseudo";
+            }
             switch (givenRandomness) {
                 case "full" : {
                     RenameVariableTransformer full = new RenameVariableTransformer(globalRandomSeed);
@@ -408,6 +414,9 @@ public class App {
         if(properties.get("EmptyMethodTransformer") != null
                 && ((String)properties.get("EmptyMethodTransformer")).equalsIgnoreCase("true")){
             String givenRandomness = (String) properties.get("EmptyMethodStringRandomness");
+            if (givenRandomness == null){
+                givenRandomness = "pseudo";
+            }
             switch (givenRandomness) {
                 case "full" : {
                     EmptyMethodTransformer full = new EmptyMethodTransformer(globalRandomSeed);
@@ -426,6 +435,9 @@ public class App {
         if(properties.get("AddUnusedVariableTransformer") != null
                 && ((String)properties.get("AddUnusedVariableTransformer")).equalsIgnoreCase("true")){
             String givenRandomness = (String) properties.get("UnusedVariableStringRandomness");
+            if (givenRandomness == null){
+                givenRandomness = "pseudo";
+            }
             switch (givenRandomness) {
                 case "full" : {
                     AddUnusedVariableTransformer t = new AddUnusedVariableTransformer(globalRandomSeed);
