@@ -39,8 +39,7 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            ghcr.io/ciselab/lampion/java
-            lampion/java
+            ghcr.io/ciselab/lampion/java-transformer
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
@@ -59,8 +58,8 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.CI_USER }}
+          password: ${{ secrets.CISELAB_CI_PAT }}
       -
         name: Build and push
         uses: docker/build-push-action@v2

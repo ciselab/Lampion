@@ -10,7 +10,7 @@ It is currently still under development.
 To build the project, simply do: 
 
 ```sh
-mvn clean compile test
+mvn clean package verify
 ```
 
 To build an executable: 
