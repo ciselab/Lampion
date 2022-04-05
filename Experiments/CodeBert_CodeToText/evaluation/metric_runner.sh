@@ -14,7 +14,7 @@ folders=`find $1 -maxdepth 2 -mindepth 2 -type d`
 for config_folder in $folders; do
     [ -e "$config_folder" ] || continue
     echo "running bleu in folder $config_folder"
-    python3 ./bleu_evaluator.py \
+    python ./bleu_evaluator.py \
       "$config_folder/test_0.gold" \
       < "$config_folder/test_0.output" \
       | tail -n 1 > "$config_folder/bleu.txt"
