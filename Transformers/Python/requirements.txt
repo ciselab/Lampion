@@ -18,7 +18,7 @@ PyYAML==6.0
 setuptools==61.2.0
 toml==0.10.2
 tomli==2.0.1
-typing-extensions==4.1.1
+typing-extensions==4.2.0
 typing-inspect==0.7.1
 wheel==0.37.1
 regex==2022.3.15
