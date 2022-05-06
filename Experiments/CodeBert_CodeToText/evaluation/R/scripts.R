@@ -53,25 +53,32 @@ for (language in unique(full.results$prefix)){
   )
   x <- as.matrix(x)
   colnames(x) <- c("1st Order", "5th Order", "10th Order")
+  a <- nemenyi(x, conf.level=0.95, plottype="vmcb", main = "Nemenyi Test Results for #Transfarmations")
   
   print("## RQ2") 
   print("Results of the Friedman test")
-  results2 <- results[results$transformations == 1, ]
-  p <- friedman.test(data=results2, y=results2$bleu_score, groups = as.factor(results2$MT), blocks = as.factor(results2$entry))
-  print(p)
-  
-  print("Nemenyi post-hoc procedure (see plots)")
-  x <- data.frame(results2[results2$MT=="MT-IF",]$bleu_score, 
-                  results2[results2$MT=="MT-L",]$bleu_score,
-                  results2[results2$MT=="MT-NE",]$bleu_score,
-                  results2[results2$MT=="MT-REP + MT-UVP",]$bleu_score,
-                  results2[results2$MT=="MT-RER + MT-UVR",]$bleu_score
-  )
-  x <- as.matrix(x)
-  colnames(x) <- c("MT-IF","MT-L","MT-NE","MT-REP + MT-UVP","MT-RER + MT-UVR")
-  
-  
-  a <- nemenyi(x, conf.level=0.95, plottype="vmcb")
+  for (n_transformation in c(1,5,10)){
+    results2 <- results[results$transformations == n_transformation, ]
+    p <- friedman.test(data=results2, y=results2$bleu_score, groups = as.factor(results2$MT), blocks = as.factor(results2$entry))
+    print(p)
+    
+    print("Nemenyi post-hoc procedure (see plots)")
+    x <- data.frame(results2[results2$MT=="MT-IF",]$bleu_score, 
+                    results2[results2$MT=="MT-L",]$bleu_score,
+                    results2[results2$MT=="MT-NE",]$bleu_score,
+                    results2[results2$MT=="MT-REP + MT-UVP",]$bleu_score,
+                    results2[results2$MT=="MT-RER + MT-UVR",]$bleu_score
+    )
+    x <- as.matrix(x)
+    colnames(x) <- c("MT-IF","MT-L","MT-NE","MT-REP + MT-UVP","MT-RER + MT-UVR")
+    
+    if (language == "java")
+        lang = "Java"
+    else
+        lang = "Python"
+    
+    a <- nemenyi(x, conf.level=0.95, plottype="vmcb", main=paste(lang, "with", n_transformation, "transformations", sep = " "))
+  }
   
   # Multi-factor analysis (RQ3)
   results2 <- results[results$transformations!="0" & results$different_to_ref=="True",]
@@ -79,4 +86,7 @@ for (language in unique(full.results$prefix)){
   print(r)
 }
 
+
+results2 <- full.results[full.results$transformations!="0" & full.results$different_to_ref=="True",]
+r <- aovperm(bleu_score ~ method_type*MT*transformations*prefix, data = results2, np=100)
 
