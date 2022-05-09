@@ -87,6 +87,6 @@ for (language in unique(full.results$prefix)){
 }
 
 
-results2 <- full.results[full.results$transformations!="0" & full.results$different_to_ref=="True",]
-r <- aovperm(bleu_score ~ method_type*MT*transformations*prefix, data = results2, np=100)
-
+non_reference_changed_results <- full.results[full.results$transformations!="0" & full.results$different_to_ref=="True",]
+aov_for_non_reference_changed_results  <- aovperm(bleu_score ~ method_type*MT*transformations*prefix*, data = non_reference_changed_results, np=100)
+print(aov_for_non_reference_changed_results)
