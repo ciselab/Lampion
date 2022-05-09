@@ -14,7 +14,7 @@ for (language in unique(full.results$prefix)){
   # reference results
   results.base <- results[results$config=="reference", ]
   
-  ## RQ2
+  ## RQ1
   print("## RQ1") 
   # 1. Results for first-order transformations
   results.changed <- results[results$transformations=="1", ]
@@ -86,7 +86,7 @@ for (language in unique(full.results$prefix)){
   print(r)
 }
 
-
+print("Results for the 'Big' Anova Perm")
 non_reference_changed_results <- full.results[full.results$transformations!="0" & full.results$different_to_ref=="True",]
-aov_for_non_reference_changed_results  <- aovperm(bleu_score ~ method_type*MT*transformations*prefix*, data = non_reference_changed_results, np=100)
+aov_for_non_reference_changed_results  <- aovperm(bleu_score ~ method_type*MT*transformations*prefix*gold_length_in_words, data = non_reference_changed_results, np=100)
 print(aov_for_non_reference_changed_results)
