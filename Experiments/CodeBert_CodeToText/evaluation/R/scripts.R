@@ -7,6 +7,11 @@ if (!require(permuco)){ install.packages("permuco") }
 ## read csv file
 full.results <- read.csv("bleus.csv")
 
+# Adding the "gold_length" changed some results drastically
+# So the below scripts check the values, but they look ok 
+# length(unique(full.results$gold_length_in_characters)) # -> 353
+# length(unique(full.results$gold_length_in_words)) # -> 87
+
 for (language in unique(full.results$prefix)){
   print(paste("## RESULTS FOR", language))
   
@@ -20,23 +25,26 @@ for (language in unique(full.results$prefix)){
   results.changed <- results[results$transformations=="1", ]
   
   # Statistical significance for RQ1 considering all data values
-  p <- wilcox.test(results.base$bleu_score, results.changed$bleu_score, alternative="two.sided", paired=F)
+  p_wilcoxon_bleu_all <- wilcox.test(results.base$bleu_score, results.changed$bleu_score, alternative="two.sided", paired=F)
   print("Statistical significance for BLEU-Score considering the entire test set") 
-  print(p)
+  print(p_wilcoxon_bleu_all)
   
   
   print("Statistical significance for BLEU-Score considering the code snippets with changes") 
   results.changed <- results[results$transformations=="1" & results$different_to_ref=="True", ]
-  p <- wilcox.test(results.base$bleu_score, results.changed$bleu_score, alternative="two.sided", paired=F)
-  print(p)
+  # This wilcoxon test changes whether the distribution of bleu-scores for non-changed and for changed elements come from different distributions
+  p_wilcoxon_bleu_only_changed <- wilcox.test(results.base$bleu_score, results.changed$bleu_score, alternative="two.sided", paired=F)
+  print(p_wilcoxon_bleu_only_changed)
   
-  print("Cliff's delta for setters")
+  print("Cliff's delta for Specific Method-Types")
   method_types = unique(results.changed$method_type)
   for (type in method_types){
+    # This Test checks for the effect size (how important) a certain method type is for the bleu score
+    # It does so by comparing the differences in distributions
     mts.subset  <- results.changed[results.changed$method_type == type,]
-    es <- cliff.delta(mts.subset$bleu_score, results.base$bleu_score)
+    effect_size_per_method <- cliff.delta(mts.subset$bleu_score, results.base$bleu_score)
     print(paste("For", type, "methods", sep=" "))
-    print(es)
+    print(effect_size_per_method)
   }
   
   print("Results of the Permutation test")
@@ -53,7 +61,7 @@ for (language in unique(full.results$prefix)){
   )
   x <- as.matrix(x)
   colnames(x) <- c("1st Order", "5th Order", "10th Order")
-  a <- nemenyi(x, conf.level=0.95, plottype="vmcb", main = "Nemenyi Test Results for #Transfarmations")
+  a <- nemenyi(x, conf.level=0.95, plottype="vmcb", main = "Nemenyi Test Results for #Transformations")
   
   print("## RQ2") 
   print("Results of the Friedman test")
@@ -81,12 +89,16 @@ for (language in unique(full.results$prefix)){
   }
   
   # Multi-factor analysis (RQ3)
-  results2 <- results[results$transformations!="0" & results$different_to_ref=="True",]
-  r <- aovperm(bleu_score ~ method_type*MT*transformations, data = results2, np=100) # reduce the number if iterations (np) if you reach memory limit
-  print(r)
+  # I think these are redundant, given the big Anova below
+  # 
+  # changed_and_different_results_per_language <- results[results$transformations!="0" & results$different_to_ref=="True",]
+  # aov_results_per_lang <- aovperm(bleu_score ~ method_type*MT*transformations, data = changed_and_different_results_per_language, np=100) # reduce the number if iterations (np) if you reach memory limit
+  # print(aov_results_per_lang)
 }
 
+# RQ3 --- Big ANOVA-Check for Correlations
+# Approx Times: np=100 -> 2 min, np=500 -> 11 min
 print("Results for the 'Big' Anova Perm")
 non_reference_changed_results <- full.results[full.results$transformations!="0" & full.results$different_to_ref=="True",]
-aov_for_non_reference_changed_results  <- aovperm(bleu_score ~ method_type*MT*transformations*prefix*gold_length_in_words, data = non_reference_changed_results, np=100)
+aov_for_non_reference_changed_results  <- aovperm(bleu_score ~ method_type*MT*transformations*prefix*gold_length_in_words, data = non_reference_changed_results, np=500)
 print(aov_for_non_reference_changed_results)
