@@ -12,10 +12,14 @@ full.results <- read.csv("bleus.csv")
 # length(unique(full.results$gold_length_in_characters)) # -> 353
 # length(unique(full.results$gold_length_in_words)) # -> 87
 
+
+
 for (language in unique(full.results$prefix)){
   print(paste("## RESULTS FOR", language))
   
   results <- full.results[full.results$prefix==language, ]
+  
+  print(length(unique(results$method_type)))
   # reference results
   results.base <- results[results$config=="reference", ]
   
@@ -28,7 +32,6 @@ for (language in unique(full.results$prefix)){
   p_wilcoxon_bleu_all <- wilcox.test(results.base$bleu_score, results.changed$bleu_score, alternative="two.sided", paired=F)
   print("Statistical significance for BLEU-Score considering the entire test set") 
   print(p_wilcoxon_bleu_all)
-  
   
   print("Statistical significance for BLEU-Score considering the code snippets with changes") 
   results.changed <- results[results$transformations=="1" & results$different_to_ref=="True", ]
@@ -47,9 +50,11 @@ for (language in unique(full.results$prefix)){
     print(effect_size_per_method)
   }
   
+  results.transformations_applied <- results[results$transformations=="1", ]
   print("Results of the Permutation test")
-  r <- aovperm(bleu_score ~ method_type, data = results.changed, np=500) # reduce the number if iterations (np) if you reach memory limit
-  print(r)
+  print("Method Types", length(unique(results.transformations_applied$method_type)))
+  r_per_method <- aovperm(bleu_score ~ method_type, data = results.transformations_applied, np=500) # reduce the number if iterations (np) if you reach memory limit
+  print(r_per_method)
   
   ## RQ2
   print("## RQ2") 
@@ -100,5 +105,5 @@ for (language in unique(full.results$prefix)){
 # Approx Times: np=100 -> 2 min, np=500 -> 11 min
 print("Results for the 'Big' Anova Perm")
 non_reference_changed_results <- full.results[full.results$transformations!="0" & full.results$different_to_ref=="True",]
-aov_for_non_reference_changed_results  <- aovperm(bleu_score ~ method_type*MT*transformations*prefix*gold_length_in_words, data = non_reference_changed_results, np=500)
+aov_for_non_reference_changed_results  <- aovperm(bleu_score ~ method_type*MT*transformations*prefix*gold_length_in_words, data = non_reference_changed_results, np=10)
 print(aov_for_non_reference_changed_results)
