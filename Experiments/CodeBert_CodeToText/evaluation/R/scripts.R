@@ -66,7 +66,7 @@ for (language in unique(full.results$prefix)){
   )
   x <- as.matrix(x)
   colnames(x) <- c("1st Order", "5th Order", "10th Order")
-  a <- nemenyi(x, conf.level=0.95, plottype="vmcb", main = "Nemenyi Test Results for #Transformations")
+  a <- nemenyi(x, conf.level=0.95, plottype="vmcb", main = paste("Nemenyi Test Results for #Transformations in",language))
   
   print("## RQ2") 
   print("Results of the Friedman test")
@@ -101,9 +101,34 @@ for (language in unique(full.results$prefix)){
   # print(aov_results_per_lang)
 }
 
+# RQ2 & 3 --- Nemenyi for Un-shared Transformations and MTs
+t_bleus <- data.frame(full.results[full.results$transformations==1,]$bleu_score, 
+                      full.results[full.results$transformations==5,]$bleu_score,
+                      full.results[full.results$transformations==10,]$bleu_score
+)
+t_bleus <- as.matrix(t_bleus)
+colnames(t_bleus) <- c("1st Order", "5th Order", "10th Order")
+t_bleus_nemenyi <- nemenyi(t_bleus, conf.level=0.95, plottype="vmcb", main = "Nemenyi Test Results for #Transformations")
+
+non_reference_results <- full.results$config!="reference"
+
+mt_bleus <- data.frame(non_reference_results[non_reference_results$MT=="MT-IF",]$bleu_score, 
+                       non_reference_results[non_reference_results$MT=="MT-L",]$bleu_score,
+                       non_reference_results[non_reference_results$MT=="MT-NE",]$bleu_score,
+                       non_reference_results[non_reference_results$MT=="MT-REP + MT-UVP",]$bleu_score,
+                       non_reference_results[non_reference_results$MT=="MT-RER + MT-UVR",]$bleu_score
+)
+mt_bleus <- as.matrix(mt_bleus)
+
+colnames(mt_bleus) <- c("MT-IF","MT-L","MT-NE","MT-REP + MT-UVP","MT-RER + MT-UVR")
+
+mt_bleus_nemenyi <- nemenyi(mt_bleus, conf.level=0.95, plottype="vmcb", main = "Nemenyi Test Results for MTs")
+
+
 # RQ3 --- Big ANOVA-Check for Correlations
 # Approx Times: np=100 -> 2 min, np=500 -> 11 min
 print("Results for the 'Big' Anova Perm")
-non_reference_changed_results <- full.results[full.results$transformations!="0" & full.results$different_to_ref=="True",]
-aov_for_non_reference_changed_results  <- aovperm(bleu_score ~ method_type*MT*transformations*prefix*gold_length_in_words, data = non_reference_changed_results, np=10)
+non_reference_changed_results <- full.results[ful5l.results$transformations!="0" & full.results$different_to_ref=="True",]
+aov_for_non_reference_changed_results  <- aovperm(bleu_score ~ method_type*MT*transformations*prefix*gold_length_in_words, data = non_reference_changed_results, np=1000)
 print(aov_for_non_reference_changed_results)
+
