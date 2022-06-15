@@ -11,6 +11,7 @@ import spoon.reflect.declaration.*;
 import spoon.reflect.factory.Factory;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -71,7 +72,8 @@ public class LambdaIdentityTransformer extends BaseTransformer {
             return new EmptyTransformationResult();
         }
 
-        CtLiteral toAlter = TransformerUtils.pickRandomLiteral(ast,random);
+        Optional<CtLiteral> oToAlter = TransformerUtils.pickRandomLiteral(ast,random);
+        CtLiteral toAlter = oToAlter.get();
         // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
         CtLiteral savedElement = toAlter.clone();
         savedElement.setParent(toAlter.getParent());

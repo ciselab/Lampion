@@ -16,6 +16,7 @@ import spoon.reflect.reference.CtTypeReference;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -134,7 +135,8 @@ public class AddNeutralElementTransformer extends BaseTransformer {
             return new EmptyTransformationResult();
         }
 
-        CtTypedElement toAlter = pickRandomValidElement(ast);
+        Optional<CtTypedElement> oToAlter = pickRandomValidElement(ast);
+        CtTypedElement toAlter = oToAlter.get();
         // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
         CtElement savedElement = toAlter.clone();
         savedElement.setParent(toAlter.getParent());
@@ -217,7 +219,7 @@ public class AddNeutralElementTransformer extends BaseTransformer {
      * @param ast the toplevel element from which to pick a random method
      * @return a random supported literal. Reference is passed, so altering this element will alter the toplevel ast.
      */
-    private CtTypedElement pickRandomValidElement(CtElement ast) {
+    private Optional<CtTypedElement> pickRandomValidElement(CtElement ast) {
         // Check for all Literals that are supported
         List<CtTypedElement> validElements = ast
                 .filterChildren(c -> c instanceof CtLiteral || c instanceof CtVariableRead)
@@ -226,10 +228,12 @@ public class AddNeutralElementTransformer extends BaseTransformer {
                 .map(p -> (CtTypedElement)p)
                 .filter(u -> isSupportedType(u.getType()))
                 .collect(Collectors.toList());
+        if(validElements.size()==0)
+            return Optional.empty();
         // Pick a number between 0 and count(literals)
         int randomValidIndex = random.nextInt(validElements.size());
         // return the method at the position
-        return validElements.get(randomValidIndex);
+        return Optional.of(validElements.get(randomValidIndex));
     }
 
     /**

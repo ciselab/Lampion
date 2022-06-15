@@ -15,10 +15,7 @@ import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -124,7 +121,8 @@ public class AddUnusedVariableTransformer extends BaseTransformer {
             return new EmptyTransformationResult();
         }
 
-        CtMethod toAlter = pickRandomMethod(ast);
+        Optional<CtMethod> oToAlter = pickRandomMethod(ast);
+        CtMethod toAlter = oToAlter.get();
         // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
         CtMethod savedElement = toAlter.clone();
         savedElement.setParent(toAlter.getParent());
@@ -196,7 +194,7 @@ public class AddUnusedVariableTransformer extends BaseTransformer {
      * @param ast the toplevel element from which to pick a random method
      * @return a random element. Reference is passed, so altering this element will alter the toplevel ast.
      */
-    private CtMethod pickRandomMethod(CtElement ast) {
+    private Optional<CtMethod> pickRandomMethod(CtElement ast) {
         // Check for all methods
         List<CtMethod> allMethods = ast
                 .filterChildren(c -> c instanceof CtMethod)
@@ -204,10 +202,12 @@ public class AddUnusedVariableTransformer extends BaseTransformer {
                 .stream()
                 .map(o -> (CtMethod) o)
                 .collect(Collectors.toList());
+        if(allMethods.size()==0)
+            return Optional.empty();
         // Pick a number between 0 and count(methods)
         int randomValidIndex = random.nextInt(allMethods.size());
         // return the method at the position
-        return allMethods.get(randomValidIndex);
+        return Optional.of(allMethods.get(randomValidIndex));
     }
 
     /**

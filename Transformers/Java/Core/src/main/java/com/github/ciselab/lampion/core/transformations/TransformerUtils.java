@@ -8,6 +8,7 @@ import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtTypeReference;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 /**
@@ -132,13 +133,15 @@ public class TransformerUtils {
      * @param random the random number provider of the transformer, should be seeded. Will be altered in-place.
      * @return a random element. Reference is passed, so altering this element will alter the toplevel ast.
      */
-    public static CtLiteral pickRandomLiteral(CtElement ast, Random random) {
+    public static Optional<CtLiteral> pickRandomLiteral(CtElement ast, Random random) {
         // Check for all literals
         List<CtLiteral> allLiterals = ast.filterChildren(c -> c instanceof CtLiteral).list();
+        if(allLiterals.size()==0)
+            return Optional.empty();
         // Pick a number between 0 and count(literals)
         int randomValidIndex = random.nextInt(allLiterals.size());
         // return the literal at the position
-        return allLiterals.get(randomValidIndex);
+        return Optional.of(allLiterals.get(randomValidIndex));
     }
 
 
