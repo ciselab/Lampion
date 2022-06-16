@@ -136,6 +136,8 @@ public class AddNeutralElementTransformer extends BaseTransformer {
         }
 
         Optional<CtTypedElement> oToAlter = pickRandomValidElement(ast);
+        if(oToAlter.isEmpty())
+            return new EmptyTransformationResult();
         CtTypedElement toAlter = oToAlter.get();
         // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
         CtElement savedElement = toAlter.clone();

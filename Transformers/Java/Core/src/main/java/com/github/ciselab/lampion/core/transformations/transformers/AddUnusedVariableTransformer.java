@@ -122,6 +122,8 @@ public class AddUnusedVariableTransformer extends BaseTransformer {
         }
 
         Optional<CtMethod> oToAlter = pickRandomMethod(ast);
+        if(oToAlter.isEmpty())
+            return new EmptyTransformationResult();
         CtMethod toAlter = oToAlter.get();
         // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
         CtMethod savedElement = toAlter.clone();
@@ -166,7 +168,7 @@ public class AddUnusedVariableTransformer extends BaseTransformer {
 
         // Step 3: Create the local variable and add it as the first statement
         CtLocalVariable newlyCreatedVariable =
-                factory.createLocalVariable(typeofVarToAdd,nameOfVarToAdd,valueOfVarToAdd);
+                factory.createLocalVariable(typeofVarToAdd, nameOfVarToAdd, valueOfVarToAdd);
         blockToAddTo.getStatements().add(newlyCreatedVariable);
     }
 

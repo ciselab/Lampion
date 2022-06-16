@@ -64,10 +64,14 @@ public class RenameVariableTransformer extends BaseTransformer {
             return new EmptyTransformationResult();
         }
         Optional<CtMethod> oToAlter = pickRandomMethod(ast);
-        // Check for existance of methods is done beforehand per constraints, so I just get the result right away
+        // Check for emptyness is done earlier as constraint, but a sanity check just in case
+        if(oToAlter.isEmpty())
+            return new EmptyTransformationResult();
         CtMethod toAlter = oToAlter.get();
 
         Optional<CtLocalVariable> oVarToAlter = pickRandomVariable(toAlter);
+        if(oVarToAlter.isEmpty())
+            return new EmptyTransformationResult();
         // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
         CtMethod savedElement = toAlter.clone();
         savedElement.setParent(toAlter.getParent());
@@ -154,6 +158,8 @@ public class RenameVariableTransformer extends BaseTransformer {
                         && pickRandomVariable((CtMethod) c ).isPresent()   // there are free parameters left
         ).list();
         // Check for non-empty Methods is done beforehand per constraints
+        if(allMethods.size() == 0)
+            return Optional.empty();
         // Pick a number between 0 and count(methods)
         int randomValidIndex = random.nextInt(allMethods.size());
         // return the method at the position

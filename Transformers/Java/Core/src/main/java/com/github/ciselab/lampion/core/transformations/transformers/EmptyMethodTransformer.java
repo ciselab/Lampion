@@ -60,7 +60,7 @@ public class EmptyMethodTransformer extends BaseTransformer {
             return new EmptyTransformationResult();
         }
 
-        var oToAlter = pickRandomMethod(ast);
+        Optional<CtMethod> oToAlter = pickRandomMethod(ast);
         if(oToAlter.isEmpty()) {
             return new EmptyTransformationResult();
         }

@@ -73,6 +73,8 @@ public class LambdaIdentityTransformer extends BaseTransformer {
         }
 
         Optional<CtLiteral> oToAlter = TransformerUtils.pickRandomLiteral(ast,random);
+        if(oToAlter.isEmpty())
+            return new EmptyTransformationResult();
         CtLiteral toAlter = oToAlter.get();
         // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
         CtLiteral savedElement = toAlter.clone();

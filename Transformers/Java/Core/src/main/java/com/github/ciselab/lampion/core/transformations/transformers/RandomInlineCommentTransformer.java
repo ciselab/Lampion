@@ -52,7 +52,9 @@ public class RandomInlineCommentTransformer extends BaseTransformer {
         }
 
         Optional<CtMethod> oToAlter = pickRandomMethod(ast);
-        // Check for emptyness is done earlier as constraint, so I can just get it here.
+        // Check for emptyness is done earlier as constraint, but a sanity check just in case
+        if(oToAlter.isEmpty())
+            return new EmptyTransformationResult();
         CtMethod toAlter = oToAlter.get();
 
         // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
@@ -111,7 +113,8 @@ public class RandomInlineCommentTransformer extends BaseTransformer {
         ).list();
 
         // The check for empty-ness is done as constraint beforehand.
-
+        if(allMethods.size() == 0)
+            return Optional.empty();
         // Pick a number between 0 and count(methods)
         int randomValidIndex = random.nextInt(allMethods.size());
         // return the method at the position

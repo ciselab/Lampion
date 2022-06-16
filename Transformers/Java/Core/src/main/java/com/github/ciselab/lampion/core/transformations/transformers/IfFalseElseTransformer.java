@@ -73,6 +73,8 @@ public class IfFalseElseTransformer extends BaseTransformer {
         }
 
         Optional<CtMethod> oToAlter = pickRandomMethod(ast);
+        if(oToAlter.isEmpty())
+            return new EmptyTransformationResult();
         CtMethod toAlter = oToAlter.get();
         // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
         CtMethod savedElement = toAlter.clone();
