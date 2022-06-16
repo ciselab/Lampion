@@ -163,6 +163,10 @@ public class AddUnusedVariableTransformer extends BaseTransformer {
                 .stream()
                 .map(b -> (CtBlock) b)
                 .collect(Collectors.toList());
+        // If there are no blocks available we should quit the method
+        if(blocks.size() == 0)
+            return;
+
         int indexOfBlockToPick = random.nextInt(blocks.size());
         CtBlock blockToAddTo = blocks.get(indexOfBlockToPick);
 
