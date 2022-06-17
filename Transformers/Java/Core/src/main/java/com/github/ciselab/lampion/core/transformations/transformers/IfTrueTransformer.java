@@ -126,6 +126,7 @@ public class IfTrueTransformer extends BaseTransformer {
     /**
      * Returns a random (non-empty) method of the ast.
      * Check whether ast is empty is done earlier using constraints.
+     * Abstract Methods are filtered out due to found issues.
      *
      * @param ast the toplevel element from which to pick a random method
      * @return a random element. Reference is passed, so altering this element will alter the toplevel ast.
@@ -137,6 +138,10 @@ public class IfTrueTransformer extends BaseTransformer {
                 .list()
                 .stream()
                 .map(o -> (CtMethod) o)
+                // Regression for Issue 91
+                // Abstract Methods do not want to be altered and throw errors!
+                // Hence, filter them out.
+                .filter(c -> ! c.isAbstract())
                 .filter(c -> ! c.getBody().getStatements().isEmpty())
                 .collect(Collectors.toList());
         if(allMethods.size()==0)

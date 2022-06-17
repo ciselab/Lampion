@@ -1,9 +1,9 @@
 package com.github.ciselab.lampion.core.transformations;
 
+import com.github.ciselab.lampion.core.transformations.transformers.*;
 import com.github.ciselab.lampion.core.transformations.transformers.RandomInlineCommentTransformer;
-import com.github.ciselab.lampion.core.transformations.transformers.EmptyMethodTransformer;
-import com.github.ciselab.lampion.core.transformations.transformers.RandomInlineCommentTransformer;
-import com.github.ciselab.lampion.core.transformations.transformers.RandomParameterNameTransformer;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import spoon.Launcher;
 import spoon.reflect.declaration.CtClass;
@@ -162,6 +162,308 @@ public class RandomInlineCommentTransformerTests {
         transformer.setFullRandomStrings(false);
 
         assertFalse(transformer.isFullRandomStrings());
+    }
+
+    /*
+    ==============================================
+                    Known CornerCases
+    ==============================================
+
+    These are issues we found with rare and currently not supported Java Elements.
+    For example, inner classes crash virtually everything.
+    See https://github.com/ciselab/Lampion/issues/109 and https://github.com/ciselab/Lampion/issues/91
+     */
+
+    @Tag("Regression")
+    @Test
+    public void applyToAbstractClassWithAbstractMethod_shouldNotBeApplied(){
+        String raw = """
+                public abstract class example_abstract_class {
+                    public abstract void abstract_method() {
+                        int a = 5;
+                        System.out.println("Hello Abstract World");
+                    }
+                }
+                """;
+        CtElement testObject = Launcher.parseClass(raw);
+
+        RandomInlineCommentTransformer transformer = new RandomInlineCommentTransformer();
+        TransformationResult result = transformer.applyAtRandom(testObject);
+
+        assertEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Tag("Regression")
+    @Test
+    public void applyToAbstractClassWithConcreteMethod_shouldBeApplied(){
+        String raw = """
+                public abstract class example_abstract_class {
+                    public void normal_method(){
+                        int b = 1;
+                        System.out.println("Hello World");
+                    }
+                }
+                """;
+        CtElement testObject = Launcher.parseClass(raw);
+
+        RandomInlineCommentTransformer transformer = new RandomInlineCommentTransformer();
+        TransformationResult result = transformer.applyAtRandom(testObject);
+
+        assertNotEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Tag("Regression")
+    @RepeatedTest(3)
+    public void applyToAbstractClassWithConcreteAndAbstractMethod_shouldBeApplied(){
+        String raw = """
+                public abstract class example_abstract_class {
+                    public void normal_method(){
+                        int a = 5;
+                        System.out.println("Hello World");
+                    }
+                    
+                    public abstract void abstract_method() {
+                        int b = 5;
+                        System.out.println("Hello Abstract World");
+                    }
+                }
+                """;
+        CtElement testObject = Launcher.parseClass(raw);
+
+        RandomInlineCommentTransformer transformer = new RandomInlineCommentTransformer();
+        TransformationResult result = transformer.applyAtRandom(testObject);
+
+        assertNotEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Tag("Regression")
+    @Test
+    public void applyToEmptyInterface_shouldNotBeApplied(){
+        String raw = """
+                public interface example_interface {
+                
+                }
+                """;
+        var launcher = new Launcher();
+        CtElement testObject = launcher.getFactory().createCodeSnippetStatement(raw);
+
+        RandomInlineCommentTransformer transformer = new RandomInlineCommentTransformer();
+        TransformationResult result = transformer.applyAtRandom(testObject);
+
+        assertEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Tag("Regression")
+    @Test
+    public void applyToInterface_shouldNotBeApplied(){
+        String raw = """
+                public interface example_interface {
+                    
+                    public int doSomething();
+                }
+                """;
+        var launcher = new Launcher();
+        CtElement testObject = launcher.getFactory().createCodeSnippetStatement(raw);
+
+        RandomInlineCommentTransformer transformer = new RandomInlineCommentTransformer();
+        TransformationResult result = transformer.applyAtRandom(testObject);
+
+        assertEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Tag("Regression")
+    @Test
+    public void applyToInterfaceWithDefaultMethod_shouldNotBeApplied(){
+        String raw = """
+                public interface example_interface {
+                    
+                    public default int doSomething(){
+                        int b = 5;
+                        return 5;
+                    }
+                    
+                }
+                """;
+
+        var launcher = new Launcher();
+        CtElement testObject = launcher.getFactory().createCodeSnippetStatement(raw);
+
+        RandomInlineCommentTransformer transformer = new RandomInlineCommentTransformer();
+        TransformationResult result = transformer.applyAtRandom(testObject);
+
+        assertEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Tag("Regression")
+    @Test
+    public void applyToEnum_shouldNotBeApplied(){
+        // This does not match the transformers purpose - but it should also not throw an error!
+        String raw = """
+                enum Directions {
+                    NORTH,
+                    EAST,
+                    SOUTH,
+                    WEST
+                }
+                """;
+        var launcher = new Launcher();
+        CtElement testObject = launcher.getFactory().createCodeSnippetStatement(raw);
+
+        RandomInlineCommentTransformer transformer = new RandomInlineCommentTransformer();
+        TransformationResult result = transformer.applyAtRandom(testObject);
+
+        assertEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Tag("Regression")
+    @Test
+    public void applyToInnerClassWithoutMethods_shouldNotBeApplied(){
+        // This does not match the transformers purpose - but it should also not throw an error!
+        String raw = """
+                public class Outer {  
+                        private class Inner {}
+                }
+                """;
+        var launcher = new Launcher();
+        CtElement testObject = launcher.getFactory().createCodeSnippetStatement(raw);
+
+        RandomInlineCommentTransformer transformer = new RandomInlineCommentTransformer();
+        TransformationResult result = transformer.applyAtRandom(testObject);
+
+        assertEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Tag("Regression")
+    @RepeatedTest(5)
+    public void applyToInnerClassWithMethods_shouldNotBeApplied(){
+        // This does not match the transformers purpose - but it should also not throw an error!
+        String raw = """
+                public class Outer {  
+                        private class Inner {
+                            public int innerDoSomething(int i){
+                                int something = 15;
+                                return i + something;
+                            }
+                        }
+                }
+                """;
+        var launcher = new Launcher();
+        CtElement testObject = launcher.getFactory().createCodeSnippetStatement(raw);
+
+        RandomInlineCommentTransformer transformer = new RandomInlineCommentTransformer();
+        TransformationResult result = transformer.applyAtRandom(testObject);
+
+        assertEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Tag("Regression")
+    @RepeatedTest(5)
+    public void applyToInnerClass_InnerHasNotAndOuterHasMethod_shouldNotBeApplied(){
+        // This does not match the transformers purpose - but it should also not throw an error!
+        String raw = """
+                public class Outer {
+                        public int outerDoSomething(int o){
+                            int something = 5;
+                            return o + something;
+                        }
+                                
+                        private class Inner {}
+                    }
+                """;
+        var launcher = new Launcher();
+        CtElement testObject = launcher.getFactory().createCodeSnippetStatement(raw);
+
+        RandomInlineCommentTransformer transformer = new RandomInlineCommentTransformer();
+        TransformationResult result = transformer.applyAtRandom(testObject);
+
+        assertEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Tag("Regression")
+    @RepeatedTest(7)
+    public void applyToInnerClass_InnerAndOuterHaveMethods_shouldNotBeApplied(){
+        // This does not match the transformers purpose - but it should also not throw an error!
+        String raw = """
+                public class Outer {
+                        public int outerDoSomething(int o){
+                            int con = 5;
+                            return o + con;
+                        }
+                                
+                        private class Inner {
+                            public int innerDoSomething(int i){
+                                int cin = 15;
+                                return i + cin;
+                            }
+                        }
+                    }
+                """;
+        var launcher = new Launcher();
+        CtElement testObject = launcher.getFactory().createCodeSnippetStatement(raw);
+
+        RandomInlineCommentTransformer transformer = new RandomInlineCommentTransformer();
+        TransformationResult result = transformer.applyAtRandom(testObject);
+
+        assertEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Tag("Regression")
+    @Test
+    public void applyToSynchronizedMethod_shouldBeApplied(){
+        String raw = """
+                public class example_class {
+                    public synchronized void someMethod() {
+                        int b = 5;
+                        System.out.println("Hello Synchronized World");
+                    }
+                }
+                """;
+        CtElement testObject = Launcher.parseClass(raw);
+
+        RandomInlineCommentTransformer transformer = new RandomInlineCommentTransformer();
+        TransformationResult result = transformer.applyAtRandom(testObject);
+
+        assertNotEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Tag("Regression")
+    @Test
+    public void applyToSynchronizedStaticMethod_shouldBeApplied(){
+        String raw = """
+                public class example_class {
+                    public static synchronized void someMethod() {
+                        int b = 5;
+                        System.out.println("Hello Synchronized World");
+                    }
+                }
+                """;
+        CtElement testObject = Launcher.parseClass(raw);
+
+        RandomInlineCommentTransformer transformer = new RandomInlineCommentTransformer();
+        TransformationResult result = transformer.applyAtRandom(testObject);
+
+        assertNotEquals(new EmptyTransformationResult(),result);
+    }
+
+    @Tag("Regression")
+    @Test
+    public void applyToMethodWithSynchronizedBlock_shouldBeApplied(){
+        String raw = """
+                public class example_class {
+                    public void someMethod() {
+                        synchronized (this) {
+                            int b = 5;
+                            System.out.println("Hello Synchronized World");
+                        }
+                    }
+                }
+                """;
+        CtElement testObject = Launcher.parseClass(raw);
+
+        RandomInlineCommentTransformer transformer = new RandomInlineCommentTransformer();
+        TransformationResult result = transformer.applyAtRandom(testObject);
+
+        assertNotEquals(new EmptyTransformationResult(),result);
     }
 
     /*

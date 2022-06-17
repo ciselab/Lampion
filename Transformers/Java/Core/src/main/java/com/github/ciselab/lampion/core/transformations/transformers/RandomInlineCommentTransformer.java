@@ -95,8 +95,8 @@ public class RandomInlineCommentTransformer extends BaseTransformer {
         }
 
         // Take the closest compilable unit (the class) and restore the ast according to transformers presettings
-        CtClass containingclass = toAlter.getParent(p -> p instanceof CtClass);
-        restoreAstAndImports(containingclass);
+        CtClass containingClass = toAlter.getParent(p -> p instanceof CtClass);
+        restoreAstAndImports(containingClass);
     }
 
     /**
@@ -110,7 +110,12 @@ public class RandomInlineCommentTransformer extends BaseTransformer {
         // Get all Methods with Parameters
         List<CtMethod> allMethods = ast.filterChildren(
                 c -> c instanceof CtMethod // the child is a method
-        ).list();
+                // Regression for Issue 91
+                // Abstract Methods do not want to be altered and throw errors!
+                // Hence, filter them out.
+                && !((CtMethod) c).isAbstract()
+        )
+        .list();
 
         // The check for empty-ness is done as constraint beforehand.
         if(allMethods.size() == 0)

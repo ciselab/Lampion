@@ -5,6 +5,7 @@ import com.github.ciselab.lampion.core.transformations.SimpleTransformationResul
 import com.github.ciselab.lampion.core.transformations.TransformationCategory;
 import com.github.ciselab.lampion.core.transformations.TransformationResult;
 import com.github.ciselab.lampion.core.transformations.Transformer;
+import spoon.SpoonException;
 import spoon.reflect.code.CtComment;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
@@ -66,27 +67,35 @@ public class RemoveAllCommentsTransformer extends BaseTransformer {
             return new EmptyTransformationResult();
         }
 
-        // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
-        CtElement savedElement = ast.clone();
-        savedElement.setParent(ast.getParent());
-        savedElement.getParent().updateAllParentsBelow();
+        try {
+
+            // As the altered method is altered forever and in all instances, safe a clone for the transformation result.
+            CtElement savedElement = ast.clone();
+            savedElement.setParent(ast.getParent());
+            savedElement.getParent().updateAllParentsBelow();
 
 
-        // Take the closest compilable unit (the class) and restore the ast according to transformers presettings
-        CtClass containingClass =
-                ast instanceof CtClass ? (CtClass)ast : ast.getParent(p -> p instanceof CtClass);
+            // Take the closest compilable unit (the class) and restore the ast according to transformers presettings
+            CtClass containingClass =
+                    ast instanceof CtClass ? (CtClass) ast : ast.getParent(p -> p instanceof CtClass);
 
-        containingClass.getFactory().getEnvironment().setCommentEnabled(false);
+            containingClass.getFactory().getEnvironment().setCommentEnabled(false);
 
-        restoreAstAndImports(containingClass);
+            restoreAstAndImports(containingClass);
 
 
-        // If debug information is wished for, create a bigger Transformationresult
-        // Else, just return a minimal Transformationresult
-        if (debug) {
-            return new SimpleTransformationResult(name,savedElement,this.getCategories(),beforeAfterOverview(savedElement,ast),ast.clone());
-        } else {
-            return new SimpleTransformationResult(name,savedElement,this.getCategories());
+            // If debug information is wished for, create a bigger Transformationresult
+            // Else, just return a minimal Transformationresult
+            if (debug) {
+                return new SimpleTransformationResult(name, savedElement, this.getCategories(), beforeAfterOverview(savedElement, ast), ast.clone());
+            } else {
+                return new SimpleTransformationResult(name, savedElement, this.getCategories());
+            }
+        } catch (SpoonException spoonException){
+            // This happens as (one) known case for abstract methods.
+            // See Issue 91
+            //logger.warn("Received an Spoon Exception while removing comments!)
+            return new EmptyTransformationResult();
         }
     }
 

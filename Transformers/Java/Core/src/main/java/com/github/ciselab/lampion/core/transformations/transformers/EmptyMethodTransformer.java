@@ -178,6 +178,10 @@ public class EmptyMethodTransformer extends BaseTransformer {
                 .stream()
                 .map(c -> (CtMethod) c)
                 .filter(c -> ! createdMethods.contains(c))
+                // Regression for Issue 91
+                // Abstract Methods do not want to be altered and throw errors!
+                // Hence, filter them out.
+                .filter(c -> ! c.isAbstract())
                 .filter(c -> ! c.getBody().getStatements().isEmpty())
                 .collect(Collectors.toList());
 
