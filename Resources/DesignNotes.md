@@ -157,6 +157,22 @@ This is due to a weird / unlikable behaviour of the random class.
 
 Examples can be found in the tests.
 
+### Unsupported Elements 
+
+(This section is "inspired" by Issue 91 and 109)
+
+During trials we found some strange interactions from Transformer to certain code Elements. 
+The following elements are widely unsupported by our Transformers: 
+
+- Enums
+- Interfaces (with and without default methods)
+- Synchronized Methods
+- Abstract Classes and Methods
+- Inner Classes
+
+While they are usually not transformed, the transformers should be apply-able but returning an empty result. 
+If it crashes, usually in NullPointer or OutOfIndexExceptions, feel free to open an Issue.
+
 ## TroubleShooting / Error Registry 
 
 This section holds some of the issues encountered.
@@ -196,6 +212,10 @@ After a lot of trial and error, the following dependencies must be somewhere in 
 - Log4J-SLF4J Binding
 
 I am not 100% sure whether some of these can be removed, however now it is working with logging for both spoon and the java transformer.
+
+### Abstract Classes / Inner Classes are not changed!
+
+These are not supported elements by our current implementation. Please see above for reasoning.
 
 ## Miscellancelous 
 
