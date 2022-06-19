@@ -1,7 +1,6 @@
 package com.github.ciselab.lampion.core.regression;
 
 import com.github.ciselab.lampion.core.program.Engine;
-import com.github.ciselab.lampion.core.program.EngineResult;
 import com.github.ciselab.lampion.core.transformations.TransformerRegistry;
 import com.github.ciselab.lampion.core.transformations.transformers.*;
 import org.junit.jupiter.api.*;
