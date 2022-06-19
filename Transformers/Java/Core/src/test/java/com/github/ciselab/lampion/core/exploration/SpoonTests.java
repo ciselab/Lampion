@@ -6,6 +6,7 @@ import com.github.ciselab.lampion.core.transformations.transformers.RandomParame
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This Class contains exploration-tests to evaluate the behaviour of the Spoon Library.
@@ -829,6 +831,47 @@ public class SpoonTests {
 
         assertFalse(prettyPrinted.contains("Comment"));
     }
+
+    @Tag("Regression")
+    @Tag("Exploration")
+    @Disabled
+    @Test
+    public void testAbstractMethods_DoesNotHaveABody(){
+        /*
+        This Test covers for some strange behaviour with abstract classes.
+        I would have expected it to be fine, as the abstract method also has a body.
+        This behaviour was in issue 91 (https://github.com/ciselab/Lampion/issues/91).
+        This also happens in normal classes with abstract methods,
+        but it does not happen with normal methods in abstract classes.
+        Final, static and synchronized keywords do not change this behaviour.
+
+        I used this exploration Test to ask the spoon people, discussion is here:
+        https://github.com/INRIA/spoon/issues/4752
+
+        As this is known to break, I disabled it.
+        So no one wonders about failures in the Exploration Tests and has to find this explanation.
+         */
+
+        String code = """
+                public abstract class example_abstract_class {                    
+                    public abstract void abstract_method() {
+                        int b = 5;
+                        System.out.println("Hello Abstract World");
+                    }
+                }
+                """;
+        CtElement testObject = Launcher.parseClass(code);
+
+        List<CtMethod> allMethodsWithBody = testObject
+                .filterChildren(c -> c instanceof CtMethod)
+                .list()
+                .stream()
+                .map(o -> (CtMethod) o)
+                // This line throws an error, as "getBody()" returns null!
+                .filter(c -> !c.getBody().getStatements().isEmpty())
+                .toList();
+    }
+
     /*
     ==============================================================================
                         Helper Methods
