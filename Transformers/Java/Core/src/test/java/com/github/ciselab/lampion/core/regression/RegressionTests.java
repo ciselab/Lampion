@@ -3,7 +3,11 @@ import com.github.ciselab.lampion.core.transformations.Transformer;
 import com.github.ciselab.lampion.core.transformations.transformers.*;
 import org.junit.jupiter.api.*;
 import spoon.Launcher;
+import spoon.reflect.code.CtComment;
 import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.ModifierKind;
+
 import java.util.*;
 
 /**
@@ -93,9 +97,6 @@ public class RegressionTests {
         return;
     }
 
-    //TODO: this must be fixed in the Library
-    /*
-    @Ignore
     @Tag("Exploration")
     @Tag("Regression")
     @RepeatedTest(5)
@@ -117,7 +118,7 @@ public class RegressionTests {
     }
 
     //TODO: this must be fixed in the Library
-    @Ignore
+    //@Ignore
     @Tag("Exploration")
     @Tag("Regression")
     @Test
@@ -150,5 +151,4 @@ public class RegressionTests {
 
         return;
     }
-    */
 }
