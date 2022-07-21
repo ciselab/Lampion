@@ -4,7 +4,7 @@ This part of the Lampion Project alters Python Files using metamorphic transform
 and returns/writes the altered files.
 
 **Important: Due to the used parser, only Python 3 files are supported!** 
-Buggy Python 3 files, as well as Python 2 files are ignored for transformation.
+Buggy Python 3 files, as well as Python 2 files are ignored for transformation. The transformer will still run, just not run on those files.
 
 It is currently in early development, I implemented every feature for the first trials, 
 but I expect bugs popping up when you use them on actual data.
@@ -22,6 +22,15 @@ This will test & build everything and run it on examples from the tests.
 This is the recommended way to use the transformer - adjust the properties and compose for your project.
 
 ## Build & Run
+
+**Docker**
+
+```
+docker build . -t lampion/python-transformer:1.3 -t lampion/python-transformer:latest -t ciselab/lampion/python-transformer:1.3 -t ciselab/lampion/python-transformer:latest -t ghcr.io/ciselab/lampion/python-transformer:1.3
+```
+
+**Python**
+
 ```bash
 pip install -r requirements.txt
 ```

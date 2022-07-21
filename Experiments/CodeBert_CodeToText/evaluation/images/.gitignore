@@ -1,0 +1,10 @@
+*.tex
+.tex
+*tex
+*.aux
+*aux
+.aux
+.png
+*.png
+png
+*.csv

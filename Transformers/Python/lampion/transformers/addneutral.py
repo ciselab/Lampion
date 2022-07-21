@@ -126,7 +126,7 @@ class AddNeutralElementTransformer(BaseTransformer, ABC):
         Returns whether the transformer was successfully applied since the last reset.
         If the transformer cannot be applied for logical reasons it will return false without attempts.
 
-        :returns bool
+        returns bool:
             True if the Transformer was successfully applied.
             False otherwise.
 

@@ -1,0 +1,39 @@
+{
+  "transformations": [1,5,10],
+  "transformer_combinations" : [
+    {
+      "IfTrueTransformer": true,
+      "IfFalseElseTransformer": true
+    },
+    {
+      "LambdaIdentityTransformer": true
+    },
+    {
+      "AddNeutralElementTransformer": true
+    },
+    {
+    "RandomParameterNameTransformer": true,
+    "RandomParameterNameStringRandomness": "pseudo",
+    "AddUnusedVariableTransformer": true,
+    "AddUnusedVariableTransformer_StringRandomness": "pseudo"
+    },
+    {
+    "RandomParameterNameTransformer": true,
+    "RandomParameterNameStringRandomness": "full",
+    "AddUnusedVariableTransformer": true,
+    "AddUnusedVariableTransformer_StringRandomness": "full"
+    }
+  ],
+  
+  "WriteManifest": false,
+  "ExplicitImports" : false,
+
+  "models": ["pretrained_python_pytorch_model.bin"],
+  "ur_dataset": "cleaned_python_test.jsonl",
+  "processed_dataset": "preprocessed_python_test.jsonl",
+
+  "seeds": [2022],
+
+  "batch_size": 16,
+  "mem_limit": "16g"
+}

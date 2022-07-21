@@ -22,7 +22,7 @@ class BaseTransformer():
     def reset(self):
         """Resets the Transformer to be applied again.
 
-        :raises NotImplementedError
+        :raises NotImplementedError:
             Iff the Subclasses do not overwrite the parent method.
 
         after the reset all local state is deleted, the transformer is fully reset.
@@ -68,7 +68,7 @@ class BaseTransformer():
     def worked(self) -> bool:
         """Returns whether the transformer was successfully applied since the last reset
 
-        :returns bool
+        :returns bool:
             True if the Transformer was successfully applied.
             False otherwise.
 

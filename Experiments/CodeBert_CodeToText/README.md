@@ -9,13 +9,14 @@ The model is supposed to learn corresponding pairs of tokens, this approach is s
 After learning, the model should be able to generate Documentation for an previously unseen method. 
 The documentation is evaluated against the actual documentation of the method using the BLEU-Score (a common translation metric). 
 
-While the experiment from Microsoft/Nvidia has multiple languages, this experiment first focusses on java. 
+While the experiment from Microsoft/Nvidia has multiple languages, this experiment first focusses on java and python. 
 
 ## Structure
 
-- *Preprocessing* contains all items necessary to containerise the preprocessing done including the obfuscation
-- *GridExperiment* will contain all elements necessary to run the experiment in a parameterized, grid fashion (to be done)
-- *Visualisation* will contain the evaluation of the meta experiment, using the results of the grid experiment (to be done)
+- *preprocessing* contains all items necessary to containerise the preprocessing done including the obfuscation --- 2 folders, one for java one for python. They use the same interface in docker-compose.
+- *grid-experiment* contains all elements necessary to run the experiment in a parameterized, grid fashion
+- *evaluation* contains the evaluation of the meta experiment, using the results of the grid experiment.
+- *handwriting* contains a way to run small examples, providing your own java files and immediatly see results from a pretrained model. 
 
 ## Dataset - Preparation 
 
@@ -31,8 +32,3 @@ From the validation set, remove the entries of the java validation file which ha
 From the test set, remove the entries of the java test file which have `base/base/src/main/com/thesett/util/log4j/` in their path with the repository `rupertlssmith/lojix` **and** `geopackage_sdk/src/main/java/mil/nga/geopackage/factory`.
 
 The entries made issues with the obfuscation - they are addressed with the removal of 25 files in total (of 15000).
-
-## Further Reading 
-
-- [Microsofts Repository](https://github.com/microsoft/CodeXGLUE/tree/main/Code-Text/code-to-text)
-- [Reproduction Package](https://github.com/ciselab/CodeBert-CodeToText-Reproduction)

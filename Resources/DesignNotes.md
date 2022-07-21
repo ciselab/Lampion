@@ -13,22 +13,19 @@ A short dictionary to understand names and namings in this project:
 ## Big Refactorings 
 
 - From v1.1: Changed "Obfuscator" in all occasions to "Transformer", to fit closer to the processes described in the paper. The Term Obfuscator was still part of the experiments provided in the paper, however, I then decided to change it. 
+- From v1.3: Java Transformer has been split into a core library and a CLI application. This was intended for an MSc Student to use the Engine in a search process and to generally ease interactive use by other programs.
 
 ## Repository Structure
 
 In terms of the optimal repository structure, it is important to see the components of this project as a whole, where there are 
 
 1. self-written Transformers
-2. an output specification (Manifest-Schema)
-3. Foreign Experiments, to conduct a meta experiment
-4. Visualization, to evaluate the meta experiment
+2. Foreign Experiments, to conduct a meta experiment
+3. Visualization, to evaluate the meta experiment
 
 Where each part has different inputs and outputs:
 
 Transformers are program code, should be versioned, should use shared data (the manifest) and be published.
-
-The Manifest-Schema is only shared data between transformers and visualization.
-While it goes into a sql-lite database, there is no such thing as a docker image provided.
 
 The foreign experiments, need (foreign) data and return data (such as metrics). 
 Furthermore, the foreign experiments need some buildup to put the transformers to work, and to norm the metrics in a usable format.
@@ -148,6 +145,34 @@ These Attributes should enable a managing component to
 1. pick only valid, none code breaking, Transformations for any method
 2. pick Transformations based on a specified distribution
 
+### On Transformer Equality
+
+We decided to implement Equals and HashCode for Equality. 
+Initially, the Java Object ID was used, so two Transformers where always different after creation. 
+
+We decided to call every Transformer "that does the same" to be equal, 
+i.E. the two transformers of the same class with the same configuration are equals. 
+This is a design decision. Also, the random-state is ignored - if t1 and t2 are equal on construction, and t1 is used (changing internal state, e.g. from random) t2 and t1 are still equal after. 
+This is due to a weird / unlikable behaviour of the random class.
+
+Examples can be found in the tests.
+
+### Unsupported Elements 
+
+(This section is "inspired" by Issue 91 and 109)
+
+During trials we found some strange interactions from Transformer to certain code Elements. 
+The following elements are widely unsupported by our Transformers: 
+
+- Enums
+- Interfaces (with and without default methods)
+- Synchronized Methods
+- Abstract Classes and Methods
+- Inner Classes
+
+While they are usually not transformed, the transformers should be apply-able but returning an empty result. 
+If it crashes, usually in NullPointer or OutOfIndexExceptions, feel free to open an Issue.
+
 ## TroubleShooting / Error Registry 
 
 This section holds some of the issues encountered.
@@ -187,6 +212,10 @@ After a lot of trial and error, the following dependencies must be somewhere in 
 - Log4J-SLF4J Binding
 
 I am not 100% sure whether some of these can be removed, however now it is working with logging for both spoon and the java transformer.
+
+### Abstract Classes / Inner Classes are not changed!
+
+These are not supported elements by our current implementation. Please see above for reasoning.
 
 ## Miscellancelous 
 

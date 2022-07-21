@@ -210,3 +210,10 @@ def test_read_config_with_lots_of_whitespace_should_be_parsed_without_any_whites
     assert config["AddCommentTransformer"] == False
     assert config["seed"] == 123
     assert config["transformation_scope"] == "global"
+
+def test_read_config_with_IfFalseElseTransformer_disabled_should_have_them_as_false():
+    config = lampion.cli.read_config_file(f"{path_prefix}/test_configs/test4.properties")
+
+    assert not config["IfTrueTransformer"]
+    assert not config["IfFalseElseTransformer"]
+

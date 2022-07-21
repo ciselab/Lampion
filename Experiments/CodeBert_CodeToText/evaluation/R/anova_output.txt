@@ -1,0 +1,100 @@
+Resampling test using freedman_lane to handle nuisance variables and 1000 permutations.
+                                                                  SS    df         F
+method_type                                                1.787e+00     3  70.90601
+MT                                                         4.722e-02     4   1.40502
+transformations                                            2.322e-03     1   0.27634
+prefix                                                     5.084e-02     1   6.05039
+gold_length_in_words                                       1.173e+00     1 139.54808
+method_type:MT                                             1.747e-01    12   1.73275
+method_type:transformations                                4.998e-03     3   0.19825
+MT:transformations                                         1.318e-02     4   0.39226
+method_type:prefix                                         5.836e-01     3  23.15208
+MT:prefix                                                  2.021e-02     4   0.60127
+transformations:prefix                                     6.250e-02     1   7.43812
+method_type:gold_length_in_words                           1.458e+00     3  57.85739
+MT:gold_length_in_words                                    4.760e-02     4   1.41624
+transformations:gold_length_in_words                       1.903e-03     1   0.22652
+prefix:gold_length_in_words                                3.108e-01     1  36.98487
+method_type:MT:transformations                             7.306e-02    12   0.72456
+method_type:MT:prefix                                      1.985e-01    12   1.96881
+method_type:transformations:prefix                         1.107e-01     3   4.39258
+MT:transformations:prefix                                  1.438e-02     4   0.42795
+method_type:MT:gold_length_in_words                        2.012e-01    12   1.99569
+method_type:transformations:gold_length_in_words           4.079e-03     3   0.16180
+MT:transformations:gold_length_in_words                    1.841e-02     4   0.54786
+method_type:prefix:gold_length_in_words                    5.314e-01     3  21.07875
+MT:prefix:gold_length_in_words                             2.818e-03     4   0.08384
+transformations:prefix:gold_length_in_words                1.072e-02     1   1.27552
+method_type:MT:transformations:prefix                      8.527e-02    12   0.84564
+method_type:MT:transformations:gold_length_in_words        7.914e-02    12   0.78485
+method_type:MT:prefix:gold_length_in_words                 2.092e-01    12   2.07498
+method_type:transformations:prefix:gold_length_in_words    1.218e-01     3   4.83021
+MT:transformations:prefix:gold_length_in_words             8.591e-03     4   0.25559
+method_type:MT:transformations:prefix:gold_length_in_words 8.487e-02    12   0.84169
+Residuals                                                  7.045e+02 83839          
+                                                           parametric P(>F)
+method_type                                                       0.000e+00
+MT                                                                2.294e-01
+transformations                                                   5.991e-01
+prefix                                                            1.391e-02
+gold_length_in_words                                              0.000e+00
+method_type:MT                                                    5.352e-02
+method_type:transformations                                       8.976e-01
+MT:transformations                                                8.143e-01
+method_type:prefix                                                5.662e-15
+MT:prefix                                                         6.617e-01
+transformations:prefix                                            6.387e-03
+method_type:gold_length_in_words                                  0.000e+00
+MT:gold_length_in_words                                           2.256e-01
+transformations:gold_length_in_words                              6.341e-01
+prefix:gold_length_in_words                                       1.196e-09
+method_type:MT:transformations                                    7.288e-01
+method_type:MT:prefix                                             2.287e-02
+method_type:transformations:prefix                                4.269e-03
+MT:transformations:prefix                                         7.886e-01
+method_type:MT:gold_length_in_words                               2.069e-02
+method_type:transformations:gold_length_in_words                  9.221e-01
+MT:transformations:gold_length_in_words                           7.006e-01
+method_type:prefix:gold_length_in_words                           1.210e-13
+MT:prefix:gold_length_in_words                                    9.874e-01
+transformations:prefix:gold_length_in_words                       2.587e-01
+method_type:MT:transformations:prefix                             6.030e-01
+method_type:MT:transformations:gold_length_in_words               6.669e-01
+method_type:MT:prefix:gold_length_in_words                        1.532e-02
+method_type:transformations:prefix:gold_length_in_words           2.309e-03
+MT:transformations:prefix:gold_length_in_words                    9.064e-01
+method_type:MT:transformations:prefix:gold_length_in_words        6.072e-01
+Residuals                                                                  
+                                                           resampled P(>F)
+method_type                                                          0.001
+MT                                                                   0.235
+transformations                                                      0.592
+prefix                                                               0.009
+gold_length_in_words                                                 0.001
+method_type:MT                                                       0.073
+method_type:transformations                                          0.891
+MT:transformations                                                   0.813
+method_type:prefix                                                   0.001
+MT:prefix                                                            0.660
+transformations:prefix                                               0.004
+method_type:gold_length_in_words                                     0.001
+MT:gold_length_in_words                                              0.217
+transformations:gold_length_in_words                                 0.636
+prefix:gold_length_in_words                                          0.001
+method_type:MT:transformations                                       0.714
+method_type:MT:prefix                                                0.033
+method_type:transformations:prefix                                   0.004
+MT:transformations:prefix                                            0.772
+method_type:MT:gold_length_in_words                                  0.032
+method_type:transformations:gold_length_in_words                     0.930
+MT:transformations:gold_length_in_words                              0.696
+method_type:prefix:gold_length_in_words                              0.001
+MT:prefix:gold_length_in_words                                       0.983
+transformations:prefix:gold_length_in_words                          0.245
+method_type:MT:transformations:prefix                                0.595
+method_type:MT:transformations:gold_length_in_words                  0.641
+method_type:MT:prefix:gold_length_in_words                           0.023
+method_type:transformations:prefix:gold_length_in_words              0.002
+MT:transformations:prefix:gold_length_in_words                       0.905
+method_type:MT:transformations:prefix:gold_length_in_words           0.615
+Residuals                
