@@ -16,7 +16,7 @@ jobs:
         java-version: '17'
         cache: 'maven'
     - name: Build Java Transformer
-      run: mvn package verify --file Transformers/Java/pom.xml
+      run: mvn package verify -P nofiles --file Transformers/Java/pom.xml
 
 
   buildWithDocker: 
