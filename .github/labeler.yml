@@ -1,22 +1,22 @@
 Java:
-- ./Transformers/Java/src/**
+- ./Transformers/Java/**
 - ./.github/workflows/BuildJavaTransformer.yml
 - ./.github/workflows/BuildJavaTransformer_OnSchedule.yml
+- ./**/*.java
 
 Python:
-- ./Transformers/Python/lampion/**
+- ./Transformers/Python/**
 - ./.github/workflows/BuildPythonTransformer.yml
 - ./.github/workflows/BuildPythonTransformer_onSchedule.yml
+- ./**/*.py
 
 Test:
-- ./Transformers/Java/src/test/**
-- ./Transformers/Python/tests/**
+- ./Transformers/Java/**/test/**
+- ./Transformers/Python/**/tests/**
 
 Documentation:
 - ./**/*.md
-
-Database:
-- ManifestSchema/*
+- ./Resources/**
 
 Docker:
 - ./**/Dockerfile
@@ -34,6 +34,9 @@ Configuration:
 - ./**/*.json
 - ./**/*.xml
 - .gitignore
+
+Experiment:
+- ./Experiments/**
 
 Git:
 - .github/*

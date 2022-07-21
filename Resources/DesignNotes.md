@@ -217,6 +217,18 @@ I am not 100% sure whether some of these can be removed, however now it is worki
 
 These are not supported elements by our current implementation. Please see above for reasoning.
 
+### The CI is failing with some strange Class Path Errors????
+
+This can very well be from the Static Code-Parts as the Github CI is sometimes weird. 
+Check if:
+
+1. it does not happen on your local machine with maven
+2. it does not happen on your local machine with docker
+3. it happens in both remote maven and docker ci 
+
+For now I just added an Tag as "File" for it which means this test is not run in the CI. 
+Please add a comment explaining why with the error message in the test. 
+
 ## Miscellancelous 
 
 ### Anonymus Shading of Java Transformers
