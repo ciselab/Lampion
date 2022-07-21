@@ -1,4 +1,4 @@
-atomicwrites==1.4.0
+atomicwrites==1.4.1
 attrs==21.4.0
 build==0.7.0
 colorama==0.4.5
