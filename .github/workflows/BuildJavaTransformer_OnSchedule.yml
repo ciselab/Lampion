@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK
-      uses: actions/setup-java@v2.4.0
+      uses: actions/setup-java@v3
       with:
         distribution: 'zulu'
         java-version: '17'
@@ -44,7 +44,7 @@ jobs:
         uses: docker/setup-qemu-action@v1
       -
         name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       -
         name: Login to GHCR
         if: github.event_name != 'pull_request'
