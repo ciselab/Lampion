@@ -1,4 +1,7 @@
 # Lampion
+[![Licence](https://img.shields.io/github/license/ciselab/lampion?color=purple)](https://img.shields.io/github/license/ciselab/lampion?color=purple)
+[![Java CI](https://github.com/ciselab/Lampion/actions/workflows/BuildJavaTransformer_OnSchedule.yml/badge.svg)](https://github.com/ciselab/Lampion/actions/workflows/BuildJavaTransformer_OnSchedule.yml)
+[![Python CI](https://github.com/ciselab/Lampion/actions/workflows/BuildPythonTransformer_OnSchedule.yml/badge.svg)](https://github.com/ciselab/Lampion/actions/workflows/BuildPythonTransformer_OnSchedule.yml)
 
 This project aims to help you with explainability and robustness of your Codebased ML-Models.
 It is based on the idea of [Metamorphic Transformations](https://en.wikipedia.org/wiki/Metamorphic_code) which alter the code-syntax but keep the meaning of the code.
