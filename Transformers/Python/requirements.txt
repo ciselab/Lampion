@@ -15,10 +15,10 @@ pyparsing==3.0.9
 pytest==7.1.2
 pytest-cov==3.0.0
 PyYAML==6.0
-setuptools==63.2.0
+setuptools==65.3.0
 toml==0.10.2
 tomli==2.0.1
 typing-extensions==4.3.0
-typing-inspect==0.7.1
+typing-inspect==0.8.0
 wheel==0.37.1
-regex==2022.7.9
+regex==2022.8.17
