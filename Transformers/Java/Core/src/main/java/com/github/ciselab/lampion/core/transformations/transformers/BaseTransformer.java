@@ -117,4 +117,13 @@ public abstract class BaseTransformer implements Transformer {
         }
     }
 
+    /**
+     * Gives the Seed used to create the transformer.
+     *
+     * Note: The "Running Seed" is not accessible - it is hidden in the random number provider.
+     * @return the Seed used on creation.
+     */
+    public long getSeed() {
+        return seedOnCreation;
+    }
 }

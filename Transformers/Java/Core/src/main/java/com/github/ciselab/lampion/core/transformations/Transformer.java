@@ -91,4 +91,6 @@ public interface Transformer {
      * @param seed used for setting the random machine.
      */
     void setSeed(long seed);
+
+    long getSeed();
 }
