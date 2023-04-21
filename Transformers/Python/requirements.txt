@@ -1,7 +1,7 @@
 atomicwrites==1.4.1
 attrs==22.1.0
 build==0.8.0
-colorama==0.4.5
+colorama==0.4.6
 iniconfig==1.1.1
 libcst==0.4.9
 more-itertools==9.0.0
