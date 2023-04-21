@@ -32,7 +32,7 @@ public class EngineTests {
 
     @BeforeAll
     @AfterAll
-    private static void folder_cleanup() throws IOException {
+    public static void folder_cleanup() throws IOException {
         if(Files.exists(Paths.get(outputTestFolder))) {
             Files.walk(Paths.get(outputTestFolder))
                     .sorted(Comparator.reverseOrder())
@@ -42,7 +42,7 @@ public class EngineTests {
     }
 
     @BeforeEach
-    private void createOutputFolderIfNotExists() throws IOException {
+    public void createOutputFolderIfNotExists() throws IOException {
         if(!Files.exists(Paths.get(outputTestFolder))){
             Files.createDirectory(Paths.get(outputTestFolder));
         }
