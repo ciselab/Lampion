@@ -4,7 +4,7 @@ build==0.10.0
 colorama==0.4.6
 iniconfig==1.1.1
 libcst==0.4.9
-more-itertools==9.0.0
+more-itertools==9.1.0
 mypy-extensions==0.4.3
 pip==22.3.1
 pep517==0.13.0
