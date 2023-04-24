@@ -20,5 +20,5 @@ toml==0.10.2
 tomli==2.0.1
 typing-extensions==4.4.0
 typing-inspect==0.8.0
-wheel==0.38.4
+wheel==0.40.0
 regex==2022.10.31
