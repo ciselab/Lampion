@@ -21,4 +21,4 @@ tomli==2.0.1
 typing-extensions==4.4.0
 typing-inspect==0.8.0
 wheel==0.38.4
-regex==2022.10.31
+regex==2023.6.3
