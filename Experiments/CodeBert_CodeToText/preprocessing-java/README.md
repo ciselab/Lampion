@@ -27,7 +27,7 @@ The above given compose is just a step to verify this building brick of the meta
 To provide it for the GridExperiment, do 
 
 ```
-docker build --build-arg TRANSFORMER_VERSION=latest . -t lampion/codebert-java-preprocessing:1.2  -t lampion/codebert-java-preprocessing:latest -t ciselab/codebert-java-preprocessing:1.2  -t ciselab/codebert-preprocessing:latest -t ghcr.io/ciselab/lampion/codebert-java-preprocessing:1.2 -t ghcr.io/ciselab/lampion/codebert-java-preprocessing:latest -t ciselab/lampion/codebert-java-preprocessing:1.2  -t ciselab/lampion/codebert-preprocessing:latest
+docker build --build-arg TRANSFORMER_VERSION=latest . -t lampion/codebert-java-preprocessing:1.3  -t lampion/codebert-java-preprocessing:latest -t ciselab/codebert-java-preprocessing:1.3  -t ciselab/codebert-preprocessing:latest -t ghcr.io/ciselab/lampion/codebert-java-preprocessing:1.3 -t ghcr.io/ciselab/lampion/codebert-java-preprocessing:latest -t ciselab/lampion/codebert-java-preprocessing:1.3  -t ciselab/lampion/codebert-preprocessing:latest
 ```
 
 These are quite some tags, but I made the mistake to label things differently in different places, so this is the safest for everything to work smoothly.

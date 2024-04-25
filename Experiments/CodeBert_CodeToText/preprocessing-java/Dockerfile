@@ -18,7 +18,7 @@ RUN mkdir /python-helpers
 WORKDIR /python-helpers
 
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt --break-system-packages
 
 COPY java_to_jsonl.py .
 RUN chmod +x java_to_jsonl.py
