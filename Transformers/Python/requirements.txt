@@ -6,7 +6,7 @@ iniconfig==1.1.1
 libcst==0.4.9
 more-itertools==9.1.0
 mypy-extensions==0.4.3
-pip==23.1.2
+pip==23.3
 pep517==0.13.0
 pluggy==1.0.0
 py==1.11.0
