@@ -49,56 +49,6 @@ public class EngineTests {
     }
 
     @Test
-    void testSetDistribution_DistributionHasUnknownElements_ShouldThrowException(){
-        Transformer in = new IfTrueTransformer();
-
-        Transformer notIn = new RandomParameterNameTransformer();
-
-        TransformerRegistry registry = new TransformerRegistry("Test");
-        registry.registerTransformer(in);
-
-        Map<Transformer,Integer> faultyDistribution = new HashMap<>();
-        faultyDistribution.put(notIn,5);
-
-        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder+"_exploration",registry);
-
-        assertThrows(UnsupportedOperationException.class, () -> testObject.setDistribution(faultyDistribution));
-    }
-
-    @Test
-    void testSetDistribution_DistributionHasNegativeValues_ShouldThrowException(){
-        Transformer in = new IfTrueTransformer();
-
-        TransformerRegistry registry = new TransformerRegistry("Test");
-        registry.registerTransformer(in);
-
-        Map<Transformer,Integer> faultyDistribution = new HashMap<>();
-        faultyDistribution.put(in,-2);
-
-        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
-
-        assertThrows(UnsupportedOperationException.class, () -> testObject.setDistribution(faultyDistribution));
-    }
-
-    @Test
-    void testSetDistribution_DistributionIsCorrect_shouldBeSet(){
-        Transformer in = new IfTrueTransformer();
-        Transformer inToo = new RandomParameterNameTransformer();
-
-        TransformerRegistry registry = new TransformerRegistry("Test");
-        registry.registerTransformer(in);
-        registry.registerTransformer(inToo);
-
-        Map<Transformer,Integer> dist = new HashMap<>();
-        dist.put(in,5);
-
-        Engine testObject = new Engine(pathToTestFileFolder,outputTestFolder,registry);
-
-        testObject.setDistribution(dist);
-        return;
-    }
-
-    @Test
     void testSetTransformationScope_negativeNumberOfTransformations_shouldThrowException(){
         TransformerRegistry registry = new TransformerRegistry("Test");
 

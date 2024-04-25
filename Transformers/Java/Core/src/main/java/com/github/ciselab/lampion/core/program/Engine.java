@@ -18,13 +18,13 @@ import java.util.*;
 /**
  * This class runs the primary parts of the Program.
  * It is purposefully separated from the app, to be better testable.
- *
+ * <p/>
  * It takes a registry equipped with all relevant
  * Transformers, and applies them quantified in a certain configuration to a given AST.
- *
+ * <p/>
  * The default behaviour is to apply all available transformations evenly distributed.
  * If others are wanted, a distribution transformation is required, see "setDistribution".
- *
+ * <p/>
  * The primary method is "run" and has similar comments laying out what's happening.
  */
 public class Engine {
@@ -49,11 +49,6 @@ public class Engine {
     }
     long numberOfTransformationsPerScope = 100;
     TransformationScope scope = TransformationScope.global;
-
-    // The distribution on how often to apply the Transformers
-    // if every transformer has the same value, they are applied evenly often.
-    // if e.g. a transformer has 2 and another one has 1, then the 2-transformer is applied twice as much.
-    Map<Transformer,Integer> distribution;
 
     // These are helpers for "perClassEach" and "perMethodEach"
     // To iterate over the classes and methods until there are no more transformations
@@ -84,11 +79,6 @@ public class Engine {
         this.codeDirectory = codeDirectory;
         this.outputDirectory = outputDirectory;
         this.registry = registry;
-        distribution = new HashMap<>();
-        // default behaviour is to apply all transformations equally often
-        for (Transformer t: registry.getRegisteredTransformers()) {
-            distribution.put(t,1);
-        }
     }
 
     public EngineResult run(CtModel codeRoot){
@@ -99,8 +89,7 @@ public class Engine {
 
         EngineResult.Builder builder = new EngineResult.Builder(codeRoot, codeDirectory, outputDirectory, registry)
                 .javaOutput(writeJavaOutput)
-                .randomSeed(random)
-                .distribution(distribution);
+                .randomSeed(random);
 
         // Note:
         // It is important that methods are instantiated here and not while transformations are running,
@@ -131,15 +120,8 @@ public class Engine {
         };
         logger.info("Applying " + totalTransformationsToDo + " Transformations evenly distributed amongst all classes");
         // Step 2.2:
-        // For picking transformers, a simple approach was taken to quantify them according to distribution
-        // make a new list of transformers, where every transformer is added a number of times their distribution
-        // then, pick a random number between 0 and list.size() and this is your transformer!
-        List<Transformer> quantifiedTransformers = new ArrayList<>();
-        for (var entry : distribution.entrySet()) {
-            for (int i = 0; i < entry.getValue(); i++) {
-                quantifiedTransformers.add(entry.getKey());
-            }
-        }
+        // Legacy - Removed as Distributions have been removed for now.
+
         // Step 2.3:
         // For every to-be-applied transformation
         // Pick the next (random) element
@@ -150,14 +132,13 @@ public class Engine {
             try {
                 CtElement toAlter = getNextCtElement();
 
-                int index = random.nextInt(quantifiedTransformers.size());
-                Transformer transformer = quantifiedTransformers.get(index);
+                int index = random.nextInt(registry.getRegisteredTransformers().size());
+                Transformer transformer = registry.getRegisteredTransformers().get(index);
 
                 TransformationResult result = transformer.applyAtRandom(toAlter);
                 results.add(result);
 
                 if (result != null && ! result.equals(new EmptyTransformationResult())){
-                    // As we removed the Manifest (for now?) we just log a debug statement of what was done
                     logger.debug("Successfully applied " + result.getTransformationName() +
                             " to Element(Hash):" + result.getTransformedElement().toString().hashCode());
                 }
@@ -243,39 +224,13 @@ public class Engine {
         return toAlter;
     }
 
-    /**
-     * This method sets the distribution on how often to apply the Transformers
-     * if every transformer has the same value, they are applied evenly often.
-     * if e.g. a transformer has 2 and another one has 1, then the 2-transformer is applied twice as much.
-     *
-     * They are applied using a random algorithm and not in order.
-     *
-     * You can create certain distributions using factory methods of this class,
-     * building distributions e.g. for a certain set of categories of all available transformations in the registry.
-     *
-     * @param distribution
-     * @throws UnsupportedOperationException when the distribution contains items that are not in the registry.
-     */
-    public void setDistribution(Map<Transformer,Integer> distribution){
-        // check whether all Transformers in the distribution are in the registry
-        if(!distribution.keySet().stream().allMatch(
-                d -> registry.getRegisteredTransformers().contains(d)
-        )){
-            throw new UnsupportedOperationException("The given distribution contains transformation outside of registry");
-        }
-        if(distribution.values().stream().anyMatch(v -> v < 0)) {
-            throw new UnsupportedOperationException("The given distribution negative amounts for transformations");
-        }
-
-        this.distribution = distribution;
-    }
 
     /**
      * This method sets the number of transformations and its scope.
      * They are multiplied with the item under alternation, example:
      * The system has 2 classes, scope classes and transformations 100 -> 200 Transformations in total.
      * The system has 10 methods, scope method, and transformations 10 -> 100 Transformations in total.
-     *
+     * <p/>
      * The transformations are (currently) applied evenly among all items, so setting the scope to
      * "perMethod" does not mean that every method is altered 10 times,
      * but in average there will be 10 alternations per method.
@@ -298,7 +253,7 @@ public class Engine {
     /**
      * Whether to write to the output folder or not.
      * All other logic is still applied as usual.
-     *
+     * <p/>
      * This is mostly intended to make tests easier without the need for file cleanup.
      * @param val true if you want to write output, false otherwise.
      */
@@ -307,26 +262,9 @@ public class Engine {
     }
 
     /**
-     * This method builds a distribution of the transformers in the
-     * registry according to the given distribution of categories.
-     * If the categories all have 1, they are applied evenly often.
-     * If category A has 1, and category B has 2, then B will be used twice as much as A.
-     *
-     * The distribution will contain every transformer of the registry at least once if they have one category.
-     *
-     * @param distributionByCategory
-     * @return A distribution of the registries transformers quantified by categories
-     */
-    public Map<Transformer,Integer> setDistributionByCategory(Map<TransformationCategory,Integer> distributionByCategory) {
-        // TODO: Fill me
-        // TODO: Decide whether the total amount of transformers is twice as much as the others
-        return new HashMap<>();
-    }
-
-    /**
      * This method sets whether all comments are removed or not.
      * The comments are still entities in the AST, but are not in the toString() or prettyprinting.
-     * @param val whether or not to remove all comments in all files - true for removal, false for keeping
+     * @param val whether to remove all comments in all files - true for removal, false for keeping
      */
     public void setRemoveAllComments(boolean val) {
         this.removeAllComments = val;
