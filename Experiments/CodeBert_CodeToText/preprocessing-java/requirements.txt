@@ -1,6 +1,6 @@
 attrs==21.4.0
 jsonlines==3.0.0
-pip==22.0.3
+pip==23.3
 regex==2022.3.2
 setuptools==65.5.1
 typing_extensions==4.1.1
