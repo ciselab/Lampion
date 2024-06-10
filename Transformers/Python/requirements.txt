@@ -10,7 +10,7 @@ pip==23.1.2
 pep517==0.13.0
 pluggy==1.0.0
 py==1.11.0
-pylint==2.16.4
+pylint==3.2.3
 pyparsing==3.0.9
 pytest==7.3.2
 pytest-cov==4.0.0
