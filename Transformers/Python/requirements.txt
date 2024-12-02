@@ -2,7 +2,7 @@ atomicwrites==1.4.1
 attrs==23.1.0
 build==0.10.0
 colorama==0.4.6
-iniconfig==1.1.1
+iniconfig==2.0.0
 libcst==0.4.9
 more-itertools==9.1.0
 mypy-extensions==0.4.3
